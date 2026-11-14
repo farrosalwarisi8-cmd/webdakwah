@@ -24,6 +24,10 @@ async function bootstrap(): Promise<void> {
   const host = config.getOrThrow<string>('HOST');
   const origins = parseOrigins(config.getOrThrow<string>('FRONTEND_ORIGINS'));
 
+  if (config.get<string>('NODE_ENV') === 'production' && !config.get<string>('SUPABASE_URL')) {
+    throw new Error('SUPABASE_URL wajib diisi di production agar verifikasi token berjalan.');
+  }
+
   await app.register(helmet, { contentSecurityPolicy: false });
 
   app.enableCors({

@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 
+import { Public } from '../auth/auth.decorators.js';
+
 export interface HealthResponse {
   status: 'ok';
   uptimeSec: number;
@@ -10,6 +12,7 @@ export interface HealthResponse {
  * Sengaja sangat ringan (tanpa query database) karena dipakai Render sebagai
  * health check. Path publik: GET /health
  */
+@Public()
 @Controller('health')
 export class HealthController {
   @Get()

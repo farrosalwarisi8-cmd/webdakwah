@@ -3,8 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 1 — Fondasi**. Yang ada saat ini adalah kerangka monorepo, halaman beranda
-> statis, dan endpoint health check. Fitur konten, auth, dan moderasi menyusul di fase berikutnya.
+> Status: **Fase 2 — Database, Autentikasi & Hak Akses**. Beranda statis, login Supabase,
+> profil + role di database, dan pembatasan akses di API sudah berjalan. Editor konten dan
+> moderasi menyusul di fase berikutnya.
 
 ## Teknologi
 
@@ -13,7 +14,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 | Monorepo        | pnpm workspaces + Turborepo                                    |
 | Frontend        | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | Backend         | NestJS 12 + Fastify                                            |
-| Database & Auth | Supabase (Postgres + Auth), Prisma (mulai Fase 2)              |
+| Database & Auth | Supabase (Postgres + Auth), Prisma 7                           |
 | Media           | Cloudflare R2 dengan presigned URL (mulai Fase 4)              |
 | Deploy          | Web → Vercel, API → Render                                     |
 
@@ -22,31 +23,58 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 ```
 webdakwah/
 ├─ apps/
-│  ├─ web/        # Next.js App Router (UI publik + dashboard nanti)
-│  └─ api/        # NestJS + Fastify
+│  ├─ web/        # Next.js App Router (beranda, /masuk, /akun, /dashboard)
+│  └─ api/        # NestJS + Fastify, modul auth & health
+│     └─ prisma/  # schema.prisma, migrasi SQL, seed admin
 ├─ packages/
-│  └─ shared/     # Tipe, konstanta (role/status), skema Zod
+│  └─ shared/     # Tipe, konstanta (role/status), skema Zod, matriks izin
 ├─ eslint.config.mjs
 ├─ turbo.json
 └─ tsconfig.base.json
 ```
 
 `packages/shared` adalah satu-satunya sumber kebenaran untuk aturan yang dipakai kedua app
-(daftar role, status konten, tipe konten, validasi URL, pagination).
+(daftar role, status konten, tipe konten, validasi URL, pagination, dan matriks izin).
+
+## Autentikasi & Hak Akses
+
+- Login memakai **Supabase Auth** (email + kata sandi). Akun dibuat oleh admin, bukan pendaftaran
+  terbuka.
+- Role **tidak** disimpan di metadata auth, melainkan di tabel `profiles` (id sama dengan
+  `auth.users.id`). Pengguna tidak bisa menaikkan hak aksesnya sendiri.
+- Trigger `on_auth_user_created` membuat profil baru otomatis dengan role `CONTRIBUTOR`.
+- API memverifikasi Bearer token setiap request (JWKS/ES256, atau HS256 untuk proyek lama), lalu
+  `RolesGuard` membaca role **dari database** dan menolak akun yang dinonaktifkan.
+- Matriks izin ada di `packages/shared/src/auth/permissions.ts`
+  (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`).
+  Kontributor hanya mendapat dua izin pertama.
+- `/dashboard` dijaga oleh `proxy.ts` (pengganti middleware di Next 16). Proxy hanya lapisan
+  kenyamanan; API tetap memverifikasi token sendiri.
 
 ## Menjalankan Secara Lokal
 
-Prasyarat: Node.js 24 (lihat `.nvmrc`) dan pnpm 12.
+Prasyarat: Node.js 24 (lihat `.nvmrc`), pnpm 12, dan satu project Supabase (gratis).
 
 ```bash
-# 1. Install dependensi
+# 1. Install dependensi (sekaligus generate Prisma Client)
 pnpm install
 
 # 2. Siapkan environment
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 
-# 3. Jalankan keduanya (web :3000, api :3001)
+# 3. Isi kredensial Supabase di kedua file env:
+#    - API: DATABASE_URL, DIRECT_URL, SUPABASE_URL
+#    - Web: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+#    Nilai didapat dari Supabase Dashboard → Project Settings → Database / API.
+
+# 4. Terapkan skema database
+pnpm --filter api db:migrate
+
+# 5. Buat akun admin pertama (isi SEED_ADMIN_* + SUPABASE_SERVICE_ROLE_KEY di .env)
+pnpm --filter api db:seed
+
+# 6. Jalankan keduanya (web :3000, api :3001)
 pnpm dev
 ```
 
@@ -58,7 +86,11 @@ pnpm --filter api dev
 ```
 
 Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
-Endpoint bisnis berada di prefiks `/api`, mis. `http://localhost:3001/api/...`.
+Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
+Login: <http://localhost:3000/masuk>
+
+Tanpa kredensial Supabase, aplikasi tetap bisa di-build dan beranda/health tetap jalan;
+halaman login akan menampilkan pesan bahwa autentikasi belum dikonfigurasi.
 
 ## Perintah Penting
 
@@ -66,8 +98,19 @@ Endpoint bisnis berada di prefiks `/api`, mis. `http://localhost:3001/api/...`.
 pnpm build         # build semua package (turbo, urut dependensi)
 pnpm typecheck     # TypeScript tanpa emit untuk semua package
 pnpm lint          # ESLint untuk seluruh repo
+pnpm test          # tes unit aturan akses (Vitest)
 pnpm format        # Prettier --write
 pnpm format:check  # cek format
+```
+
+Prisma (dijalankan dari root):
+
+```bash
+pnpm --filter api db:generate   # generate Prisma Client ke src/generated/prisma
+pnpm --filter api db:migrate    # prisma migrate deploy (produksi/CI)
+pnpm --filter api db:migrate:dev# buat migrasi baru saat mengubah schema
+pnpm --filter api db:seed       # buat/naikkan akun admin dari SEED_ADMIN_*
+pnpm --filter api db:studio     # Prisma Studio
 ```
 
 ## Environment Variables
@@ -76,51 +119,57 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 
 ### API (`apps/api/.env`)
 
-| Variabel                                          | Wajib  | Default                 | Keterangan                                    |
-| ------------------------------------------------- | ------ | ----------------------- | --------------------------------------------- |
-| `NODE_ENV`                                        | tidak  | `development`           | `development` \| `test` \| `production`       |
-| `PORT`                                            | tidak  | `3001`                  | Port HTTP                                     |
-| `HOST`                                            | tidak  | `0.0.0.0`               | Bind address (Render butuh `0.0.0.0`)         |
-| `LOG_LEVEL`                                       | tidak  | `info`                  | Level logger Fastify/Pino                     |
-| `FRONTEND_ORIGINS`                                | tidak  | `http://localhost:3000` | Origin CORS, dipisah koma                     |
-| `DATABASE_URL`                                    | Fase 2 | —                       | URL Postgres via pooler                       |
-| `DIRECT_URL`                                      | Fase 2 | —                       | URL langsung untuk migrasi Prisma             |
-| `SUPABASE_URL`                                    | Fase 2 | —                       | Base URL project Supabase                     |
-| `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | Fase 2 | —                       | Kunci Supabase (service role hanya di server) |
-| `SUPABASE_JWT_SECRET` / `SUPABASE_JWKS_URL`       | Fase 2 | —                       | Verifikasi token akses                        |
-| `R2_*`                                            | Fase 4 | —                       | Kredensial Cloudflare R2 untuk upload media   |
-| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET`    | Fase 7 | —                       | Pemicu revalidasi cache web                   |
+| Variabel                                       | Wajib       | Default                 | Keterangan                                    |
+| ---------------------------------------------- | ----------- | ----------------------- | --------------------------------------------- |
+| `NODE_ENV`                                     | tidak       | `development`           | `development` \| `test` \| `production`       |
+| `PORT`                                         | tidak       | `3001`                  | Port HTTP                                     |
+| `HOST`                                         | tidak       | `0.0.0.0`               | Bind address (Render butuh `0.0.0.0`)         |
+| `LOG_LEVEL`                                    | tidak       | `info`                  | Level logger Fastify/Pino                     |
+| `FRONTEND_ORIGINS`                             | tidak       | `http://localhost:3000` | Origin CORS, dipisah koma                     |
+| `DATABASE_URL`                                 | ya (Fase 2) | —                       | Postgres via pooler Supabase (port 6543)      |
+| `DIRECT_URL`                                   | ya (Fase 2) | —                       | Koneksi langsung untuk Prisma CLI/migrasi     |
+| `SUPABASE_URL`                                 | ya (Fase 2) | —                       | Base URL project; juga dipakai membentuk JWKS |
+| `SUPABASE_JWKS_URL`                            | tidak       | `<SUPABASE_URL>/...`    | Override endpoint JWKS                        |
+| `SUPABASE_JWT_SECRET`                          | tidak       | —                       | Hanya untuk proyek lama dengan token HS256    |
+| `SUPABASE_SERVICE_ROLE_KEY`                    | hanya seed  | —                       | Kunci server; jangan dipakai di runtime web   |
+| `SEED_ADMIN_EMAIL`                             | hanya seed  | —                       | Email admin pertama                           |
+| `SEED_ADMIN_PASSWORD`                          | hanya seed  | —                       | Minimal 8 karakter                            |
+| `R2_*`                                         | Fase 4      | —                       | Kredensial Cloudflare R2 untuk upload media   |
+| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | Fase 7      | —                       | Pemicu revalidasi cache web                   |
 
 ### Web (`apps/web/.env.local`)
 
-| Variabel                        | Wajib  | Default                 | Keterangan                    |
-| ------------------------------- | ------ | ----------------------- | ----------------------------- |
-| `NEXT_PUBLIC_API_URL`           | ya     | `http://localhost:3001` | Base URL API                  |
-| `NEXT_PUBLIC_SITE_URL`          | ya     | `http://localhost:3000` | URL publik untuk metadata/OG  |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Fase 2 | —                       | URL Supabase                  |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Fase 2 | —                       | Anon key (aman di browser)    |
-| `REVALIDATE_SECRET`             | Fase 7 | —                       | Secret untuk route revalidasi |
+| Variabel                        | Wajib       | Default                 | Keterangan                    |
+| ------------------------------- | ----------- | ----------------------- | ----------------------------- |
+| `NEXT_PUBLIC_API_URL`           | ya          | `http://localhost:3001` | Base URL API                  |
+| `NEXT_PUBLIC_SITE_URL`          | ya          | `http://localhost:3000` | URL publik untuk metadata/OG  |
+| `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                  |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)    |
+| `REVALIDATE_SECRET`             | Fase 7      | —                       | Secret untuk route revalidasi |
 
 ## Deploy
 
 **Web (Vercel)**
 
 1. Import repo, set **Root Directory** ke `apps/web`.
-2. Framework terdeteksi otomatis (Next.js). Build command: `pnpm build` (dijalankan dari root
-   karena Turbo perlu melihat workspace), atau gunakan `cd ../.. && pnpm --filter web build`.
-3. Isi env `NEXT_PUBLIC_API_URL` (URL Render) dan `NEXT_PUBLIC_SITE_URL` (domain produksi).
+2. Framework terdeteksi otomatis (Next.js). Build command: `cd ../.. && pnpm --filter web build`
+   agar Prisma/Turbo tetap melihat workspace.
+3. Isi env `NEXT_PUBLIC_API_URL` (URL Render), `NEXT_PUBLIC_SITE_URL` (domain produksi),
+   `NEXT_PUBLIC_SUPABASE_URL`, dan `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 **API (Render)**
 
 1. Buat **Web Service** dari repo, Root Directory `apps/api`.
 2. Build: `pnpm install && pnpm --filter @webdakwah/shared build && pnpm --filter api build`
    Start: `node apps/api/dist/main.js` (atau `npm --prefix apps/api start`).
-3. Health check path: `/health`.
-4. Isi env sesuai tabel di atas; set `FRONTEND_ORIGINS` ke domain Vercel.
+3. Pre-deploy (sekali saat rilis skema): `pnpm --filter api db:migrate` — butuh `DIRECT_URL`.
+4. Health check path: `/health`.
+5. Isi env sesuai tabel di atas (`NODE_ENV=production`, `DATABASE_URL`, `DIRECT_URL`,
+   `SUPABASE_URL`), dan set `FRONTEND_ORIGINS` ke domain Vercel.
 
 ## Aturan Kontribusi
 
 - TypeScript strict; hindari `any`. Gunakan tipe dari `@webdakwah/shared`.
 - UI berbahasa Indonesia, mobile-first, dan ringan (hindari JS klien yang tidak perlu).
 - Jangan menaruh kunci/rahasia di repo — hanya `.env.example`.
-- Sebelum commit: `pnpm lint && pnpm typecheck && pnpm build`.
+- Sebelum commit: `pnpm lint && pnpm typecheck && pnpm test && pnpm build`.

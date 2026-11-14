@@ -1,10 +1,5 @@
 import { z } from 'zod';
 
-/**
- * Hanya variabel yang dipakai sejak Fase 1 yang divalidasi di sini.
- * Variabel Supabase, R2, dan revalidate ditambahkan saat modul terkait dibuat,
- * supaya server tetap bisa boot tanpa kredensial di tahap fondasi.
- */
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
@@ -12,6 +7,14 @@ export const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   /** Daftar origin frontend yang diizinkan, dipisah koma. */
   FRONTEND_ORIGINS: z.string().default('http://localhost:3000'),
+  /** Connection pooler Supabase (port 6543) untuk aplikasi. */
+  DATABASE_URL: z.string().min(1).optional(),
+  /** Project URL Supabase, dipakai memverifikasi token lewat JWKS. */
+  SUPABASE_URL: z.url().optional(),
+  /** Hanya untuk proyek Supabase lama yang masih memakai HS256. */
+  SUPABASE_JWT_SECRET: z.string().min(32).optional(),
+  /** Opsional: override endpoint JWKS (mis. saat memakai domain kustom). */
+  SUPABASE_JWKS_URL: z.url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

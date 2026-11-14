@@ -1,0 +1,33 @@
+// Skema database WebDakwah (Postgres / Supabase).
+// URL koneksi diatur di prisma.config.ts, bukan di file ini (Prisma 7).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CONTRIBUTOR
+}
+
+/// Profil aplikasi, terhubung 1:1 ke auth.users milik Supabase (id sama).
+/// Role sengaja disimpan di sini, bukan di metadata auth, agar pengguna tidak
+/// bisa menaikkan hak aksesnya sendiri.
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique @db.VarChar(254)
+  fullName  String?  @map("full_name") @db.VarChar(120)
+  role      Role     @default(CONTRIBUTOR)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("profiles")
+}

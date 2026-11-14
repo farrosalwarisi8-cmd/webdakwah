@@ -9,8 +9,11 @@ minimumReleaseAgeExclude:
   - '@eslint/config-array@0.23.6'
   - eslint@10.15.0
 
-onlyBuiltDependencies:
-  - '@swc/core'
-  - '@tailwindcss/oxide'
-  - esbuild
-  - sharp
+# Paket yang diizinkan menjalankan skrip instalasi (pnpm 12: allowBuilds).
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  prisma: true
+  sharp: true

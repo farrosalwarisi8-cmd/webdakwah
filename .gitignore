@@ -19,6 +19,9 @@ coverage/
 # Next.js generated
 next-env.d.ts
 
+# Prisma Client (dibuat ulang oleh `pnpm install` / prisma generate)
+apps/api/src/generated/
+
 # Log & OS
 *.log
 npm-debug.log*

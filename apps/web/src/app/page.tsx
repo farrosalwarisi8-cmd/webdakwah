@@ -72,6 +72,9 @@ export default function HomePage() {
             <a href="#tentang" className="text-sm text-ink-600 transition hover:text-brand-700">
               Tentang
             </a>
+            <a href="/masuk" className="text-sm text-ink-600 transition hover:text-brand-700">
+              Masuk
+            </a>
             <a
               href="#kategori"
               className="rounded-full bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800"
@@ -80,12 +83,17 @@ export default function HomePage() {
             </a>
           </nav>
 
-          <a
-            href="#kategori"
-            className="rounded-full bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800 sm:hidden"
-          >
-            Mulai
-          </a>
+          <div className="flex items-center gap-3 sm:hidden">
+            <a href="/masuk" className="text-sm text-ink-600 transition hover:text-brand-700">
+              Masuk
+            </a>
+            <a
+              href="#kategori"
+              className="rounded-full bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800"
+            >
+              Mulai
+            </a>
+          </div>
         </div>
       </header>
 
@@ -198,7 +206,7 @@ export default function HomePage() {
       <footer className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-3 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} WebDakwah. Dibangun untuk kebaikan.</p>
-          <p className="text-xs text-ink-400">Fase 1 — fondasi aplikasi</p>
+          <p className="text-xs text-ink-400">Fase 2 — autentikasi &amp; hak akses</p>
         </div>
       </footer>
     </div>
