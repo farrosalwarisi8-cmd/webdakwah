@@ -1,0 +1,31 @@
+# Dependency & build output
+node_modules/
+.pnpm-store/
+dist/
+.next/
+out/
+build/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Env: jangan pernah commit nilai asli
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# Next.js generated
+next-env.d.ts
+
+# Log & OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/*
+!.vscode/extensions.json

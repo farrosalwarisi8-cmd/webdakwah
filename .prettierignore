@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+
+# Generated output
+dist/
+.next/
+.turbo/
+coverage/
+node_modules/
+next-env.d.ts
