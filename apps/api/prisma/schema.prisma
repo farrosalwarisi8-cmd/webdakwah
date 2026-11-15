@@ -29,6 +29,7 @@ model Profile {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   contents  Content[]
+  uploads   UploadRequestLog[]
 
   @@map("profiles")
 }
@@ -70,4 +71,18 @@ model Content {
   @@index([authorId, updatedAt])
   @@index([status, publishedAt])
   @@map("contents")
+}
+
+/// Catatan presign unggahan untuk kuota per pengguna. Disimpan di database
+/// agar tidak hilang saat Render memulai ulang instance.
+model UploadRequestLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  profileId String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, createdAt])
+  @@index([createdAt])
+  @@map("upload_requests")
 }

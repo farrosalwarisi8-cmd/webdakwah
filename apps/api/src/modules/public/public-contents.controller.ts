@@ -1,4 +1,5 @@
 import { BadRequestException, Controller, Get, Param, Query } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   publicContentQuerySchema,
   publicSearchQuerySchema,
@@ -7,6 +8,7 @@ import {
 } from '@webdakwah/shared';
 
 import { Public } from '../auth/auth.decorators.js';
+import { readLimit, THROTTLE_TTL_MS } from '../throttling/throttling.js';
 import { PublicContentsService } from './public-contents.service.js';
 
 function parseQuery(query: unknown): PublicContentQuery {
@@ -29,8 +31,15 @@ function parseSearchQuery(query: unknown): PublicSearchQuery {
   return parsed.data;
 }
 
-/** Rute baca publik: hanya konten berstatus PUBLISHED yang pernah keluar. */
+/**
+ * Rute baca publik: hanya konten berstatus PUBLISHED yang pernah keluar.
+ * Batasnya longgar (anti-banjir) dan tiap handler punya penghitung sendiri,
+ * jadi pencarian tidak menghabiskan kuota daftar/beranda.
+ */
 @Public()
+@Throttle({
+  default: { limit: () => readLimit('THROTTLE_GLOBAL_PER_MIN', 600), ttl: THROTTLE_TTL_MS },
+})
 @Controller('public')
 export class PublicContentsController {
   constructor(private readonly contents: PublicContentsService) {}
@@ -41,6 +50,9 @@ export class PublicContentsController {
   }
 
   @Get('search')
+  @Throttle({
+    default: { limit: () => readLimit('THROTTLE_SEARCH_PER_MIN', 600), ttl: THROTTLE_TTL_MS },
+  })
   search(@Query() query: Record<string, unknown>) {
     return this.contents.search(parseSearchQuery(query));
   }

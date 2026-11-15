@@ -53,6 +53,24 @@ describe('ContentsService — moderasi', () => {
     expect(prisma.content.findMany).not.toHaveBeenCalled();
   });
 
+  it('menolak kontributor melihat daftar terbitan', async () => {
+    const { prisma, service } = createService();
+
+    await expect(
+      service.listManaged(contributor, { status: 'PUBLISHED', page: 1, pageSize: 12 }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.content.findMany).not.toHaveBeenCalled();
+  });
+
+  it('menolak kontributor mengarsipkan konten', async () => {
+    const { prisma, service } = createService();
+
+    await expect(service.archive(contributor, CONTENT_ID)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(prisma.content.findUnique).not.toHaveBeenCalled();
+  });
+
   it('menampilkan antrean pending dari yang paling lama menunggu', async () => {
     const { prisma, service } = createService();
     prisma.content.count.mockResolvedValue(3);

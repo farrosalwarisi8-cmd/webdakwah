@@ -1,13 +1,10 @@
-import { ServiceUnavailableException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { HttpException } from '@nestjs/common';
 import { uploadRequestSchema } from '@webdakwah/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@aws-sdk/s3-request-presigner', () => ({ getSignedUrl: vi.fn() }));
-
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
 import type { AuthProfile } from '../src/modules/auth/auth.types.js';
+import type { StorageService } from '../src/modules/storage/storage.service.js';
+import type { UploadQuotaService } from '../src/modules/uploads/upload-quota.service.js';
 import { UploadsService } from '../src/modules/uploads/uploads.service.js';
 
 const profile: AuthProfile = {
@@ -18,80 +15,72 @@ const profile: AuthProfile = {
   isActive: true,
 };
 
-const CONFIGURED = {
-  R2_ACCOUNT_ID: 'akun',
-  R2_ACCESS_KEY_ID: 'kunci',
-  R2_SECRET_ACCESS_KEY: 'rahasia',
-  R2_BUCKET_NAME: 'webdakwah-media',
-  R2_PUBLIC_BASE_URL: 'https://media.contoh.test',
+const PRESIGNED = {
+  uploadUrl: 'https://upload.contoh.test/signed',
+  publicUrl: `https://media.contoh.test/media/${profile.id}/berkas.mp3`,
+  key: `media/${profile.id}/berkas.mp3`,
+  expiresIn: 600,
 };
 
-function createService(values: Record<string, string | undefined>) {
-  const config = {
-    get: vi.fn((key: string) => values[key]),
+function createService() {
+  const storage = {
+    createPresignedPut: vi.fn().mockResolvedValue(PRESIGNED),
+  };
+  const quota = {
+    assertAllowed: vi.fn().mockResolvedValue(undefined),
+    record: vi.fn().mockResolvedValue(undefined),
   };
 
-  return new UploadsService(config as unknown as ConfigService);
+  return {
+    storage,
+    quota,
+    service: new UploadsService(
+      storage as unknown as StorageService,
+      quota as unknown as UploadQuotaService,
+    ),
+  };
 }
 
 describe('UploadsService', () => {
-  const getSignedUrlMock = vi.mocked(getSignedUrl);
-
   beforeEach(() => {
-    getSignedUrlMock.mockReset();
-    getSignedUrlMock.mockResolvedValue('https://upload.contoh.test/signed');
+    vi.clearAllMocks();
   });
 
-  it('menolak presign saat konfigurasi R2 belum lengkap', async () => {
-    const service = createService({ R2_ACCOUNT_ID: 'akun' });
-
-    await expect(
-      service.createPresignedUpload(profile, { contentType: 'audio/mpeg', size: 1024 }),
-    ).rejects.toBeInstanceOf(ServiceUnavailableException);
-    expect(getSignedUrlMock).not.toHaveBeenCalled();
-  });
-
-  it('membuat URL unggah dengan kunci pada folder pengguna', async () => {
-    const service = createService(CONFIGURED);
+  it('memeriksa kuota sebelum presign lalu mencatatnya', async () => {
+    const { quota, service } = createService();
 
     const result = await service.createPresignedUpload(profile, {
       contentType: 'audio/mpeg',
       size: 2048,
     });
 
-    expect(result.publicUrl).toMatch(
-      /^https:\/\/media\.contoh\.test\/media\/11111111-1111-4111-8111-111111111111\/[0-9a-f-]+\.mp3$/,
+    expect(result).toEqual(PRESIGNED);
+    expect(quota.assertAllowed).toHaveBeenCalledWith(profile);
+    expect(quota.record).toHaveBeenCalledWith(profile.id);
+    expect(quota.assertAllowed.mock.invocationCallOrder[0]).toBeLessThan(
+      quota.record.mock.invocationCallOrder[0]!,
     );
-    expect(result).toMatchObject({
-      uploadUrl: 'https://upload.contoh.test/signed',
-      expiresIn: 600,
-    });
-
-    const command = getSignedUrlMock.mock.calls[0]?.[1] as {
-      input: Record<string, unknown>;
-    };
-
-    expect(command.input).toMatchObject({
-      Bucket: 'webdakwah-media',
-      ContentType: 'audio/mpeg',
-      ContentLength: 2048,
-    });
-    expect(command.input.Key).toBe(result.key);
-    expect(getSignedUrlMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
-      expiresIn: 600,
-      signableHeaders: new Set(['content-type']),
-    });
   });
 
-  it('memakai ekstensi video yang sesuai', async () => {
-    const service = createService(CONFIGURED);
+  it('tidak membuat URL saat kuota habis', async () => {
+    const { quota, storage, service } = createService();
+    quota.assertAllowed.mockRejectedValue(new HttpException('Kuota habis.', 429));
 
-    const result = await service.createPresignedUpload(profile, {
-      contentType: 'video/webm',
-      size: 1024,
-    });
+    await expect(
+      service.createPresignedUpload(profile, { contentType: 'audio/mpeg', size: 1024 }),
+    ).rejects.toMatchObject({ status: 429 });
+    expect(storage.createPresignedPut).not.toHaveBeenCalled();
+    expect(quota.record).not.toHaveBeenCalled();
+  });
 
-    expect(result.key.endsWith('.webm')).toBe(true);
+  it('tidak mencatat kuota bila presign gagal', async () => {
+    const { quota, storage, service } = createService();
+    storage.createPresignedPut.mockRejectedValue(new Error('R2 belum diatur'));
+
+    await expect(
+      service.createPresignedUpload(profile, { contentType: 'audio/mpeg', size: 1024 }),
+    ).rejects.toThrow('R2 belum diatur');
+    expect(quota.record).not.toHaveBeenCalled();
   });
 });
 

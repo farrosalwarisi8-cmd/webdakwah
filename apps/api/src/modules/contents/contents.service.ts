@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import {
   can,
@@ -20,6 +21,7 @@ import { randomUUID } from 'node:crypto';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RevalidationService } from '../revalidation/revalidation.service.js';
+import { StorageService } from '../storage/storage.service.js';
 
 const CONTENT_SUMMARY_SELECT = {
   id: true,
@@ -67,6 +69,7 @@ export class ContentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly revalidation?: RevalidationService,
+    @Optional() private readonly storage?: StorageService,
   ) {}
 
   async listMine(profile: AuthProfile, query: ContentListQuery) {
@@ -260,20 +263,29 @@ export class ContentsService {
     const row = await this.findOwnedRow(id, profile);
     this.assertEditable(profile, row);
 
+    const mediaUrl = emptyToNull(input.mediaUrl);
     const data = {
       type: input.type,
       title: input.title,
       excerpt: emptyToNull(input.excerpt),
       body: emptyToNull(input.body),
-      mediaUrl: emptyToNull(input.mediaUrl),
+      mediaUrl,
       ...(input.title === row.title ? {} : { slug: await this.buildSlug(input.title) }),
     };
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data,
       select: CONTENT_DETAIL_SELECT,
     });
+
+    // Hanya berkas milik penulis konten yang boleh dihapus; URL eksternal
+    // atau URL milik pengguna lain diabaikan oleh StorageService.
+    if (row.mediaUrl && row.mediaUrl !== mediaUrl) {
+      await this.storage?.deleteByPublicUrl(row.mediaUrl, row.authorId);
+    }
+
+    return updated;
   }
 
   /** DRAFT/REJECTED -> PENDING_REVIEW; isian wajib diperiksa ulang di sini. */
@@ -338,6 +350,10 @@ export class ContentsService {
     }
 
     await this.prisma.content.delete({ where: { id } });
+
+    if (row.mediaUrl) {
+      await this.storage?.deleteByPublicUrl(row.mediaUrl, row.authorId);
+    }
 
     return { ok: true };
   }

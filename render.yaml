@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: webdakwah-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @webdakwah/shared build && pnpm --filter api build
+    startCommand: sh -c "pnpm --filter api db:migrate && node apps/api/dist/main.js"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_PUBLIC_BASE_URL
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: FRONTEND_REVALIDATE_URL
+        sync: false
+      - key: REVALIDATE_SECRET
+        sync: false
+      - key: THROTTLE_GLOBAL_PER_MIN
+        value: "600"
+      - key: THROTTLE_UPLOAD_PER_MIN
+        value: "10"
+      - key: THROTTLE_SEARCH_PER_MIN
+        value: "600"
+      - key: THROTTLE_SESSION_PER_MIN
+        value: "60"
+      - key: UPLOAD_QUOTA_PER_HOUR
+        value: "20"
+      - key: UPLOAD_QUOTA_PER_DAY
+        value: "60"
+      - key: UPLOAD_QUOTA_ADMIN_PER_HOUR
+        value: "100"

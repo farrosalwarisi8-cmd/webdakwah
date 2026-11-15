@@ -26,6 +26,15 @@ export const envSchema = z.object({
   R2_PUBLIC_BASE_URL: z.url().optional(),
   /** Opsional: endpoint S3 kustom (mis. MinIO saat pengujian lokal). */
   R2_ENDPOINT: z.url().optional(),
+  /** Batas anti-banjir (permintaan/menit). Endpoint terautentikasi dihitung per pengguna. */
+  THROTTLE_GLOBAL_PER_MIN: z.coerce.number().int().positive().default(600),
+  THROTTLE_UPLOAD_PER_MIN: z.coerce.number().int().positive().default(10),
+  THROTTLE_SEARCH_PER_MIN: z.coerce.number().int().positive().default(600),
+  THROTTLE_SESSION_PER_MIN: z.coerce.number().int().positive().default(60),
+  /** Kuota presign per pengguna; admin bebas kuota harian dan punya batas jam sendiri. */
+  UPLOAD_QUOTA_PER_HOUR: z.coerce.number().int().positive().default(20),
+  UPLOAD_QUOTA_PER_DAY: z.coerce.number().int().positive().default(60),
+  UPLOAD_QUOTA_ADMIN_PER_HOUR: z.coerce.number().int().positive().default(100),
 });
 
 export type Env = z.infer<typeof envSchema>;

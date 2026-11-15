@@ -1,8 +1,10 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { uploadRequestSchema, type UploadRequest } from '@webdakwah/shared';
 
 import { CurrentProfile } from '../auth/auth.decorators.js';
 import type { AuthProfile } from '../auth/auth.types.js';
+import { readLimit, THROTTLE_TTL_MS } from '../throttling/throttling.js';
 import { UploadsService } from './uploads.service.js';
 
 function parseInput(body: unknown): UploadRequest {
@@ -20,6 +22,9 @@ export class UploadsController {
   constructor(private readonly uploads: UploadsService) {}
 
   @Post('presign')
+  @Throttle({
+    default: { limit: () => readLimit('THROTTLE_UPLOAD_PER_MIN', 10), ttl: THROTTLE_TTL_MS },
+  })
   presign(@CurrentProfile() profile: AuthProfile, @Body() body: unknown) {
     return this.uploads.createPresignedUpload(profile, parseInput(body));
   }

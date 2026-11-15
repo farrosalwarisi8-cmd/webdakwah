@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 
 import { Public } from '../auth/auth.decorators.js';
 
@@ -13,6 +14,7 @@ export interface HealthResponse {
  * health check. Path publik: GET /health
  */
 @Public()
+@SkipThrottle()
 @Controller('health')
 export class HealthController {
   @Get()

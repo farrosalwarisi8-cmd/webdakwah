@@ -3,9 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 9 — Unggah Media ke R2**. Siklus konten lengkap, perubahan terbit/arsip
-> langsung tercermin, pengunjung bisa mencari konten, dan audio/video bisa diunggah langsung
-> ke Cloudflare R2 dari editor.
+> Status: **Fase 10 — Pengerasan Keamanan API**. Kuota & rate limit per pengguna,
+> pembersihan objek R2 saat konten berubah/dihapus, dan konfigurasi deploy Render (`render.yaml`).
 
 ## Teknologi
 
@@ -115,7 +114,9 @@ tidak memuat email penulis, catatan review, atau status internal.
   dari AWS SDK dimatikan agar unggahan berkas asli tidak ditolak.
 - Bucket perlu **CORS** yang mengizinkan `PUT` dari origin web (mis. `https://domain-anda.com`)
   dengan header `Content-Type`, dan akses baca publik lewat domain kustom atau `r2.dev`.
-- Penghapusan objek saat konten dihapus belum diimplementasikan; berkas lama dibiarkan di R2.
+- Objek R2 dihapus otomatis saat tautan media konten diganti atau dikosongkan, dan saat konten
+  dihapus. Objek diarsipkan tidak dihapus. Hanya berkas pada folder `media/<penulis-konten>/`
+  milik bucket ini yang disentuh; URL eksternal dibiarkan.
 - Untuk uji lokal tanpa akun R2, isi `R2_ENDPOINT` ke server S3-compatible seperti MinIO dan
   set `forcePathStyle` otomatis aktif. Alur presign/PUT/GET sudah diuji dengan endpoint S3
   tiruan; verifikasi terhadap R2 asli menunggu kredensial produksi.
@@ -253,6 +254,19 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |
 | `REVALIDATE_SECRET`             | opsional    | —                       | Secret route revalidasi (sama dengan API)     |
 
+## Batas Laju & Kuota Unggahan (Fase 10)
+
+- Batas laju memakai `@nestjs/throttler`; endpoint terautentikasi dihitung per **id pengguna**
+  (bukan IP bersama server Next.js/Vercel), endpoint publik per IP.
+- Default: publik 600/menit per IP, pencarian publik 600/menit per IP (penghitung sendiri),
+  presign 10/menit per pengguna, `GET /api/me` 60/menit per pengguna, health dikecualikan.
+- Kuota presign: 20/jam dan 60/hari per pengguna, disimpan di tabel `upload_requests`
+  (`user_id`, `created_at`) sehingga tahan restart Render. Admin bebas kuota harian dengan batas
+  jam 100 (dapat diatur lewat env).
+- Semua angka dibaca dari env (`THROTTLE_*`, `UPLOAD_QUOTA_*`) dengan default di atas.
+- Pelanggaran batas laju mengembalikan `429` dengan pesan Indonesia; pelanggaran kuota juga
+  `429`.
+
 ## Deploy
 
 **Web (Vercel)**
@@ -265,14 +279,17 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 
 **API (Render)**
 
-1. Buat **Web Service** dari repo, Root Directory `apps/api`.
-2. Build: `pnpm install && pnpm --filter @webdakwah/shared build && pnpm --filter api build`
-   Start: `node apps/api/dist/main.js` (atau `npm --prefix apps/api start`).
-3. Pre-deploy (sekali saat rilis skema): `pnpm --filter api db:migrate` — butuh `DIRECT_URL`.
-4. Health check path: `/health`.
-5. Isi env sesuai tabel di atas (`NODE_ENV=production`, `DATABASE_URL`, `DIRECT_URL`,
-   `SUPABASE_URL`), set `FRONTEND_ORIGINS` ke domain Vercel, dan lengkapi `R2_*` untuk unggah
-   media (termasuk CORS bucket ke domain web).
+Blueprint tersedia di `render.yaml` di akar repo. Render membaca konfigurasi ini saat
+membuat Web Service (Root Directory tetap `apps/api`):
+
+1. Build: `pnpm install --frozen-lockfile && pnpm --filter @webdakwah/shared build && pnpm --filter api build`.
+2. Start: `pnpm --filter api db:migrate && node apps/api/dist/main.js` (migrasi jalan otomatis
+   saat start; butuh `DIRECT_URL`).
+3. Health check path: `/health`.
+4. Isi env yang ditandai `sync: false` di `render.yaml` (`DATABASE_URL`, `DIRECT_URL`,
+   `SUPABASE_URL`, `FRONTEND_ORIGINS`, `R2_*`, dsb). Nilai batas laju/kuota punya default.
+   Set `FRONTEND_ORIGINS` ke domain Vercel dan lengkapi `R2_*` (termasuk CORS bucket ke
+   domain web).
 
 ## Aturan Kontribusi
 
