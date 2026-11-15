@@ -26,14 +26,22 @@ export async function DashboardHeader() {
           </Link>
           <Link href="/dashboard/konten" className="text-ink-600 transition hover:text-brand-700">
             Konten saya
-          </Link>
+          </Link>{' '}
           {isAdmin ? (
-            <Link
-              href="/dashboard/moderasi"
-              className="text-ink-600 transition hover:text-brand-700"
-            >
-              Moderasi
-            </Link>
+            <>
+              <Link
+                href="/dashboard/terbitan"
+                className="text-ink-600 transition hover:text-brand-700"
+              >
+                Terbitan
+              </Link>
+              <Link
+                href="/dashboard/moderasi"
+                className="text-ink-600 transition hover:text-brand-700"
+              >
+                Moderasi
+              </Link>
+            </>
           ) : null}
           <Link
             href="/akun"

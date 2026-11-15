@@ -113,3 +113,10 @@ export const contentListQuerySchema = paginationQuerySchema.extend({
 });
 
 export type ContentListQuery = z.infer<typeof contentListQuerySchema>;
+
+/** Daftar kelola admin hanya berisi konten yang pernah/sedang terbit. */
+export const managedContentQuerySchema = paginationQuerySchema.extend({
+  status: z.enum(['PUBLISHED', 'ARCHIVED']).default('PUBLISHED'),
+});
+
+export type ManagedContentQuery = z.infer<typeof managedContentQuerySchema>;

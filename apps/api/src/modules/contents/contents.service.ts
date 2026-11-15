@@ -11,6 +11,7 @@ import {
   type ContentInput,
   type ContentListQuery,
   type ContentStatus,
+  type ManagedContentQuery,
   type PaginationQuery,
   type Permission,
 } from '@webdakwah/shared';
@@ -114,6 +115,66 @@ export class ContentsService {
       total,
       totalPages: Math.ceil(total / query.pageSize),
     };
+  }
+
+  /** Daftar terbitan untuk admin, termasuk yang sudah diarsipkan. */
+  async listManaged(profile: AuthProfile, query: ManagedContentQuery) {
+    this.assertModerator(profile);
+
+    const where = { status: query.status };
+
+    const [items, total] = await Promise.all([
+      this.prisma.content.findMany({
+        where,
+        select: CONTENT_SUMMARY_SELECT,
+        orderBy: { publishedAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.prisma.content.count({ where }),
+    ]);
+
+    return {
+      items,
+      page: query.page,
+      pageSize: query.pageSize,
+      total,
+      totalPages: Math.ceil(total / query.pageSize),
+    };
+  }
+
+  /** PUBLISHED -> ARCHIVED; konten hilang dari semua halaman publik. */
+  async archive(profile: AuthProfile, id: string) {
+    this.assertModerator(profile);
+
+    const row = await this.findRow(id);
+
+    if (row.status !== 'PUBLISHED') {
+      throw new BadRequestException('Hanya konten yang sudah terbit yang bisa diarsipkan.');
+    }
+
+    return this.prisma.content.update({
+      where: { id },
+      data: { status: 'ARCHIVED' },
+      select: CONTENT_DETAIL_SELECT,
+    });
+  }
+
+  /** ARCHIVED -> PUBLISHED; tanggal terbit pertama dipertahankan. */
+  async unarchive(profile: AuthProfile, id: string) {
+    this.assertModerator(profile);
+
+    const row = await this.findRow(id);
+
+    if (row.status !== 'ARCHIVED') {
+      throw new BadRequestException('Hanya konten yang diarsipkan yang bisa dipulihkan.');
+    }
+
+    return this.prisma.content.update({
+      where: { id },
+      data: { status: 'PUBLISHED' },
+      select: CONTENT_DETAIL_SELECT,
+    });
   }
 
   async publish(profile: AuthProfile, id: string) {
@@ -276,7 +337,7 @@ export class ContentsService {
     this.assertPermission(profile.role, 'content:publish');
   }
 
-  private async findPendingRow(id: string) {
+  private async findRow(id: string) {
     const row = await this.prisma.content.findUnique({
       where: { id },
       select: { id: true, status: true },
@@ -285,6 +346,12 @@ export class ContentsService {
     if (!row) {
       throw new NotFoundException('Konten tidak ditemukan.');
     }
+
+    return row;
+  }
+
+  private async findPendingRow(id: string) {
+    const row = await this.findRow(id);
 
     if (row.status !== 'PENDING_REVIEW') {
       throw new BadRequestException(

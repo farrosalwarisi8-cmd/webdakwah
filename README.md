@@ -3,9 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 5 — Halaman Publik**. Login, role, editor konten, moderasi, serta halaman baca
-> publik (artikel, audio, video, rujukan) sudah berjalan. Unggah media ke R2 dan fitur lanjutan
-> menyusul.
+> Status: **Fase 6 — Arsip & Kelola Terbitan**. Siklus konten kini lengkap: tulis, ajukan,
+> moderasi, terbit, arsip, dan pulihkan. Unggah media ke R2 dan fitur lanjutan menyusul.
 
 ## Teknologi
 
@@ -62,26 +61,31 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Admin meninjau antrean di `/dashboard/moderasi`: **Terbitkan** mengisi `published_at`, atau
   **Tolak** dengan catatan wajib (10–500 karakter). Catatan tampil ke penulis, yang lalu bisa
   memperbaiki dan mengajukan ulang; catatan lama dibersihkan saat diajukan ulang.
+- Admin mengelola terbitan di `/dashboard/terbitan`: **Arsipkan** mengubah status ke `ARCHIVED`
+  sehingga konten hilang dari seluruh halaman publik, dan **Pulihkan** mengembalikannya ke
+  `PUBLISHED` dengan tanggal terbit pertama tetap dipertahankan.
 - Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
   semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
 - Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
 - Media masih berupa tautan http/https. Unggah berkas ke R2 menyusul di fase media.
-- Arsip konten terbit (`PUBLISHED → ARCHIVED`) belum punya aksi UI.
 
 Endpoint API (semua butuh Bearer token):
 
-| Metode & path                     | Keterangan                                   |
-| --------------------------------- | -------------------------------------------- |
-| `GET /api/contents/mine`          | Daftar konten sendiri (`?status=`, `?page=`) |
-| `GET /api/contents/:id`           | Detail untuk pemilik atau admin              |
-| `POST /api/contents`              | Buat draft baru                              |
-| `PATCH /api/contents/:id`         | Sunting draft/konten ditolak                 |
-| `POST /api/contents/:id/submit`   | Ajukan review (validasi kelengkapan)         |
-| `POST /api/contents/:id/withdraw` | Tarik kembali ke draft                       |
-| `DELETE /api/contents/:id`        | Hapus draft/konten ditolak                   |
-| `GET /api/contents/review`        | Antrean `PENDING_REVIEW` (admin saja)        |
-| `POST /api/contents/:id/publish`  | Terbitkan konten (admin saja)                |
-| `POST /api/contents/:id/reject`   | Tolak + catatan wajib (admin saja)           |
+| Metode & path                      | Keterangan                                   |
+| ---------------------------------- | -------------------------------------------- |
+| `GET /api/contents/mine`           | Daftar konten sendiri (`?status=`, `?page=`) |
+| `GET /api/contents/:id`            | Detail untuk pemilik atau admin              |
+| `POST /api/contents`               | Buat draft baru                              |
+| `PATCH /api/contents/:id`          | Sunting draft/konten ditolak                 |
+| `POST /api/contents/:id/submit`    | Ajukan review (validasi kelengkapan)         |
+| `POST /api/contents/:id/withdraw`  | Tarik kembali ke draft                       |
+| `DELETE /api/contents/:id`         | Hapus draft/konten ditolak                   |
+| `GET /api/contents/review`         | Antrean `PENDING_REVIEW` (admin saja)        |
+| `POST /api/contents/:id/publish`   | Terbitkan konten (admin saja)                |
+| `POST /api/contents/:id/reject`    | Tolak + catatan wajib (admin saja)           |
+| `GET /api/contents/managed`        | Daftar terbit/arsip (admin saja)             |
+| `POST /api/contents/:id/archive`   | Arsipkan konten terbit (admin saja)          |
+| `POST /api/contents/:id/unarchive` | Pulihkan konten arsip (admin saja)           |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -99,6 +103,7 @@ tidak memuat email penulis, catatan review, atau status internal.
 - `/artikel/[slug]`, `/audio/[slug]`, `/video/[slug]`, `/rujukan/[slug]` — halaman baca dengan
   metadata judul, deskripsi, canonical, dan OpenGraph. URL memakai slug, bukan UUID.
 - Beranda menampilkan satu terbitan terbaru per jenis; bila belum ada, tampil ajakan menunggu.
+- Konten berstatus `ARCHIVED` otomatis tidak muncul di daftar, detail, sitemap, maupun highlight.
 - `/sitemap.xml` dan `/robots.txt` dihasilkan otomatis. Dashboard, akun, dan halaman masuk
   dikecualikan dari indeks mesin pencari.
 - Data diambil dengan revalidasi 60 detik. Bila API sedang mati, halaman tetap tampil dengan

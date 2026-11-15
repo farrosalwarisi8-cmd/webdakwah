@@ -13,9 +13,11 @@ import {
 import {
   contentInputSchema,
   contentListQuerySchema,
+  managedContentQuerySchema,
   paginationQuerySchema,
   type ContentInput,
   type ContentListQuery,
+  type ManagedContentQuery,
   type PaginationQuery,
 } from '@webdakwah/shared';
 
@@ -38,6 +40,16 @@ function parseListQuery(query: unknown): ContentListQuery {
 
   if (!parsed.success) {
     throw new BadRequestException('Parameter daftar konten tidak valid.');
+  }
+
+  return parsed.data;
+}
+
+function parseManagedQuery(query: unknown): ManagedContentQuery {
+  const parsed = managedContentQuerySchema.safeParse(query);
+
+  if (!parsed.success) {
+    throw new BadRequestException('Parameter daftar terbitan tidak valid.');
   }
 
   return parsed.data;
@@ -67,6 +79,24 @@ export class ContentsController {
   @Roles('ADMIN')
   reviewQueue(@CurrentProfile() profile: AuthProfile, @Query() query: Record<string, unknown>) {
     return this.contents.listReviewQueue(profile, parsePaginationQuery(query));
+  }
+
+  @Get('managed')
+  @Roles('ADMIN')
+  managed(@CurrentProfile() profile: AuthProfile, @Query() query: Record<string, unknown>) {
+    return this.contents.listManaged(profile, parseManagedQuery(query));
+  }
+
+  @Post(':id/archive')
+  @Roles('ADMIN')
+  archive(@CurrentProfile() profile: AuthProfile, @Param('id', ParseUUIDPipe) id: string) {
+    return this.contents.archive(profile, id);
+  }
+
+  @Post(':id/unarchive')
+  @Roles('ADMIN')
+  unarchive(@CurrentProfile() profile: AuthProfile, @Param('id', ParseUUIDPipe) id: string) {
+    return this.contents.unarchive(profile, id);
   }
 
   @Post(':id/publish')
