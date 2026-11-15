@@ -243,6 +243,13 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `R2_PUBLIC_BASE_URL`                           | untuk media | —                       | URL publik bucket, tanpa `/` di akhir         |
 | `R2_ENDPOINT`                                  | opsional    | —                       | Endpoint S3 kustom (MinIO) untuk uji lokal    |
 | `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | opsional    | —                       | Pemicu revalidasi cache web (Fase 7)          |
+| `THROTTLE_GLOBAL_PER_MIN`                      | tidak       | `600`                   | Batas laju publik per IP (permintaan/menit)  |
+| `THROTTLE_UPLOAD_PER_MIN`                      | tidak       | `10`                    | Batas laju presign per pengguna              |
+| `THROTTLE_SEARCH_PER_MIN`                      | tidak       | `600`                   | Batas laju pencarian publik per IP           |
+| `THROTTLE_SESSION_PER_MIN`                     | tidak       | `60`                    | Batas laju `GET /api/me` per pengguna        |
+| `UPLOAD_QUOTA_PER_HOUR`                        | tidak       | `20`                    | Kuota presign per pengguna per jam           |
+| `UPLOAD_QUOTA_PER_DAY`                         | tidak       | `60`                    | Kuota presign per pengguna per hari          |
+| `UPLOAD_QUOTA_ADMIN_PER_HOUR`                  | tidak       | `100`                   | Kuota presign admin per jam (bebas harian)   |
 
 ### Web (`apps/web/.env.local`)
 
