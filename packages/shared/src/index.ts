@@ -5,3 +5,4 @@ export * from './schemas/common.js';
 export * from './schemas/content.js';
 export * from './schemas/public-content.js';
 export * from './schemas/profile.js';
+export * from './schemas/upload.js';

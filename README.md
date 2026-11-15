@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 8 — Pencarian Konten Publik**. Siklus konten lengkap, perubahan
-> terbit/arsip langsung tercermin, dan pengunjung bisa mencari konten terbit. Unggah media
-> ke R2 dan fitur lanjutan menyusul.
+> Status: **Fase 9 — Unggah Media ke R2**. Siklus konten lengkap, perubahan terbit/arsip
+> langsung tercermin, pengunjung bisa mencari konten, dan audio/video bisa diunggah langsung
+> ke Cloudflare R2 dari editor.
 
 ## Teknologi
 
@@ -15,7 +15,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 | Frontend        | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | Backend         | NestJS 12 + Fastify                                            |
 | Database & Auth | Supabase (Postgres + Auth), Prisma 7                           |
-| Media           | Cloudflare R2 dengan presigned URL (fase media, belum aktif)   |
+| Media           | Cloudflare R2 dengan presigned URL                             |
 | Deploy          | Web → Vercel, API → Render                                     |
 
 ## Struktur Folder
@@ -68,25 +68,27 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
   semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
 - Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
-- Media masih berupa tautan http/https. Unggah berkas ke R2 menyusul di fase media.
+- Audio dan video bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai tautan
+  http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM).
 
 Endpoint API (semua butuh Bearer token):
 
-| Metode & path                      | Keterangan                                   |
-| ---------------------------------- | -------------------------------------------- |
-| `GET /api/contents/mine`           | Daftar konten sendiri (`?status=`, `?page=`) |
-| `GET /api/contents/:id`            | Detail untuk pemilik atau admin              |
-| `POST /api/contents`               | Buat draft baru                              |
-| `PATCH /api/contents/:id`          | Sunting draft/konten ditolak                 |
-| `POST /api/contents/:id/submit`    | Ajukan review (validasi kelengkapan)         |
-| `POST /api/contents/:id/withdraw`  | Tarik kembali ke draft                       |
-| `DELETE /api/contents/:id`         | Hapus draft/konten ditolak                   |
-| `GET /api/contents/review`         | Antrean `PENDING_REVIEW` (admin saja)        |
-| `POST /api/contents/:id/publish`   | Terbitkan konten (admin saja)                |
-| `POST /api/contents/:id/reject`    | Tolak + catatan wajib (admin saja)           |
-| `GET /api/contents/managed`        | Daftar terbit/arsip (admin saja)             |
-| `POST /api/contents/:id/archive`   | Arsipkan konten terbit (admin saja)          |
-| `POST /api/contents/:id/unarchive` | Pulihkan konten arsip (admin saja)           |
+| Metode & path                      | Keterangan                                     |
+| ---------------------------------- | ---------------------------------------------- |
+| `GET /api/contents/mine`           | Daftar konten sendiri (`?status=`, `?page=`)   |
+| `GET /api/contents/:id`            | Detail untuk pemilik atau admin                |
+| `POST /api/contents`               | Buat draft baru                                |
+| `PATCH /api/contents/:id`          | Sunting draft/konten ditolak                   |
+| `POST /api/contents/:id/submit`    | Ajukan review (validasi kelengkapan)           |
+| `POST /api/contents/:id/withdraw`  | Tarik kembali ke draft                         |
+| `DELETE /api/contents/:id`         | Hapus draft/konten ditolak                     |
+| `GET /api/contents/review`         | Antrean `PENDING_REVIEW` (admin saja)          |
+| `POST /api/contents/:id/publish`   | Terbitkan konten (admin saja)                  |
+| `POST /api/contents/:id/reject`    | Tolak + catatan wajib (admin saja)             |
+| `GET /api/contents/managed`        | Daftar terbit/arsip (admin saja)               |
+| `POST /api/contents/:id/archive`   | Arsipkan konten terbit (admin saja)            |
+| `POST /api/contents/:id/unarchive` | Pulihkan konten arsip (admin saja)             |
+| `POST /api/uploads/presign`        | URL PUT sementara ke R2 (semua pengguna aktif) |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -98,6 +100,25 @@ tidak memuat email penulis, catatan review, atau status internal.
 | `GET /api/public/contents/:slug`        | Detail konten terbit berdasarkan slug; lainnya 404 |
 | `GET /api/public/highlights`            | Satu terbitan terbaru per jenis untuk beranda      |
 | `GET /api/public/search?q=&type=&page=` | Cari judul/ringkasan/isi konten terbit (q 2–100)   |
+
+## Unggah Media ke R2
+
+- `POST /api/uploads/presign` menerima `{ contentType, size }` dari pengguna yang sudah login,
+  lalu mengembalikan `{ uploadUrl, publicUrl, key, expiresIn }`. URL PUT berlaku 10 menit.
+- Browser mengunggah berkas **langsung ke R2** lewat `PUT` (dengan progres), jadi berkas tidak
+  melewati API dan batas body API tetap kecil. Setelah selesai, kolom tautan media terisi
+  otomatis dengan `publicUrl`.
+- Server memvalidasi ulang jenis dan ukuran (allowlist MIME + batas per jenis); permintaan yang
+  tidak sesuai ditolak `400`. Bila kredensial R2 belum lengkap, endpoint mengembalikan `503`.
+- Objek disimpan sebagai `media/<user-id>/<uuid>.<ext>`; `Content-Type` dan `Content-Length`
+  ikut ditandatangani sehingga isi tidak bisa mengganti jenis/ukuran. Checksum CRC32 otomatis
+  dari AWS SDK dimatikan agar unggahan berkas asli tidak ditolak.
+- Bucket perlu **CORS** yang mengizinkan `PUT` dari origin web (mis. `https://domain-anda.com`)
+  dengan header `Content-Type`, dan akses baca publik lewat domain kustom atau `r2.dev`.
+- Penghapusan objek saat konten dihapus belum diimplementasikan; berkas lama dibiarkan di R2.
+- Untuk uji lokal tanpa akun R2, isi `R2_ENDPOINT` ke server S3-compatible seperti MinIO dan
+  set `forcePathStyle` otomatis aktif. Alur presign/PUT/GET sudah diuji dengan endpoint S3
+  tiruan; verifikasi terhadap R2 asli menunggu kredensial produksi.
 
 ## Halaman Publik
 
@@ -214,7 +235,12 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `SUPABASE_SERVICE_ROLE_KEY`                    | hanya seed  | —                       | Kunci server; jangan dipakai di runtime web   |
 | `SEED_ADMIN_EMAIL`                             | hanya seed  | —                       | Email admin pertama                           |
 | `SEED_ADMIN_PASSWORD`                          | hanya seed  | —                       | Minimal 8 karakter                            |
-| `R2_*`                                         | belum aktif | —                       | Kredensial Cloudflare R2 untuk upload media   |
+| `R2_ACCOUNT_ID`                                | untuk media | —                       | ID akun Cloudflare                            |
+| `R2_ACCESS_KEY_ID`                             | untuk media | —                       | Access key token R2                           |
+| `R2_SECRET_ACCESS_KEY`                         | untuk media | —                       | Secret access key R2                          |
+| `R2_BUCKET_NAME`                               | untuk media | —                       | Nama bucket media                             |
+| `R2_PUBLIC_BASE_URL`                           | untuk media | —                       | URL publik bucket, tanpa `/` di akhir         |
+| `R2_ENDPOINT`                                  | opsional    | —                       | Endpoint S3 kustom (MinIO) untuk uji lokal    |
 | `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | opsional    | —                       | Pemicu revalidasi cache web (Fase 7)          |
 
 ### Web (`apps/web/.env.local`)
@@ -224,7 +250,8 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `NEXT_PUBLIC_API_URL`           | ya          | `http://localhost:3001` | Base URL API                                  |
 | `NEXT_PUBLIC_SITE_URL`          | ya          | `http://localhost:3000` | URL publik untuk metadata, canonical, sitemap |
 | `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                                  |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |     | `REVALIDATE_SECRET` | opsional | —   | Secret route revalidasi (sama dengan API) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |
+| `REVALIDATE_SECRET`             | opsional    | —                       | Secret route revalidasi (sama dengan API)     |
 
 ## Deploy
 
@@ -244,7 +271,8 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 3. Pre-deploy (sekali saat rilis skema): `pnpm --filter api db:migrate` — butuh `DIRECT_URL`.
 4. Health check path: `/health`.
 5. Isi env sesuai tabel di atas (`NODE_ENV=production`, `DATABASE_URL`, `DIRECT_URL`,
-   `SUPABASE_URL`), dan set `FRONTEND_ORIGINS` ke domain Vercel.
+   `SUPABASE_URL`), set `FRONTEND_ORIGINS` ke domain Vercel, dan lengkapi `R2_*` untuk unggah
+   media (termasuk CORS bucket ke domain web).
 
 ## Aturan Kontribusi
 

@@ -9,6 +9,7 @@ import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
 import { ContentsModule } from './modules/contents/contents.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { PublicContentsModule } from './modules/public/public-contents.module.js';
+import { UploadsModule } from './modules/uploads/uploads.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PublicContentsModule } from './modules/public/public-contents.module.js
     AuthModule,
     ContentsModule,
     PublicContentsModule,
+    UploadsModule,
     HealthModule,
   ],
   providers: [

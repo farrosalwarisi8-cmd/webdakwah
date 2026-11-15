@@ -18,6 +18,14 @@ export const envSchema = z.object({
   /** Webhook revalidasi cache web; keduanya harus diisi agar aktif. */
   FRONTEND_REVALIDATE_URL: z.url().optional(),
   REVALIDATE_SECRET: z.string().min(16).optional(),
+  /** Cloudflare R2 untuk unggah media; semua wajib agar fitur aktif. */
+  R2_ACCOUNT_ID: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET_NAME: z.string().min(1).optional(),
+  R2_PUBLIC_BASE_URL: z.url().optional(),
+  /** Opsional: endpoint S3 kustom (mis. MinIO saat pengujian lokal). */
+  R2_ENDPOINT: z.url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

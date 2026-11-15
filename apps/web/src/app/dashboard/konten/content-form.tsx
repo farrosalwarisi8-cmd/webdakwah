@@ -4,6 +4,7 @@ import { CONTENT_TYPES, CONTENT_TYPE_LABELS, type ContentType } from '@webdakwah
 import { useActionState, useState } from 'react';
 
 import type { ContentFormState } from './form-state';
+import { MediaUploadField } from './media-upload-field';
 
 interface ContentFormProps {
   action: (state: ContentFormState, formData: FormData) => Promise<ContentFormState>;
@@ -26,6 +27,7 @@ const labelClass = 'text-sm font-medium text-ink-800';
 export function ContentForm({ action, contentId, initial, submitLabel }: ContentFormProps) {
   const [state, formAction, pending] = useActionState(action, { error: null });
   const [type, setType] = useState<ContentType>(initial?.type ?? 'ARTICLE');
+  const [mediaUrl, setMediaUrl] = useState(initial?.mediaUrl ?? '');
 
   const needsMedia = type !== 'ARTICLE';
 
@@ -92,13 +94,19 @@ export function ContentForm({ action, contentId, initial, submitLabel }: Content
             id="mediaUrl"
             name="mediaUrl"
             type="url"
-            defaultValue={initial?.mediaUrl ?? ''}
+            value={mediaUrl}
+            onChange={(event) => setMediaUrl(event.target.value)}
             className={fieldClass}
             placeholder="https://contoh.com/kajian.mp3"
           />
           <p className="mt-1.5 text-xs text-ink-500">
             Wajib untuk audio, video, dan tautan rujukan. Hanya alamat http/https.
+            {type === 'LINK' ? null : ' Anda bisa mengunggah berkas di bawah agar tautan terisi.'}
           </p>
+
+          {type === 'AUDIO' || type === 'VIDEO' ? (
+            <MediaUploadField type={type} value={mediaUrl} onChange={setMediaUrl} />
+          ) : null}
         </div>
       ) : (
         <input type="hidden" name="mediaUrl" value="" />
