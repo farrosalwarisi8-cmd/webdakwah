@@ -9,6 +9,8 @@ import {
 } from '@webdakwah/shared';
 import { cache } from 'react';
 
+import { PUBLIC_CONTENT_TAG } from '../cache-tags';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const REVALIDATE_SECONDS = 60;
 const SITEMAP_MAX_PAGES = 20;
@@ -33,7 +35,7 @@ async function fetchParsed<T>(path: string, schema: Schema<T>): Promise<T> {
 
   try {
     response = await fetch(`${API_URL}/api${path}`, {
-      next: { revalidate: REVALIDATE_SECONDS },
+      next: { revalidate: REVALIDATE_SECONDS, tags: [PUBLIC_CONTENT_TAG] },
     });
   } catch {
     throw new PublicApiError(503, 'Server konten sedang tidak dapat dihubungi.');

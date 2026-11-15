@@ -15,6 +15,9 @@ export const envSchema = z.object({
   SUPABASE_JWT_SECRET: z.string().min(32).optional(),
   /** Opsional: override endpoint JWKS (mis. saat memakai domain kustom). */
   SUPABASE_JWKS_URL: z.url().optional(),
+  /** Webhook revalidasi cache web; keduanya harus diisi agar aktif. */
+  FRONTEND_REVALIDATE_URL: z.url().optional(),
+  REVALIDATE_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

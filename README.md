@@ -3,8 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 6 — Arsip & Kelola Terbitan**. Siklus konten kini lengkap: tulis, ajukan,
-> moderasi, terbit, arsip, dan pulihkan. Unggah media ke R2 dan fitur lanjutan menyusul.
+> Status: **Fase 7 — Revalidasi Cache Instan**. Siklus konten lengkap dan perubahan
+> terbit/arsip langsung tercermin di halaman publik. Unggah media ke R2 dan fitur lanjutan
+> menyusul.
 
 ## Teknologi
 
@@ -106,8 +107,20 @@ tidak memuat email penulis, catatan review, atau status internal.
 - Konten berstatus `ARCHIVED` otomatis tidak muncul di daftar, detail, sitemap, maupun highlight.
 - `/sitemap.xml` dan `/robots.txt` dihasilkan otomatis. Dashboard, akun, dan halaman masuk
   dikecualikan dari indeks mesin pencari.
-- Data diambil dengan revalidasi 60 detik. Bila API sedang mati, halaman tetap tampil dengan
-  pesan ramah, bukan error 500.
+- Data diambil dengan revalidasi 60 detik sebagai cadangan. Setelah konten terbit, diarsipkan,
+  atau dipulihkan, API memanggil webhook `POST /api/revalidate` agar cache publik langsung
+  dibersihkan tanpa menunggu 60 detik.
+- Bila API sedang mati, halaman tetap tampil dengan pesan ramah, bukan error 500.
+
+### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
+
+- `POST /api/revalidate` dengan header `x-revalidate-secret: <REVALIDATE_SECRET>`.
+- `200` bila berhasil, `401` bila rahasia salah, `503` bila `REVALIDATE_SECRET` belum diisi.
+- Tag cache `public-content` dipakai semua fetch konten publik (daftar, detail, highlight,
+  sitemap), sehingga satu panggilan menyegarkan seluruh halaman.
+- Aktif hanya bila API dan web sama-sama mengisi `FRONTEND_REVALIDATE_URL` dan
+  `REVALIDATE_SECRET` (minimal 16 karakter). Tanpa itu, konten baru muncul paling lama 60 detik
+  kemudian dan aksi admin tetap berhasil (webhook bersifat best-effort).
 
 ## Menjalankan Secara Lokal
 
@@ -195,7 +208,7 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `SEED_ADMIN_EMAIL`                             | hanya seed  | —                       | Email admin pertama                           |
 | `SEED_ADMIN_PASSWORD`                          | hanya seed  | —                       | Minimal 8 karakter                            |
 | `R2_*`                                         | belum aktif | —                       | Kredensial Cloudflare R2 untuk upload media   |
-| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | Fase 7      | —                       | Pemicu revalidasi cache web                   |
+| `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | opsional    | —                       | Pemicu revalidasi cache web (Fase 7)          |
 
 ### Web (`apps/web/.env.local`)
 
@@ -204,8 +217,7 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `NEXT_PUBLIC_API_URL`           | ya          | `http://localhost:3001` | Base URL API                                  |
 | `NEXT_PUBLIC_SITE_URL`          | ya          | `http://localhost:3000` | URL publik untuk metadata, canonical, sitemap |
 | `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                                  |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |
-| `REVALIDATE_SECRET`             | Fase 7      | —                       | Secret untuk route revalidasi                 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |     | `REVALIDATE_SECRET` | opsional | —   | Secret route revalidasi (sama dengan API) |
 
 ## Deploy
 

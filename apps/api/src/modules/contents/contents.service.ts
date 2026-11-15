@@ -19,6 +19,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { RevalidationService } from '../revalidation/revalidation.service.js';
 
 const CONTENT_SUMMARY_SELECT = {
   id: true,
@@ -63,7 +64,10 @@ function slugify(value: string): string {
 
 @Injectable()
 export class ContentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly revalidation?: RevalidationService,
+  ) {}
 
   async listMine(profile: AuthProfile, query: ContentListQuery) {
     const where = {
@@ -153,11 +157,15 @@ export class ContentsService {
       throw new BadRequestException('Hanya konten yang sudah terbit yang bisa diarsipkan.');
     }
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'ARCHIVED' },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.revalidation?.trigger();
+
+    return updated;
   }
 
   /** ARCHIVED -> PUBLISHED; tanggal terbit pertama dipertahankan. */
@@ -170,22 +178,30 @@ export class ContentsService {
       throw new BadRequestException('Hanya konten yang diarsipkan yang bisa dipulihkan.');
     }
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'PUBLISHED' },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.revalidation?.trigger();
+
+    return updated;
   }
 
   async publish(profile: AuthProfile, id: string) {
     this.assertModerator(profile);
     await this.findPendingRow(id);
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'PUBLISHED', publishedAt: new Date(), reviewNote: null },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.revalidation?.trigger();
+
+    return updated;
   }
 
   async reject(profile: AuthProfile, id: string, reviewNote: string) {
