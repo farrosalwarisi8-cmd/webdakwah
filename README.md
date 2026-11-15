@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 3 — Editor Konten & Alur Draf**. Login, role, editor artikel/audio/video,
-> serta pengajuan review sudah berjalan. Moderasi admin dan halaman publik menyusul.
+> Status: **Fase 4 — Moderasi Konten**. Login, role, editor artikel/audio/video, pengajuan
+> review, serta penerbitan/penolakan oleh admin sudah berjalan. Halaman publik menyusul.
 
 ## Teknologi
 
@@ -14,7 +14,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 | Frontend        | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | Backend         | NestJS 12 + Fastify                                            |
 | Database & Auth | Supabase (Postgres + Auth), Prisma 7                           |
-| Media           | Cloudflare R2 dengan presigned URL (mulai Fase 4)              |
+| Media           | Cloudflare R2 dengan presigned URL (fase media, belum aktif)   |
 | Deploy          | Web → Vercel, API → Render                                     |
 
 ## Struktur Folder
@@ -22,7 +22,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 ```
 webdakwah/
 ├─ apps/
-│  ├─ web/        # Next.js App Router (beranda, /masuk, /akun, /dashboard/konten)
+│  ├─ web/        # Next.js App Router (beranda, /masuk, /dashboard/konten, /dashboard/moderasi)
 │  └─ api/        # NestJS + Fastify, modul auth, contents & health
 │     └─ prisma/  # schema.prisma, migrasi SQL, seed admin
 ├─ packages/
@@ -47,21 +47,25 @@ webdakwah/
 - Matriks izin ada di `packages/shared/src/auth/permissions.ts`
   (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`).
   Kontributor hanya mendapat dua izin pertama.
-- `/dashboard` dan `/dashboard/konten` dijaga oleh `proxy.ts` (pengganti middleware di Next 16).
-  Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
+- `/dashboard`, `/dashboard/konten`, dan `/dashboard/moderasi` dijaga oleh `proxy.ts` (pengganti
+  middleware di Next 16). Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
 
 ## Konten & Alur Review
 
 Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DRAFT` dan
-`PUBLISHED → ARCHIVED` untuk fase moderasi. Pada Fase 3 yang sudah aktif:
+`PUBLISHED → ARCHIVED`.
 
 - Kontributor menulis artikel, menautkan audio/video/tautan rujukan, dan menyimpannya sebagai draft.
   Draft boleh belum lengkap; kelengkapan diperiksa saat diajukan.
 - Konten yang diajukan (`PENDING_REVIEW`) tidak bisa disunting sampai ditarik kembali ke draft.
+- Admin meninjau antrean di `/dashboard/moderasi`: **Terbitkan** mengisi `published_at`, atau
+  **Tolak** dengan catatan wajib (10–500 karakter). Catatan tampil ke penulis, yang lalu bisa
+  memperbaiki dan mengajukan ulang; catatan lama dibersihkan saat diajukan ulang.
 - Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
   semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
 - Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
 - Media masih berupa tautan http/https. Unggah berkas ke R2 menyusul di fase media.
+- Arsip konten terbit (`PUBLISHED → ARCHIVED`) belum punya aksi UI.
 
 Endpoint API (semua butuh Bearer token):
 
@@ -74,6 +78,9 @@ Endpoint API (semua butuh Bearer token):
 | `POST /api/contents/:id/submit`   | Ajukan review (validasi kelengkapan)         |
 | `POST /api/contents/:id/withdraw` | Tarik kembali ke draft                       |
 | `DELETE /api/contents/:id`        | Hapus draft/konten ditolak                   |
+| `GET /api/contents/review`        | Antrean `PENDING_REVIEW` (admin saja)        |
+| `POST /api/contents/:id/publish`  | Terbitkan konten (admin saja)                |
+| `POST /api/contents/:id/reject`   | Tolak + catatan wajib (admin saja)           |
 
 ## Menjalankan Secara Lokal
 

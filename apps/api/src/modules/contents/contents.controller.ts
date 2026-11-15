@@ -13,11 +13,13 @@ import {
 import {
   contentInputSchema,
   contentListQuerySchema,
+  paginationQuerySchema,
   type ContentInput,
   type ContentListQuery,
+  type PaginationQuery,
 } from '@webdakwah/shared';
 
-import { CurrentProfile } from '../auth/auth.decorators.js';
+import { CurrentProfile, Roles } from '../auth/auth.decorators.js';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { ContentsService } from './contents.service.js';
 
@@ -41,6 +43,16 @@ function parseListQuery(query: unknown): ContentListQuery {
   return parsed.data;
 }
 
+function parsePaginationQuery(query: unknown): PaginationQuery {
+  const parsed = paginationQuerySchema.safeParse(query);
+
+  if (!parsed.success) {
+    throw new BadRequestException('Parameter halaman tidak valid.');
+  }
+
+  return parsed.data;
+}
+
 /** Semua rute butuh login; hak akses detail ditegakkan di ContentsService. */
 @Controller('contents')
 export class ContentsController {
@@ -49,6 +61,30 @@ export class ContentsController {
   @Get('mine')
   list(@CurrentProfile() profile: AuthProfile, @Query() query: Record<string, unknown>) {
     return this.contents.listMine(profile, parseListQuery(query));
+  }
+
+  @Get('review')
+  @Roles('ADMIN')
+  reviewQueue(@CurrentProfile() profile: AuthProfile, @Query() query: Record<string, unknown>) {
+    return this.contents.listReviewQueue(profile, parsePaginationQuery(query));
+  }
+
+  @Post(':id/publish')
+  @Roles('ADMIN')
+  publish(@CurrentProfile() profile: AuthProfile, @Param('id', ParseUUIDPipe) id: string) {
+    return this.contents.publish(profile, id);
+  }
+
+  @Post(':id/reject')
+  @Roles('ADMIN')
+  reject(
+    @CurrentProfile() profile: AuthProfile,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const note = (body as { reviewNote?: unknown } | null)?.reviewNote;
+
+    return this.contents.reject(profile, id, typeof note === 'string' ? note : '');
   }
 
   @Get(':id')

@@ -58,6 +58,17 @@ export const contentInputSchema = contentFields.superRefine((value, ctx) => {
 
 export type ContentInput = z.infer<typeof contentInputSchema>;
 
+/** Catatan wajib saat admin menolak konten, supaya penulis tahu apa yang harus diperbaiki. */
+export const contentRejectSchema = z.object({
+  reviewNote: z
+    .string()
+    .trim()
+    .min(10, 'Catatan minimal 10 karakter')
+    .max(500, 'Catatan maksimal 500 karakter'),
+});
+
+export type ContentRejectInput = z.infer<typeof contentRejectSchema>;
+
 export const contentAuthorSchema = z.object({
   id: z.uuid(),
   email: z.email(),

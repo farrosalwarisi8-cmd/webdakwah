@@ -2,8 +2,12 @@ import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
 import { signOutAction } from '@/lib/auth/actions';
+import { getViewer } from '@/lib/auth/viewer';
 
-export function DashboardHeader() {
+export async function DashboardHeader() {
+  const viewer = await getViewer();
+  const isAdmin = viewer.status === 'authenticated' && viewer.profile?.role === 'ADMIN';
+
   return (
     <header className="border-b border-ink-200/80 bg-ink-50/85">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
@@ -23,6 +27,14 @@ export function DashboardHeader() {
           <Link href="/dashboard/konten" className="text-ink-600 transition hover:text-brand-700">
             Konten saya
           </Link>
+          {isAdmin ? (
+            <Link
+              href="/dashboard/moderasi"
+              className="text-ink-600 transition hover:text-brand-700"
+            >
+              Moderasi
+            </Link>
+          ) : null}
           <Link
             href="/akun"
             className="hidden text-ink-600 transition hover:text-brand-700 sm:inline"

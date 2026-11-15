@@ -58,12 +58,22 @@ export default async function DashboardPage() {
                   ? 'Meninjau kiriman kontributor, menerbitkan atau menolak materi, dan mengelola akses pengguna.'
                   : 'Menulis artikel, mengunggah audio kajian dan video, lalu mengirimkannya untuk ditinjau admin sebelum terbit.'}
               </p>
-              <Link
-                href="/dashboard/konten"
-                className="mt-5 inline-flex rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
-              >
-                Buka konten saya
-              </Link>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link
+                  href="/dashboard/konten"
+                  className="inline-flex rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+                >
+                  Buka konten saya
+                </Link>
+                {profile.role === 'ADMIN' ? (
+                  <Link
+                    href="/dashboard/moderasi"
+                    className="inline-flex rounded-full border border-ink-200 px-5 py-2.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+                  >
+                    Antrean moderasi
+                  </Link>
+                ) : null}
+              </div>
             </section>
           </div>
         )}

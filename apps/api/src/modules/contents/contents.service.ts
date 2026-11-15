@@ -7,9 +7,11 @@ import {
 import {
   can,
   contentInputSchema,
+  contentRejectSchema,
   type ContentInput,
   type ContentListQuery,
   type ContentStatus,
+  type PaginationQuery,
   type Permission,
 } from '@webdakwah/shared';
 import { randomUUID } from 'node:crypto';
@@ -86,6 +88,61 @@ export class ContentsService {
       total,
       totalPages: Math.ceil(total / query.pageSize),
     };
+  }
+
+  /** Antrean moderasi: hanya admin, urut dari yang paling lama menunggu. */
+  async listReviewQueue(profile: AuthProfile, query: PaginationQuery) {
+    this.assertModerator(profile);
+
+    const where = { status: 'PENDING_REVIEW' as const };
+
+    const [items, total] = await Promise.all([
+      this.prisma.content.findMany({
+        where,
+        select: CONTENT_SUMMARY_SELECT,
+        orderBy: { updatedAt: 'asc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.prisma.content.count({ where }),
+    ]);
+
+    return {
+      items,
+      page: query.page,
+      pageSize: query.pageSize,
+      total,
+      totalPages: Math.ceil(total / query.pageSize),
+    };
+  }
+
+  async publish(profile: AuthProfile, id: string) {
+    this.assertModerator(profile);
+    await this.findPendingRow(id);
+
+    return this.prisma.content.update({
+      where: { id },
+      data: { status: 'PUBLISHED', publishedAt: new Date(), reviewNote: null },
+      select: CONTENT_DETAIL_SELECT,
+    });
+  }
+
+  async reject(profile: AuthProfile, id: string, reviewNote: string) {
+    this.assertModerator(profile);
+
+    const parsed = contentRejectSchema.safeParse({ reviewNote });
+
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.issues.map((issue) => issue.message));
+    }
+
+    await this.findPendingRow(id);
+
+    return this.prisma.content.update({
+      where: { id },
+      data: { status: 'REJECTED', reviewNote: parsed.data.reviewNote },
+      select: CONTENT_DETAIL_SELECT,
+    });
   }
 
   async getById(profile: AuthProfile, id: string) {
@@ -212,6 +269,30 @@ export class ContentsService {
     if (!can(role, permission)) {
       throw new ForbiddenException('Anda tidak memiliki izin untuk tindakan ini.');
     }
+  }
+
+  /** Moderasi memakai izin terbit, bukan hanya role yang dikirim klien. */
+  private assertModerator(profile: AuthProfile): void {
+    this.assertPermission(profile.role, 'content:publish');
+  }
+
+  private async findPendingRow(id: string) {
+    const row = await this.prisma.content.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!row) {
+      throw new NotFoundException('Konten tidak ditemukan.');
+    }
+
+    if (row.status !== 'PENDING_REVIEW') {
+      throw new BadRequestException(
+        'Hanya konten yang menunggu review yang bisa diterbitkan atau ditolak.',
+      );
+    }
+
+    return row;
   }
 
   /**
