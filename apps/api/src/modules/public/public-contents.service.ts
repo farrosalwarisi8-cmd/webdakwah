@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { PublicContentQuery, PublicContentSummary } from '@webdakwah/shared';
+import type {
+  PublicContentQuery,
+  PublicContentSummary,
+  PublicSearchQuery,
+} from '@webdakwah/shared';
 
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -27,6 +31,38 @@ export class PublicContentsService {
     const where = {
       status: 'PUBLISHED' as const,
       ...(query.type ? { type: query.type } : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.content.findMany({
+        where,
+        select: PUBLIC_SUMMARY_SELECT,
+        orderBy: { publishedAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.prisma.content.count({ where }),
+    ]);
+
+    return {
+      items,
+      page: query.page,
+      pageSize: query.pageSize,
+      total,
+      totalPages: Math.ceil(total / query.pageSize),
+    };
+  }
+
+  /** Pencarian sederhana (ILIKE) pada judul, ringkasan, dan isi konten terbit. */
+  async search(query: PublicSearchQuery) {
+    const where = {
+      status: 'PUBLISHED' as const,
+      ...(query.type ? { type: query.type } : {}),
+      OR: [
+        { title: { contains: query.q, mode: 'insensitive' as const } },
+        { excerpt: { contains: query.q, mode: 'insensitive' as const } },
+        { body: { contains: query.q, mode: 'insensitive' as const } },
+      ],
     };
 
     const [items, total] = await Promise.all([

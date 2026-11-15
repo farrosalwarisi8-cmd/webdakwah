@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 7 — Revalidasi Cache Instan**. Siklus konten lengkap dan perubahan
-> terbit/arsip langsung tercermin di halaman publik. Unggah media ke R2 dan fitur lanjutan
-> menyusul.
+> Status: **Fase 8 — Pencarian Konten Publik**. Siklus konten lengkap, perubahan
+> terbit/arsip langsung tercermin, dan pengunjung bisa mencari konten terbit. Unggah media
+> ke R2 dan fitur lanjutan menyusul.
 
 ## Teknologi
 
@@ -92,11 +92,12 @@ Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konte
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
 tidak memuat email penulis, catatan review, atau status internal.
 
-| Metode & path                          | Keterangan                                         |
-| -------------------------------------- | -------------------------------------------------- |
-| `GET /api/public/contents?type=&page=` | Daftar konten terbit (filter jenis opsional)       |
-| `GET /api/public/contents/:slug`       | Detail konten terbit berdasarkan slug; lainnya 404 |
-| `GET /api/public/highlights`           | Satu terbitan terbaru per jenis untuk beranda      |
+| Metode & path                           | Keterangan                                         |
+| --------------------------------------- | -------------------------------------------------- |
+| `GET /api/public/contents?type=&page=`  | Daftar konten terbit (filter jenis opsional)       |
+| `GET /api/public/contents/:slug`        | Detail konten terbit berdasarkan slug; lainnya 404 |
+| `GET /api/public/highlights`            | Satu terbitan terbaru per jenis untuk beranda      |
+| `GET /api/public/search?q=&type=&page=` | Cari judul/ringkasan/isi konten terbit (q 2–100)   |
 
 ## Halaman Publik
 
@@ -104,7 +105,13 @@ tidak memuat email penulis, catatan review, atau status internal.
 - `/artikel/[slug]`, `/audio/[slug]`, `/video/[slug]`, `/rujukan/[slug]` — halaman baca dengan
   metadata judul, deskripsi, canonical, dan OpenGraph. URL memakai slug, bukan UUID.
 - Beranda menampilkan satu terbitan terbaru per jenis; bila belum ada, tampil ajakan menunggu.
-- Konten berstatus `ARCHIVED` otomatis tidak muncul di daftar, detail, sitemap, maupun highlight.
+- `/cari` mencari judul, ringkasan, dan isi konten terbit, dengan filter jenis dan paginasi.
+  Halaman hasil ditandai `noindex` agar tidak membanjiri mesin pencari, dan tautan cari tersedia
+  di header.
+- Konten berstatus `ARCHIVED` otomatis tidak muncul di daftar, detail, sitemap, highlight,
+  maupun hasil pencarian.
+- Pencarian memakai `ILIKE` (`contains` + `mode: insensitive`). Untuk data besar, tambahkan
+  indeks trigram Postgres pada kolom yang dicari.
 - `/sitemap.xml` dan `/robots.txt` dihasilkan otomatis. Dashboard, akun, dan halaman masuk
   dikecualikan dari indeks mesin pencari.
 - Data diambil dengan revalidasi 60 detik sebagai cadangan. Setelah konten terbit, diarsipkan,
@@ -160,7 +167,7 @@ Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
 Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
 Login: <http://localhost:3000/masuk>
 Editor konten: <http://localhost:3000/dashboard/konten>
-Halaman publik: <http://localhost:3000/artikel>, `/audio`, `/video`, `/rujukan`
+Halaman publik: <http://localhost:3000/artikel>, `/audio`, `/video`, `/rujukan`, `/cari`
 
 Tanpa kredensial Supabase, aplikasi tetap bisa di-build dan beranda/health tetap jalan;
 halaman login akan menampilkan pesan bahwa autentikasi belum dikonfigurasi.

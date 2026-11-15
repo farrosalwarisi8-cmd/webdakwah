@@ -46,6 +46,18 @@ export const publicContentQuerySchema = paginationQuerySchema.extend({
 
 export type PublicContentQuery = z.infer<typeof publicContentQuerySchema>;
 
+/** Pencarian teks pada judul, ringkasan, dan isi konten terbit. */
+export const publicSearchQuerySchema = paginationQuerySchema.extend({
+  q: z
+    .string()
+    .trim()
+    .min(2, 'Kata kunci minimal 2 karakter.')
+    .max(100, 'Kata kunci terlalu panjang.'),
+  type: z.enum(CONTENT_TYPES).optional(),
+});
+
+export type PublicSearchQuery = z.infer<typeof publicSearchQuerySchema>;
+
 /** Satu konten terbaru per jenis untuk beranda; null bila belum ada terbitan. */
 export const publicHighlightsSchema = z.object({
   ARTICLE: publicContentSummarySchema.nullable(),

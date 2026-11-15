@@ -1,4 +1,4 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Search } from 'lucide-react';
 import Link from 'next/link';
 
 import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
@@ -26,12 +26,21 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link
-          href="/masuk"
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
-        >
-          Masuk
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/cari"
+            aria-label="Cari konten"
+            className="grid size-9 place-items-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-brand-300 hover:text-brand-700"
+          >
+            <Search aria-hidden className="size-4" />
+          </Link>
+          <Link
+            href="/masuk"
+            className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+          >
+            Masuk
+          </Link>
+        </div>
       </div>
 
       <nav
@@ -48,6 +57,13 @@ export function SiteHeader() {
               {CONTENT_SECTIONS[type].title}
             </Link>
           ))}
+          <Link
+            href="/cari"
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-ink-600 transition hover:bg-white hover:text-brand-700"
+          >
+            <Search aria-hidden className="size-3.5" />
+            Cari
+          </Link>
         </div>
       </nav>
     </header>

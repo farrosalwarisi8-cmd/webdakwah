@@ -63,6 +63,20 @@ export async function getPublicList(type: ContentType, page: number): Promise<Pu
   return fetchParsed(`/public/contents?type=${type}&page=${page}`, publicContentListSchema);
 }
 
+export async function getPublicSearch(
+  query: string,
+  type: ContentType | null,
+  page: number,
+): Promise<PublicContentList> {
+  const params = new URLSearchParams({ q: query, page: String(page) });
+
+  if (type) {
+    params.set('type', type);
+  }
+
+  return fetchParsed(`/public/search?${params.toString()}`, publicContentListSchema);
+}
+
 /** `cache` mencegah pengambilan ganda antara generateMetadata dan halaman. */
 export const getPublicContent = cache(async (slug: string): Promise<PublicContentDetail> =>
   fetchParsed(`/public/contents/${encodeURIComponent(slug)}`, publicContentDetailSchema),
