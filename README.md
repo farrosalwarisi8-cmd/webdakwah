@@ -3,9 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 2 — Database, Autentikasi & Hak Akses**. Beranda statis, login Supabase,
-> profil + role di database, dan pembatasan akses di API sudah berjalan. Editor konten dan
-> moderasi menyusul di fase berikutnya.
+> Status: **Fase 3 — Editor Konten & Alur Draf**. Login, role, editor artikel/audio/video,
+> serta pengajuan review sudah berjalan. Moderasi admin dan halaman publik menyusul.
 
 ## Teknologi
 
@@ -23,8 +22,8 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 ```
 webdakwah/
 ├─ apps/
-│  ├─ web/        # Next.js App Router (beranda, /masuk, /akun, /dashboard)
-│  └─ api/        # NestJS + Fastify, modul auth & health
+│  ├─ web/        # Next.js App Router (beranda, /masuk, /akun, /dashboard/konten)
+│  └─ api/        # NestJS + Fastify, modul auth, contents & health
 │     └─ prisma/  # schema.prisma, migrasi SQL, seed admin
 ├─ packages/
 │  └─ shared/     # Tipe, konstanta (role/status), skema Zod, matriks izin
@@ -48,8 +47,33 @@ webdakwah/
 - Matriks izin ada di `packages/shared/src/auth/permissions.ts`
   (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`).
   Kontributor hanya mendapat dua izin pertama.
-- `/dashboard` dijaga oleh `proxy.ts` (pengganti middleware di Next 16). Proxy hanya lapisan
-  kenyamanan; API tetap memverifikasi token sendiri.
+- `/dashboard` dan `/dashboard/konten` dijaga oleh `proxy.ts` (pengganti middleware di Next 16).
+  Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
+
+## Konten & Alur Review
+
+Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DRAFT` dan
+`PUBLISHED → ARCHIVED` untuk fase moderasi. Pada Fase 3 yang sudah aktif:
+
+- Kontributor menulis artikel, menautkan audio/video/tautan rujukan, dan menyimpannya sebagai draft.
+  Draft boleh belum lengkap; kelengkapan diperiksa saat diajukan.
+- Konten yang diajukan (`PENDING_REVIEW`) tidak bisa disunting sampai ditarik kembali ke draft.
+- Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
+  semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
+- Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
+- Media masih berupa tautan http/https. Unggah berkas ke R2 menyusul di fase media.
+
+Endpoint API (semua butuh Bearer token):
+
+| Metode & path                     | Keterangan                                   |
+| --------------------------------- | -------------------------------------------- |
+| `GET /api/contents/mine`          | Daftar konten sendiri (`?status=`, `?page=`) |
+| `GET /api/contents/:id`           | Detail untuk pemilik atau admin              |
+| `POST /api/contents`              | Buat draft baru                              |
+| `PATCH /api/contents/:id`         | Sunting draft/konten ditolak                 |
+| `POST /api/contents/:id/submit`   | Ajukan review (validasi kelengkapan)         |
+| `POST /api/contents/:id/withdraw` | Tarik kembali ke draft                       |
+| `DELETE /api/contents/:id`        | Hapus draft/konten ditolak                   |
 
 ## Menjalankan Secara Lokal
 
@@ -88,6 +112,7 @@ pnpm --filter api dev
 Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
 Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
 Login: <http://localhost:3000/masuk>
+Editor konten: <http://localhost:3000/dashboard/konten>
 
 Tanpa kredensial Supabase, aplikasi tetap bisa di-build dan beranda/health tetap jalan;
 halaman login akan menampilkan pesan bahwa autentikasi belum dikonfigurasi.

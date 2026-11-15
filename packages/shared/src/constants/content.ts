@@ -27,6 +27,13 @@ export const CONTENT_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO', 'LINK'] as const;
 
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
+export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+  ARTICLE: 'Artikel',
+  AUDIO: 'Audio Kajian',
+  VIDEO: 'Video',
+  LINK: 'Tautan Rujukan',
+};
+
 /** Jenis konten yang boleh punya "tautan terkait" (ContentLink). */
 export const CONTENT_LINK_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO'] as const;
 

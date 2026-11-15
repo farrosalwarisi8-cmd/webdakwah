@@ -28,6 +28,46 @@ model Profile {
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  contents  Content[]
 
   @@map("profiles")
+}
+
+enum ContentType {
+  ARTICLE
+  AUDIO
+  VIDEO
+  LINK
+}
+
+/// DRAFT -> PENDING_REVIEW -> PUBLISHED, dengan cabang REJECTED -> DRAFT
+/// dan PUBLISHED -> ARCHIVED. Transisi ditegakkan di ContentsService.
+enum ContentStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+model Content {
+  id          String        @id @default(uuid()) @db.Uuid
+  authorId    String        @map("author_id") @db.Uuid
+  type        ContentType
+  status      ContentStatus @default(DRAFT)
+  title       String        @db.VarChar(200)
+  slug        String        @unique @db.VarChar(220)
+  excerpt     String?       @db.VarChar(300)
+  body        String?       @db.Text
+  mediaUrl    String?       @map("media_url") @db.VarChar(2048)
+  reviewNote  String?       @map("review_note") @db.VarChar(500)
+  publishedAt DateTime?     @map("published_at") @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  author Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId, updatedAt])
+  @@index([status, publishedAt])
+  @@map("contents")
 }

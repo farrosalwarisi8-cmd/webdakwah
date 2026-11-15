@@ -1,10 +1,9 @@
 import { ROLE_LABELS } from '@webdakwah/shared';
-import { BookOpen } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { signOutAction } from '@/lib/auth/actions';
+import { DashboardHeader } from '@/components/dashboard-header';
 import { getViewer } from '@/lib/auth/viewer';
 
 export const metadata: Metadata = {
@@ -23,29 +22,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-dvh bg-ink-50">
-      <header className="border-b border-ink-200/80 bg-ink-50/85">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-50">
-              <BookOpen aria-hidden className="size-5" />
-            </span>
-            <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
-          </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/akun" className="text-ink-600 transition hover:text-brand-700">
-              Akun
-            </Link>
-            <form action={signOutAction}>
-              <button
-                type="submit"
-                className="rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
-              >
-                Keluar
-              </button>
-            </form>
-          </nav>
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Dashboard</h1>
@@ -81,10 +58,12 @@ export default async function DashboardPage() {
                   ? 'Meninjau kiriman kontributor, menerbitkan atau menolak materi, dan mengelola akses pengguna.'
                   : 'Menulis artikel, mengunggah audio kajian dan video, lalu mengirimkannya untuk ditinjau admin sebelum terbit.'}
               </p>
-              <p className="mt-4 rounded-xl bg-ink-50 px-4 py-3 text-xs leading-relaxed text-ink-500">
-                Editor konten hadir pada fase berikutnya. Untuk sekarang dashboard ini memastikan
-                autentikasi dan pembatasan role berjalan.
-              </p>
+              <Link
+                href="/dashboard/konten"
+                className="mt-5 inline-flex rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+              >
+                Buka konten saya
+              </Link>
             </section>
           </div>
         )}

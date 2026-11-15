@@ -6,6 +6,7 @@ import { validateEnv } from './config/env.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { RolesGuard } from './modules/auth/roles.guard.js';
 import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
+import { ContentsModule } from './modules/contents/contents.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
 @Module({
@@ -17,6 +18,7 @@ import { HealthModule } from './modules/health/health.module.js';
       validate: validateEnv,
     }),
     AuthModule,
+    ContentsModule,
     HealthModule,
   ],
   providers: [
