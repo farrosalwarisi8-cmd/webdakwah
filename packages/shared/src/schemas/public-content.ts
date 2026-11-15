@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 import { CONTENT_TYPES } from '../constants/content.js';
 import { paginationQuerySchema } from './common.js';
+import {
+  publicCategorySchema,
+  publicSpeakerSchema,
+  publicTagSchema,
+} from './taxonomy.js';
 
 /**
  * Bentuk data untuk pengunjung publik. Sengaja tidak memuat email penulis,
@@ -20,6 +25,9 @@ export const publicContentSummarySchema = z.object({
   mediaUrl: z.string().nullable(),
   publishedAt: z.string().nullable(),
   author: publicAuthorSchema,
+  categories: z.array(publicCategorySchema),
+  tags: z.array(publicTagSchema),
+  speaker: publicSpeakerSchema.nullable(),
 });
 
 export type PublicContentSummary = z.infer<typeof publicContentSummarySchema>;
@@ -42,6 +50,9 @@ export type PublicContentList = z.infer<typeof publicContentListSchema>;
 
 export const publicContentQuerySchema = paginationQuerySchema.extend({
   type: z.enum(CONTENT_TYPES).optional(),
+  category: z.string().trim().min(1).optional(),
+  tag: z.string().trim().min(1).optional(),
+  speaker: z.string().trim().min(1).optional(),
 });
 
 export type PublicContentQuery = z.infer<typeof publicContentQuerySchema>;
@@ -54,6 +65,9 @@ export const publicSearchQuerySchema = paginationQuerySchema.extend({
     .min(2, 'Kata kunci minimal 2 karakter.')
     .max(100, 'Kata kunci terlalu panjang.'),
   type: z.enum(CONTENT_TYPES).optional(),
+  category: z.string().trim().min(1).optional(),
+  tag: z.string().trim().min(1).optional(),
+  speaker: z.string().trim().min(1).optional(),
 });
 
 export type PublicSearchQuery = z.infer<typeof publicSearchQuerySchema>;

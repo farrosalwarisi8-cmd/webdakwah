@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 10 — Pengerasan Keamanan API**. Kuota & rate limit per pengguna,
-> pembersihan objek R2 saat konten berubah/dihapus, dan konfigurasi deploy Render (`render.yaml`).
+> Status: **Fase 11 — Kategori, Tag, dan Penceramah**. Konten dapat dikategorikan, ditandai,
+> dan dihubungkan ke penceramah; taksonomi dikelola admin dan tersedia untuk filter publik.
 
 ## Teknologi
 

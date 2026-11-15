@@ -49,6 +49,9 @@ function contentRow(overrides: Record<string, unknown> = {}) {
     createdAt: new Date('2026-11-15T00:00:00.000Z'),
     updatedAt: new Date('2026-11-15T00:00:00.000Z'),
     author,
+    categories: [{ categoryId: '99999999-9999-4999-8999-999999999999' }],
+    tags: [],
+    speaker: null,
     ...overrides,
   };
 }
@@ -78,6 +81,9 @@ const articleInput = {
   excerpt: 'Ringkasan singkat.',
   body: 'Isi artikel yang cukup panjang.',
   mediaUrl: '',
+  categoryIds: [],
+  tagNames: [],
+  speakerId: null,
 };
 
 describe('ContentsService', () => {

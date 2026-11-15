@@ -63,13 +63,18 @@ model Content {
   mediaUrl    String?       @map("media_url") @db.VarChar(2048)
   reviewNote  String?       @map("review_note") @db.VarChar(500)
   publishedAt DateTime?     @map("published_at") @db.Timestamptz(3)
+  speakerId   String?       @map("speaker_id") @db.Uuid
   createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  author Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author      Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  speaker     Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+  categories  ContentCategory[]
+  tags        ContentTag[]
 
   @@index([authorId, updatedAt])
   @@index([status, publishedAt])
+  @@index([speakerId])
   @@map("contents")
 }
 
@@ -85,4 +90,66 @@ model UploadRequestLog {
   @@index([profileId, createdAt])
   @@index([createdAt])
   @@map("upload_requests")
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(60)
+  slug      String   @unique @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  contents ContentCategory[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(30)
+  slug      String   @unique @db.VarChar(80)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  contents ContentTag[]
+
+  @@map("tags")
+}
+
+model Speaker {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(120)
+  slug      String   @unique @db.VarChar(140)
+  bio       String?  @db.VarChar(500)
+  avatarUrl String?  @map("avatar_url") @db.VarChar(2048)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  contents Content[]
+
+  @@map("speakers")
+}
+
+model ContentCategory {
+  contentId  String @map("content_id") @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+
+  content  Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, categoryId])
+  @@index([categoryId])
+  @@map("content_categories")
+}
+
+model ContentTag {
+  contentId String @map("content_id") @db.Uuid
+  tagId     String @map("tag_id") @db.Uuid
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, tagId])
+  @@index([tagId])
+  @@map("content_tags")
 }

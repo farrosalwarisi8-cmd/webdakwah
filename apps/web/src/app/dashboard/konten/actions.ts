@@ -21,6 +21,12 @@ function readFormData(formData: FormData) {
     excerpt: get('excerpt'),
     body: get('body'),
     mediaUrl: get('mediaUrl'),
+    categoryIds: formData.getAll('categoryIds').filter((value): value is string => typeof value === 'string'),
+    tagNames: get('tagNames')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+    speakerId: get('speakerId') || null,
   };
 }
 

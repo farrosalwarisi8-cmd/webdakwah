@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 import { CONTENT_STATUSES, CONTENT_TYPES } from '../constants/content.js';
 import { isSafeHttpUrl, paginationQuerySchema } from './common.js';
+import {
+  categoryIdsSchema,
+  speakerIdSchema,
+  tagNamesSchema,
+} from './taxonomy.js';
 
 export const contentTitleSchema = z
   .string()
@@ -29,6 +34,9 @@ const contentFields = z.object({
   excerpt: contentExcerptSchema.optional().default(''),
   body: contentBodySchema.optional().default(''),
   mediaUrl: contentMediaUrlSchema.optional().default(''),
+  categoryIds: categoryIdsSchema.optional().default([]),
+  tagNames: tagNamesSchema.optional().default([]),
+  speakerId: speakerIdSchema.optional().default(null),
 });
 
 /**
@@ -88,6 +96,13 @@ export const contentSummarySchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   author: contentAuthorSchema,
+  categories: z.array(
+    z.object({ id: z.uuid(), name: z.string(), slug: z.string() }),
+  ),
+  tags: z.array(z.object({ id: z.uuid(), name: z.string(), slug: z.string() })),
+  speaker: z
+    .object({ id: z.uuid(), name: z.string(), slug: z.string() })
+    .nullable(),
 });
 
 export type ContentSummary = z.infer<typeof contentSummarySchema>;

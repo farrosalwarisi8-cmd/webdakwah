@@ -1,7 +1,10 @@
 import {
+  publicCategoryListSchema,
   publicContentDetailSchema,
   publicContentListSchema,
   publicHighlightsSchema,
+  publicSpeakerListSchema,
+  publicTagListSchema,
   type ContentType,
   type PublicContentDetail,
   type PublicContentList,
@@ -61,6 +64,30 @@ async function fetchParsed<T>(path: string, schema: Schema<T>): Promise<T> {
 
 export async function getPublicList(type: ContentType, page: number): Promise<PublicContentList> {
   return fetchParsed(`/public/contents?type=${type}&page=${page}`, publicContentListSchema);
+}
+
+export async function getPublicListByFilter(
+  filter: { category?: string; tag?: string; speaker?: string },
+  page: number,
+): Promise<PublicContentList> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (filter.category) params.set('category', filter.category);
+  if (filter.tag) params.set('tag', filter.tag);
+  if (filter.speaker) params.set('speaker', filter.speaker);
+
+  return fetchParsed(`/public/contents?${params.toString()}`, publicContentListSchema);
+}
+
+export async function getPublicCategories() {
+  return fetchParsed('/categories', publicCategoryListSchema);
+}
+
+export async function getPublicTags() {
+  return fetchParsed('/tags', publicTagListSchema);
+}
+
+export async function getPublicSpeakers() {
+  return fetchParsed('/speakers', publicSpeakerListSchema);
 }
 
 export async function getPublicSearch(

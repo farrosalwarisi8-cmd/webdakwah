@@ -7,6 +7,30 @@ import type {
 
 import { PrismaService } from '../prisma/prisma.service.js';
 
+function mapPublicContent<T>(row: T): T {
+  if (!row || Array.isArray(row)) {
+    return row;
+  }
+
+  const record = row as Record<string, unknown>;
+  const categories = Array.isArray(record.categories)
+    ? record.categories.map((item) =>
+        item && typeof item === 'object' && 'category' in item
+          ? (item as { category: unknown }).category
+          : item,
+      )
+    : record.categories;
+  const tags = Array.isArray(record.tags)
+    ? record.tags.map((item) =>
+        item && typeof item === 'object' && 'tag' in item
+          ? (item as { tag: unknown }).tag
+          : item,
+      )
+    : record.tags;
+
+  return { ...record, categories, tags } as T;
+}
+
 const PUBLIC_CONTENT_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO', 'LINK'] as const;
 
 /** Hanya kolom aman untuk publik: tanpa email penulis dan tanpa data review. */
@@ -19,6 +43,9 @@ const PUBLIC_SUMMARY_SELECT = {
   mediaUrl: true,
   publishedAt: true,
   author: { select: { fullName: true } },
+  categories: { select: { category: { select: { name: true, slug: true } } } },
+  tags: { select: { tag: { select: { name: true, slug: true } } } },
+  speaker: { select: { name: true, slug: true } },
 };
 
 const PUBLIC_DETAIL_SELECT = { ...PUBLIC_SUMMARY_SELECT, body: true };
@@ -31,6 +58,9 @@ export class PublicContentsService {
     const where = {
       status: 'PUBLISHED' as const,
       ...(query.type ? { type: query.type } : {}),
+      ...(query.category ? { categories: { some: { category: { slug: query.category } } } } : {}),
+      ...(query.tag ? { tags: { some: { tag: { slug: query.tag } } } } : {}),
+      ...(query.speaker ? { speaker: { slug: query.speaker } } : {}),
     };
 
     const [items, total] = await Promise.all([
@@ -45,7 +75,7 @@ export class PublicContentsService {
     ]);
 
     return {
-      items,
+      items: items.map((item) => mapPublicContent(item)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -58,6 +88,9 @@ export class PublicContentsService {
     const where = {
       status: 'PUBLISHED' as const,
       ...(query.type ? { type: query.type } : {}),
+      ...(query.category ? { categories: { some: { category: { slug: query.category } } } } : {}),
+      ...(query.tag ? { tags: { some: { tag: { slug: query.tag } } } } : {}),
+      ...(query.speaker ? { speaker: { slug: query.speaker } } : {}),
       OR: [
         { title: { contains: query.q, mode: 'insensitive' as const } },
         { excerpt: { contains: query.q, mode: 'insensitive' as const } },
@@ -77,7 +110,7 @@ export class PublicContentsService {
     ]);
 
     return {
-      items,
+      items: items.map((item) => mapPublicContent(item)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -95,7 +128,7 @@ export class PublicContentsService {
       throw new NotFoundException('Konten tidak ditemukan.');
     }
 
-    return content;
+    return mapPublicContent(content);
   }
 
   /** Satu terbitan terbaru per jenis; null bila jenis itu belum punya konten terbit. */
@@ -108,7 +141,7 @@ export class PublicContentsService {
           orderBy: { publishedAt: 'desc' },
         });
 
-        return [type, item ?? null] as const;
+        return [type, item ? mapPublicContent(item) : null] as const;
       }),
     );
 

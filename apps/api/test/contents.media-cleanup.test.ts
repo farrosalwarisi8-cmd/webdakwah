@@ -44,6 +44,9 @@ function input(mediaUrl: string): ContentInput {
     excerpt: 'Ringkasan',
     body: '',
     mediaUrl,
+    categoryIds: [],
+    tagNames: [],
+    speakerId: null,
   };
 }
 

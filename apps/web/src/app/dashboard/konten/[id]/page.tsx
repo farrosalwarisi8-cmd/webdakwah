@@ -47,12 +47,25 @@ export default async function SuntingKontenPage({
 
   let content: ContentDetail | null = null;
   let loadError: string | null = null;
+  let taxonomy:
+    | { categories: { id: string; name: string }[]; speakers: { id: string; name: string }[] }
+    | undefined;
 
   if (viewer.status === 'authenticated' && viewer.profile) {
     try {
       content = contentDetailSchema.parse(await apiFetch(`/contents/${encodeURIComponent(id)}`));
     } catch (error) {
       loadError = error instanceof ApiError ? error.message : 'Gagal memuat konten. Coba lagi.';
+    }
+
+    try {
+      const [categories, speakers] = await Promise.all([
+        apiFetch<{ id: string; name: string }[]>('/categories/options'),
+        apiFetch<{ id: string; name: string }[]>('/speakers/options'),
+      ]);
+      taxonomy = { categories, speakers };
+    } catch {
+      taxonomy = { categories: [], speakers: [] };
     }
   }
 
@@ -158,7 +171,11 @@ export default async function SuntingKontenPage({
                   excerpt: content.excerpt ?? '',
                   body: content.body ?? '',
                   mediaUrl: content.mediaUrl ?? '',
+                  categoryIds: content.categories.map((item) => item.id),
+                  tagNames: content.tags.map((item) => item.name),
+                  speakerId: content.speaker?.id ?? null,
                 }}
+                taxonomy={taxonomy}
               />
             ) : content.body ? (
               <article className="mt-6 whitespace-pre-line rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800">

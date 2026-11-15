@@ -10,6 +10,7 @@ import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
 import { ContentsModule } from './modules/contents/contents.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { PublicContentsModule } from './modules/public/public-contents.module.js';
+import { TaxonomyModule } from './modules/taxonomy/taxonomy.module.js';
 import {
   readLimit,
   resolveThrottleTracker,
@@ -39,6 +40,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     AuthModule,
     ContentsModule,
     PublicContentsModule,
+    TaxonomyModule,
     UploadsModule,
     HealthModule,
   ],

@@ -6,6 +6,11 @@ import { useActionState, useState } from 'react';
 import type { ContentFormState } from './form-state';
 import { MediaUploadField } from './media-upload-field';
 
+interface TaxonomyOption {
+  id: string;
+  name: string;
+}
+
 interface ContentFormProps {
   action: (state: ContentFormState, formData: FormData) => Promise<ContentFormState>;
   contentId?: string;
@@ -15,6 +20,13 @@ interface ContentFormProps {
     excerpt: string;
     body: string;
     mediaUrl: string;
+    categoryIds?: string[];
+    tagNames?: string[];
+    speakerId?: string | null;
+  };
+  taxonomy?: {
+    categories: TaxonomyOption[];
+    speakers: TaxonomyOption[];
   };
   submitLabel: string;
 }
@@ -24,7 +36,13 @@ const fieldClass =
 
 const labelClass = 'text-sm font-medium text-ink-800';
 
-export function ContentForm({ action, contentId, initial, submitLabel }: ContentFormProps) {
+export function ContentForm({
+  action,
+  contentId,
+  initial,
+  taxonomy,
+  submitLabel,
+}: ContentFormProps) {
   const [state, formAction, pending] = useActionState(action, { error: null });
   const [type, setType] = useState<ContentType>(initial?.type ?? 'ARTICLE');
   const [mediaUrl, setMediaUrl] = useState(initial?.mediaUrl ?? '');
@@ -83,6 +101,61 @@ export function ContentForm({ action, contentId, initial, submitLabel }: Content
           className={fieldClass}
           placeholder="Dua kalimat yang muncul di daftar konten."
         />
+      </div>
+
+      <div>
+        <label className={labelClass}>
+          Kategori <span className="font-normal text-ink-500">(maksimal 5; wajib saat ajukan review)</span>
+        </label>
+        <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+          {(taxonomy?.categories ?? []).map((category) => (
+            <label key={category.id} className="flex items-center gap-2 text-sm text-ink-800">
+              <input
+                type="checkbox"
+                name="categoryIds"
+                value={category.id}
+                defaultChecked={initial?.categoryIds?.includes(category.id)}
+                className="rounded border-ink-300 text-brand-700 focus:ring-brand-500"
+              />
+              {category.name}
+            </label>
+          ))}
+          {(taxonomy?.categories ?? []).length === 0 ? (
+            <p className="text-xs text-ink-500">Belum ada kategori. Admin perlu menambahkannya.</p>
+          ) : null}
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="tagNames" className={labelClass}>
+          Tag <span className="font-normal text-ink-500">(maksimal 10, pisahkan dengan koma)</span>
+        </label>
+        <input
+          id="tagNames"
+          name="tagNames"
+          defaultValue={initial?.tagNames?.join(', ') ?? ''}
+          className={fieldClass}
+          placeholder="adab, ilmu, akhlak"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="speakerId" className={labelClass}>
+          Penceramah <span className="font-normal text-ink-500">(opsional)</span>
+        </label>
+        <select
+          id="speakerId"
+          name="speakerId"
+          defaultValue={initial?.speakerId ?? ''}
+          className={fieldClass}
+        >
+          <option value="">— Tidak ada —</option>
+          {(taxonomy?.speakers ?? []).map((speaker) => (
+            <option key={speaker.id} value={speaker.id}>
+              {speaker.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {needsMedia ? (

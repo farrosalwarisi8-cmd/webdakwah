@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { DashboardHeader } from '@/components/dashboard-header';
+import { apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 
 import { createContentAction } from '../actions';
@@ -14,6 +15,22 @@ export const metadata: Metadata = {
 
 export default async function KontenBaruPage() {
   const viewer = await requireViewer('/dashboard/konten/baru');
+
+  let taxonomy:
+    | { categories: { id: string; name: string }[]; speakers: { id: string; name: string }[] }
+    | undefined;
+
+  if (viewer.status === 'authenticated' && viewer.profile) {
+    try {
+      const [categories, speakers] = await Promise.all([
+        apiFetch<{ id: string; name: string }[]>('/categories/options'),
+        apiFetch<{ id: string; name: string }[]>('/speakers/options'),
+      ]);
+      taxonomy = { categories, speakers };
+    } catch {
+      taxonomy = { categories: [], speakers: [] };
+    }
+  }
 
   return (
     <div className="min-h-dvh bg-ink-50">
@@ -38,7 +55,11 @@ export default async function KontenBaruPage() {
               : 'Profil Anda belum terbaca dari API. Pastikan API berjalan dan migrasi database sudah dijalankan.'}
           </div>
         ) : (
-          <ContentForm action={createContentAction} submitLabel="Simpan draft" />
+          <ContentForm
+            action={createContentAction}
+            submitLabel="Simpan draft"
+            taxonomy={taxonomy}
+          />
         )}
       </main>
     </div>

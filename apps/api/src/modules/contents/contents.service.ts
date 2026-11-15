@@ -22,6 +22,7 @@ import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RevalidationService } from '../revalidation/revalidation.service.js';
 import { StorageService } from '../storage/storage.service.js';
+import { TaxonomyService } from '../taxonomy/taxonomy.service.js';
 
 const CONTENT_SUMMARY_SELECT = {
   id: true,
@@ -36,6 +37,9 @@ const CONTENT_SUMMARY_SELECT = {
   createdAt: true,
   updatedAt: true,
   author: { select: { id: true, email: true, fullName: true } },
+  categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
+  speaker: { select: { id: true, name: true, slug: true } },
 };
 
 const CONTENT_DETAIL_SELECT = { ...CONTENT_SUMMARY_SELECT, body: true };
@@ -70,6 +74,7 @@ export class ContentsService {
     private readonly prisma: PrismaService,
     private readonly revalidation?: RevalidationService,
     @Optional() private readonly storage?: StorageService,
+    @Optional() private readonly taxonomy?: TaxonomyService,
   ) {}
 
   async listMine(profile: AuthProfile, query: ContentListQuery) {
@@ -90,7 +95,7 @@ export class ContentsService {
     ]);
 
     return {
-      items,
+      items: items.map((item) => this.mapContent(item)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -116,7 +121,7 @@ export class ContentsService {
     ]);
 
     return {
-      items,
+      items: items.map((item) => this.mapContent(item)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -142,7 +147,7 @@ export class ContentsService {
     ]);
 
     return {
-      items,
+      items: items.map((item) => this.mapContent(item)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -168,7 +173,7 @@ export class ContentsService {
 
     await this.revalidation?.trigger();
 
-    return updated;
+    return this.mapContent(updated);
   }
 
   /** ARCHIVED -> PUBLISHED; tanggal terbit pertama dipertahankan. */
@@ -189,7 +194,7 @@ export class ContentsService {
 
     await this.revalidation?.trigger();
 
-    return updated;
+    return this.mapContent(updated);
   }
 
   async publish(profile: AuthProfile, id: string) {
@@ -204,7 +209,7 @@ export class ContentsService {
 
     await this.revalidation?.trigger();
 
-    return updated;
+    return this.mapContent(updated);
   }
 
   async reject(profile: AuthProfile, id: string, reviewNote: string) {
@@ -218,11 +223,13 @@ export class ContentsService {
 
     await this.findPendingRow(id);
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'REJECTED', reviewNote: parsed.data.reviewNote },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    return this.mapContent(updated);
   }
 
   async getById(profile: AuthProfile, id: string) {
@@ -238,13 +245,17 @@ export class ContentsService {
       throw new NotFoundException('Konten tidak ditemukan.');
     }
 
-    return content;
+    return this.mapContent(content);
   }
 
   async create(profile: AuthProfile, input: ContentInput) {
     this.assertPermission(profile.role, 'content:create');
 
-    return this.prisma.content.create({
+    await this.taxonomy?.ensureCategories(input.categoryIds);
+    await this.taxonomy?.ensureSpeaker(input.speakerId ?? null);
+    const tags = (await this.taxonomy?.upsertTags(input.tagNames)) ?? [];
+
+    const created = await this.prisma.content.create({
       data: {
         authorId: profile.id,
         type: input.type,
@@ -254,14 +265,29 @@ export class ContentsService {
         excerpt: emptyToNull(input.excerpt),
         body: emptyToNull(input.body),
         mediaUrl: emptyToNull(input.mediaUrl),
+        speakerId: input.speakerId ?? null,
+        categories: {
+          create: input.categoryIds.map((categoryId) => ({ categoryId })),
+        },
+        tags: {
+          create: tags.map((tag) => ({ tagId: tag.id })),
+        },
       },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.taxonomy?.cleanupOrphanTags();
+
+    return this.mapContent(created);
   }
 
   async update(profile: AuthProfile, id: string, input: ContentInput) {
     const row = await this.findOwnedRow(id, profile);
     this.assertEditable(profile, row);
+
+    await this.taxonomy?.ensureCategories(input.categoryIds);
+    await this.taxonomy?.ensureSpeaker(input.speakerId ?? null);
+    const tags = (await this.taxonomy?.upsertTags(input.tagNames)) ?? [];
 
     const mediaUrl = emptyToNull(input.mediaUrl);
     const data = {
@@ -270,6 +296,15 @@ export class ContentsService {
       excerpt: emptyToNull(input.excerpt),
       body: emptyToNull(input.body),
       mediaUrl,
+      speakerId: input.speakerId ?? null,
+      categories: {
+        deleteMany: {},
+        create: input.categoryIds.map((categoryId) => ({ categoryId })),
+      },
+      tags: {
+        deleteMany: {},
+        create: tags.map((tag) => ({ tagId: tag.id })),
+      },
       ...(input.title === row.title ? {} : { slug: await this.buildSlug(input.title) }),
     };
 
@@ -285,7 +320,9 @@ export class ContentsService {
       await this.storage?.deleteByPublicUrl(row.mediaUrl, row.authorId);
     }
 
-    return updated;
+    await this.taxonomy?.cleanupOrphanTags();
+
+    return this.mapContent(updated);
   }
 
   /** DRAFT/REJECTED -> PENDING_REVIEW; isian wajib diperiksa ulang di sini. */
@@ -293,6 +330,10 @@ export class ContentsService {
     this.assertPermission(profile.role, 'content:create');
 
     const row = await this.findOwnedRow(id, profile);
+
+    if (row.categories.length === 0) {
+      throw new BadRequestException('Minimal satu kategori wajib dipilih sebelum diajukan.');
+    }
 
     if (!SUBMITTABLE.includes(row.status)) {
       throw new BadRequestException(
@@ -312,11 +353,13 @@ export class ContentsService {
       throw new BadRequestException(parsed.error.issues.map((issue) => issue.message));
     }
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'PENDING_REVIEW', reviewNote: null },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    return this.mapContent(updated);
   }
 
   /** PENDING_REVIEW -> DRAFT agar penulis bisa memperbaiki kirimannya. */
@@ -327,11 +370,13 @@ export class ContentsService {
       throw new BadRequestException('Hanya konten yang sedang ditinjau yang bisa ditarik kembali.');
     }
 
-    return this.prisma.content.update({
+    const updated = await this.prisma.content.update({
       where: { id },
       data: { status: 'DRAFT' },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    return this.mapContent(updated);
   }
 
   async remove(profile: AuthProfile, id: string) {
@@ -351,11 +396,37 @@ export class ContentsService {
 
     await this.prisma.content.delete({ where: { id } });
 
+    await this.taxonomy?.cleanupOrphanTags();
+
     if (row.mediaUrl) {
       await this.storage?.deleteByPublicUrl(row.mediaUrl, row.authorId);
     }
 
     return { ok: true };
+  }
+
+  private mapContent<T>(row: T): T {
+    if (!row || Array.isArray(row)) {
+      return row;
+    }
+
+    const record = row as Record<string, unknown>;
+    const categories = Array.isArray(record.categories)
+      ? record.categories.map((item) =>
+          item && typeof item === 'object' && 'category' in item
+            ? (item as { category: unknown }).category
+            : item,
+        )
+      : record.categories;
+    const tags = Array.isArray(record.tags)
+      ? record.tags.map((item) =>
+          item && typeof item === 'object' && 'tag' in item
+            ? (item as { tag: unknown }).tag
+            : item,
+        )
+      : record.tags;
+
+    return { ...record, categories, tags } as T;
   }
 
   private assertPermission(role: AuthProfile['role'], permission: Permission): void {
@@ -410,6 +481,9 @@ export class ContentsService {
         excerpt: true,
         body: true,
         mediaUrl: true,
+        categories: { select: { categoryId: true } },
+        tags: { select: { tagId: true } },
+        speaker: { select: { id: true } },
       },
     });
 
