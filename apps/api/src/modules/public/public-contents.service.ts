@@ -1,0 +1,84 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type { PublicContentQuery, PublicContentSummary } from '@webdakwah/shared';
+
+import { PrismaService } from '../prisma/prisma.service.js';
+
+const PUBLIC_CONTENT_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO', 'LINK'] as const;
+
+/** Hanya kolom aman untuk publik: tanpa email penulis dan tanpa data review. */
+const PUBLIC_SUMMARY_SELECT = {
+  id: true,
+  type: true,
+  title: true,
+  slug: true,
+  excerpt: true,
+  mediaUrl: true,
+  publishedAt: true,
+  author: { select: { fullName: true } },
+};
+
+const PUBLIC_DETAIL_SELECT = { ...PUBLIC_SUMMARY_SELECT, body: true };
+
+@Injectable()
+export class PublicContentsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async list(query: PublicContentQuery) {
+    const where = {
+      status: 'PUBLISHED' as const,
+      ...(query.type ? { type: query.type } : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.content.findMany({
+        where,
+        select: PUBLIC_SUMMARY_SELECT,
+        orderBy: { publishedAt: 'desc' },
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.prisma.content.count({ where }),
+    ]);
+
+    return {
+      items,
+      page: query.page,
+      pageSize: query.pageSize,
+      total,
+      totalPages: Math.ceil(total / query.pageSize),
+    };
+  }
+
+  async getBySlug(slug: string) {
+    const content = await this.prisma.content.findFirst({
+      where: { slug, status: 'PUBLISHED' },
+      select: PUBLIC_DETAIL_SELECT,
+    });
+
+    if (!content) {
+      throw new NotFoundException('Konten tidak ditemukan.');
+    }
+
+    return content;
+  }
+
+  /** Satu terbitan terbaru per jenis; null bila jenis itu belum punya konten terbit. */
+  async highlights() {
+    const entries = await Promise.all(
+      PUBLIC_CONTENT_TYPES.map(async (type) => {
+        const item = await this.prisma.content.findFirst({
+          where: { type, status: 'PUBLISHED' },
+          select: PUBLIC_SUMMARY_SELECT,
+          orderBy: { publishedAt: 'desc' },
+        });
+
+        return [type, item ?? null] as const;
+      }),
+    );
+
+    return Object.fromEntries(entries) as Record<
+      (typeof PUBLIC_CONTENT_TYPES)[number],
+      PublicContentSummary | null
+    >;
+  }
+}

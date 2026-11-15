@@ -1,39 +1,28 @@
-import { BookOpen, Headphones, Link2, ShieldCheck, Video, type LucideIcon } from 'lucide-react';
+import type { ContentType, PublicHighlights } from '@webdakwah/shared';
+import {
+  ArrowRight,
+  BookOpen,
+  Headphones,
+  Link2,
+  ShieldCheck,
+  Video,
+  type LucideIcon,
+} from 'lucide-react';
+import Link from 'next/link';
 
-interface Category {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  href: string;
-}
+import { SiteFooter } from '@/components/public/site-footer';
+import { SiteHeader } from '@/components/public/site-header';
+import { PublicApiError, getHomeHighlights } from '@/lib/api/public';
+import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
 
-const categories: Category[] = [
-  {
-    title: 'Artikel',
-    description:
-      'Tulisan ringkas dengan dalil yang jelas, disusun untuk dibaca dalam hitungan menit.',
-    icon: BookOpen,
-    href: '#artikel',
-  },
-  {
-    title: 'Audio Kajian',
-    description: 'Rekaman kajian pilihan yang bisa disimak saat perjalanan atau di sela pekerjaan.',
-    icon: Headphones,
-    href: '#audio',
-  },
-  {
-    title: 'Video Dakwah',
-    description: 'Video pendek yang padat, cocok dibagikan ke keluarga dan kerabat.',
-    icon: Video,
-    href: '#video',
-  },
-  {
-    title: 'Link Rujukan',
-    description: 'Tautan ke sumber terpercaya, dikurasi agar tidak tersesat di lautan informasi.',
-    icon: Link2,
-    href: '#rujukan',
-  },
-];
+export const revalidate = 60;
+
+const categoryIcons: Record<ContentType, LucideIcon> = {
+  ARTICLE: BookOpen,
+  AUDIO: Headphones,
+  VIDEO: Video,
+  LINK: Link2,
+};
 
 const pillars = [
   {
@@ -53,49 +42,20 @@ const pillars = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  let highlights: PublicHighlights | null = null;
+
+  try {
+    highlights = await getHomeHighlights();
+  } catch (error) {
+    if (!(error instanceof PublicApiError)) {
+      throw error;
+    }
+  }
+
   return (
     <div className="min-h-dvh bg-ink-50">
-      <header className="sticky top-0 z-40 border-b border-ink-200/80 bg-ink-50/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <a href="#atas" className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-50">
-              <BookOpen aria-hidden className="size-5" />
-            </span>
-            <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
-          </a>
-
-          <nav aria-label="Navigasi utama" className="hidden items-center gap-6 sm:flex">
-            <a href="#kategori" className="text-sm text-ink-600 transition hover:text-brand-700">
-              Kategori
-            </a>
-            <a href="#tentang" className="text-sm text-ink-600 transition hover:text-brand-700">
-              Tentang
-            </a>
-            <a href="/masuk" className="text-sm text-ink-600 transition hover:text-brand-700">
-              Masuk
-            </a>
-            <a
-              href="#kategori"
-              className="rounded-full bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800"
-            >
-              Mulai membaca
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3 sm:hidden">
-            <a href="/masuk" className="text-sm text-ink-600 transition hover:text-brand-700">
-              Masuk
-            </a>
-            <a
-              href="#kategori"
-              className="rounded-full bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800"
-            >
-              Mulai
-            </a>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main id="atas">
         <section className="relative overflow-hidden border-b border-ink-200/70">
@@ -103,10 +63,10 @@ export default function HomePage() {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_30rem_at_50%_-10rem,var(--color-brand-100),transparent)]"
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+          <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/70 px-3 py-1 text-xs font-medium text-brand-800">
               <span className="size-1.5 rounded-full bg-brand-500" />
-              Tahap fondasi — konten segera hadir
+              Dikurasi &amp; ditinjau sebelum terbit
             </span>
 
             <h1 className="mt-6 max-w-3xl text-4xl leading-tight font-semibold tracking-tight text-ink-900 sm:text-5xl">
@@ -124,7 +84,7 @@ export default function HomePage() {
                 href="#kategori"
                 className="inline-flex items-center justify-center rounded-full bg-brand-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-800"
               >
-                Jelajahi kategori
+                Mulai membaca
               </a>
               <a
                 href="#tentang"
@@ -144,7 +104,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="kategori" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+        <section id="kategori" className="mx-auto max-w-5xl scroll-mt-24 px-4 py-16 sm:px-6">
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
               Empat pintu menuju ilmu
@@ -155,26 +115,51 @@ export default function HomePage() {
           </div>
 
           <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map(({ title, description, icon: Icon, href }) => (
-              <li key={title}>
-                <a
-                  href={href}
-                  className="group flex h-full flex-col rounded-3xl border border-ink-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-sm"
-                >
-                  <span className="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
-                    <Icon aria-hidden className="size-5" />
-                  </span>
-                  <h3 className="mt-5 text-base font-semibold text-ink-900">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-600">{description}</p>
-                  <span className="mt-5 text-xs font-medium text-brand-700">Segera tersedia</span>
-                </a>
-              </li>
-            ))}
+            {CONTENT_TYPE_ORDER.map((type) => {
+              const section = CONTENT_SECTIONS[type];
+              const Icon = categoryIcons[type];
+              const latest = highlights?.[type] ?? null;
+
+              return (
+                <li key={type}>
+                  <Link
+                    href={sectionPath(type)}
+                    className="group flex h-full flex-col rounded-3xl border border-ink-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-sm"
+                  >
+                    <span className="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
+                      <Icon aria-hidden className="size-5" />
+                    </span>
+                    <h3 className="mt-5 text-base font-semibold text-ink-900">{section.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                      {section.description}
+                    </p>
+
+                    <div className="mt-5 border-t border-ink-100 pt-4">
+                      {latest ? (
+                        <>
+                          <p className="text-xs text-ink-500">Terbaru</p>
+                          <p className="mt-1 line-clamp-2 text-sm font-medium text-ink-800 transition group-hover:text-brand-700">
+                            {latest.title}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-ink-500">Belum ada konten terbit</p>
+                      )}
+                    </div>
+
+                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-brand-700">
+                      Lihat semua
+                      <ArrowRight aria-hidden className="size-3.5" />
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
-        <section id="tentang" className="scroll-mt-20 border-y border-ink-200/70 bg-white/60">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <section id="tentang" className="scroll-mt-24 border-y border-ink-200/70 bg-white/60">
+          <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
             <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">
@@ -203,12 +188,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <div className="flex flex-col gap-3 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} WebDakwah. Dibangun untuk kebaikan.</p>
-          <p className="text-xs text-ink-400">Fase 2 — autentikasi &amp; hak akses</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

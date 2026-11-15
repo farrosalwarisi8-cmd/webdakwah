@@ -3,8 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 4 — Moderasi Konten**. Login, role, editor artikel/audio/video, pengajuan
-> review, serta penerbitan/penolakan oleh admin sudah berjalan. Halaman publik menyusul.
+> Status: **Fase 5 — Halaman Publik**. Login, role, editor konten, moderasi, serta halaman baca
+> publik (artikel, audio, video, rujukan) sudah berjalan. Unggah media ke R2 dan fitur lanjutan
+> menyusul.
 
 ## Teknologi
 
@@ -22,7 +23,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 ```
 webdakwah/
 ├─ apps/
-│  ├─ web/        # Next.js App Router (beranda, /masuk, /dashboard/konten, /dashboard/moderasi)
+│  ├─ web/        # Next.js App Router (beranda, halaman baca publik, /masuk, dashboard)
 │  └─ api/        # NestJS + Fastify, modul auth, contents & health
 │     └─ prisma/  # schema.prisma, migrasi SQL, seed admin
 ├─ packages/
@@ -82,6 +83,27 @@ Endpoint API (semua butuh Bearer token):
 | `POST /api/contents/:id/publish`  | Terbitkan konten (admin saja)                |
 | `POST /api/contents/:id/reject`   | Tolak + catatan wajib (admin saja)           |
 
+Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
+Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
+tidak memuat email penulis, catatan review, atau status internal.
+
+| Metode & path                          | Keterangan                                         |
+| -------------------------------------- | -------------------------------------------------- |
+| `GET /api/public/contents?type=&page=` | Daftar konten terbit (filter jenis opsional)       |
+| `GET /api/public/contents/:slug`       | Detail konten terbit berdasarkan slug; lainnya 404 |
+| `GET /api/public/highlights`           | Satu terbitan terbaru per jenis untuk beranda      |
+
+## Halaman Publik
+
+- `/artikel`, `/audio`, `/video`, `/rujukan` — daftar konten terbit per jenis, 12 per halaman.
+- `/artikel/[slug]`, `/audio/[slug]`, `/video/[slug]`, `/rujukan/[slug]` — halaman baca dengan
+  metadata judul, deskripsi, canonical, dan OpenGraph. URL memakai slug, bukan UUID.
+- Beranda menampilkan satu terbitan terbaru per jenis; bila belum ada, tampil ajakan menunggu.
+- `/sitemap.xml` dan `/robots.txt` dihasilkan otomatis. Dashboard, akun, dan halaman masuk
+  dikecualikan dari indeks mesin pencari.
+- Data diambil dengan revalidasi 60 detik. Bila API sedang mati, halaman tetap tampil dengan
+  pesan ramah, bukan error 500.
+
 ## Menjalankan Secara Lokal
 
 Prasyarat: Node.js 24 (lihat `.nvmrc`), pnpm 12, dan satu project Supabase (gratis).
@@ -120,6 +142,7 @@ Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
 Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
 Login: <http://localhost:3000/masuk>
 Editor konten: <http://localhost:3000/dashboard/konten>
+Halaman publik: <http://localhost:3000/artikel>, `/audio`, `/video`, `/rujukan`
 
 Tanpa kredensial Supabase, aplikasi tetap bisa di-build dan beranda/health tetap jalan;
 halaman login akan menampilkan pesan bahwa autentikasi belum dikonfigurasi.
@@ -166,18 +189,18 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `SUPABASE_SERVICE_ROLE_KEY`                    | hanya seed  | —                       | Kunci server; jangan dipakai di runtime web   |
 | `SEED_ADMIN_EMAIL`                             | hanya seed  | —                       | Email admin pertama                           |
 | `SEED_ADMIN_PASSWORD`                          | hanya seed  | —                       | Minimal 8 karakter                            |
-| `R2_*`                                         | Fase 4      | —                       | Kredensial Cloudflare R2 untuk upload media   |
+| `R2_*`                                         | belum aktif | —                       | Kredensial Cloudflare R2 untuk upload media   |
 | `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | Fase 7      | —                       | Pemicu revalidasi cache web                   |
 
 ### Web (`apps/web/.env.local`)
 
-| Variabel                        | Wajib       | Default                 | Keterangan                    |
-| ------------------------------- | ----------- | ----------------------- | ----------------------------- |
-| `NEXT_PUBLIC_API_URL`           | ya          | `http://localhost:3001` | Base URL API                  |
-| `NEXT_PUBLIC_SITE_URL`          | ya          | `http://localhost:3000` | URL publik untuk metadata/OG  |
-| `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                  |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)    |
-| `REVALIDATE_SECRET`             | Fase 7      | —                       | Secret untuk route revalidasi |
+| Variabel                        | Wajib       | Default                 | Keterangan                                    |
+| ------------------------------- | ----------- | ----------------------- | --------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`           | ya          | `http://localhost:3001` | Base URL API                                  |
+| `NEXT_PUBLIC_SITE_URL`          | ya          | `http://localhost:3000` | URL publik untuk metadata, canonical, sitemap |
+| `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                                  |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |
+| `REVALIDATE_SECRET`             | Fase 7      | —                       | Secret untuk route revalidasi                 |
 
 ## Deploy
 

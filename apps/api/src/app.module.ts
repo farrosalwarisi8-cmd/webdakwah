@@ -8,6 +8,7 @@ import { RolesGuard } from './modules/auth/roles.guard.js';
 import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
 import { ContentsModule } from './modules/contents/contents.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { PublicContentsModule } from './modules/public/public-contents.module.js';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { HealthModule } from './modules/health/health.module.js';
     }),
     AuthModule,
     ContentsModule,
+    PublicContentsModule,
     HealthModule,
   ],
   providers: [
