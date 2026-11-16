@@ -8,12 +8,14 @@ import { renderBodyHtml } from '@/lib/body-html';
 import { CONTENT_SECTIONS, sectionPath } from '@/lib/content-routes';
 import { formatDate } from '@/lib/format';
 
+import { AudioDetailPlayer } from './audio-detail-player';
+import { BookmarkButton } from './bookmark-button';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
 
 const MEDIA_ACTION_LABELS: Record<ContentType, string> = {
   ARTICLE: 'Buka tautan',
-  AUDIO: 'Simak audio',
+  AUDIO: 'Buka sumber audio',
   VIDEO: 'Tonton video',
   LINK: 'Buka rujukan',
 };
@@ -66,10 +68,39 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
             <h1 className="mt-2 text-3xl leading-tight font-semibold tracking-tight text-ink-900 sm:text-4xl">
               {content.title}
             </h1>
-            <p className="mt-3 text-xs text-ink-500">
-              {content.author.fullName ?? 'Tim WebDakwah'}
-              {content.publishedAt ? ` · ${formatDate(content.publishedAt)}` : null}
-            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-ink-500">
+                {content.speaker?.name ?? content.author.fullName ?? 'Tim WebDakwah'}
+                {content.publishedAt ? ` · ${formatDate(content.publishedAt)}` : null}
+              </p>
+              <BookmarkButton item={content} />
+            </div>
+
+            {content.categories.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {content.categories.map((category) => (
+                  <li key={category.slug}>
+                    <Link
+                      href={`/kategori/${encodeURIComponent(category.slug)}`}
+                      className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800 transition hover:bg-brand-100"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            {content.type === 'AUDIO' && content.mediaUrl ? (
+              <AudioDetailPlayer
+                track={{
+                  slug: content.slug,
+                  title: content.title,
+                  speaker: content.speaker?.name ?? content.author.fullName ?? 'Tim WebDakwah',
+                  src: content.mediaUrl,
+                }}
+              />
+            ) : null}
 
             {content.excerpt ? (
               <p className="mt-6 rounded-r-xl border-l-4 border-accent-400 bg-accent-50 py-3 pr-3 pl-4 text-base leading-relaxed text-ink-700">
@@ -90,9 +121,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
             ) : null}
 
             {content.mediaUrl && content.type !== 'ARTICLE' ? (
-              <p className="mt-2 text-xs text-ink-500">
-                Anda akan diarahkan ke website lain.
-              </p>
+              <p className="mt-2 text-xs text-ink-500">Anda akan diarahkan ke website lain.</p>
             ) : null}
 
             {content.body ? (

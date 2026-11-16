@@ -96,6 +96,22 @@ describe('PublicContentsService', () => {
     await expect(service.getBySlug('tidak-ada')).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it('mengambil daftar konten terbaru lintas jenis dengan batas jumlah', async () => {
+    const { prisma, service } = createService();
+    prisma.content.findMany.mockResolvedValue([PUBLISHED_ITEM]);
+
+    const result = await service.latest(5);
+
+    expect(prisma.content.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { status: 'PUBLISHED' },
+        orderBy: { publishedAt: 'desc' },
+        take: 5,
+      }),
+    );
+    expect(result.items).toHaveLength(1);
+  });
+
   it('mengambil satu terbitan terbaru per jenis untuk beranda', async () => {
     const { prisma, service } = createService();
     prisma.content.findFirst.mockImplementation(({ where }: { where: { type: string } }) =>

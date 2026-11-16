@@ -1,75 +1,66 @@
-import { BookOpen } from 'lucide-react';
+import { ROLE_LABELS } from '@webdakwah/shared';
+import { BookOpen, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 import { signOutAction } from '@/lib/auth/actions';
 import { getViewer } from '@/lib/auth/viewer';
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
 export async function DashboardHeader() {
   const viewer = await getViewer();
-  const isAdmin = viewer.status === 'authenticated' && viewer.profile?.role === 'ADMIN';
+  const profile = viewer.status === 'authenticated' ? viewer.profile : null;
+  const displayName = profile?.fullName ?? profile?.email ?? '';
 
   return (
-    <header className="border-b border-ink-200/80 bg-surface-soft/85">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
+    <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-surface-soft/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
           <span className="grid size-9 place-items-center rounded-full bg-accent-500 text-ink-950">
             <BookOpen aria-hidden className="size-5" />
           </span>
           <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
         </Link>
-        <nav className="flex items-center gap-3 text-sm sm:gap-4">
+
+        <div className="flex items-center gap-2">
           <Link
-            href="/dashboard"
-            className="hidden text-ink-600 transition hover:text-brand-700 sm:inline"
+            href="/"
+            className="hidden min-h-11 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700 sm:inline-flex"
           >
-            Dashboard
+            Lihat situs
+            <ExternalLink aria-hidden className="size-3.5" />
           </Link>
-          <Link href="/dashboard/konten" className="text-ink-600 transition hover:text-brand-700">
-            Konten saya
-          </Link>{' '}
-          {isAdmin ? (
-            <>
-              <Link
-                href="/dashboard/terbitan"
-                className="text-ink-600 transition hover:text-brand-700"
-              >
-                Terbitan
-              </Link>
-              <Link
-                href="/dashboard/moderasi"
-                className="text-ink-600 transition hover:text-brand-700"
-              >
-                Moderasi
-              </Link>
-              <Link
-                href="/dashboard/pengguna"
-                className="text-ink-600 transition hover:text-brand-700"
-              >
-                Pengguna
-              </Link>
-              <Link
-                href="/dashboard/statistik"
-                className="text-ink-600 transition hover:text-brand-700"
-              >
-                Statistik
-              </Link>
-            </>
+
+          {profile ? (
+            <Link
+              href="/akun"
+              className="hidden items-center gap-2 rounded-full border border-ink-200 bg-white py-1 pr-3 pl-1 sm:flex"
+            >
+              <span className="grid size-8 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-800">
+                {initials(displayName) || 'WD'}
+              </span>
+              <span className="max-w-32 truncate text-xs font-medium text-ink-700">
+                {ROLE_LABELS[profile.role]}
+              </span>
+            </Link>
           ) : null}
-          <Link
-            href="/akun"
-            className="hidden text-ink-600 transition hover:text-brand-700 sm:inline"
-          >
-            Akun
-          </Link>
+
           <form action={signOutAction}>
             <button
               type="submit"
-              className="rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+              className="min-h-11 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
             >
               Keluar
             </button>
           </form>
-        </nav>
+        </div>
       </div>
     </header>
   );

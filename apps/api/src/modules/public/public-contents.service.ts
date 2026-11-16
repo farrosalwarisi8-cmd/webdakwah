@@ -22,9 +22,7 @@ function mapPublicContent<T>(row: T): T {
     : record.categories;
   const tags = Array.isArray(record.tags)
     ? record.tags.map((item) =>
-        item && typeof item === 'object' && 'tag' in item
-          ? (item as { tag: unknown }).tag
-          : item,
+        item && typeof item === 'object' && 'tag' in item ? (item as { tag: unknown }).tag : item,
       )
     : record.tags;
   const links = Array.isArray(record.links) ? record.links : [];
@@ -124,6 +122,17 @@ export class PublicContentsService {
       total,
       totalPages: Math.ceil(total / query.pageSize),
     };
+  }
+
+  async latest(limit: number) {
+    const items = await this.prisma.content.findMany({
+      where: { status: 'PUBLISHED' },
+      select: PUBLIC_SUMMARY_SELECT,
+      orderBy: { publishedAt: 'desc' },
+      take: limit,
+    });
+
+    return { items: items.map((item) => mapPublicContent(item)) };
   }
 
   async getBySlug(slug: string) {

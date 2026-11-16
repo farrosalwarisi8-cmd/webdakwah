@@ -3,12 +3,14 @@ import {
   publicContentDetailSchema,
   publicContentListSchema,
   publicHighlightsSchema,
+  publicLatestSchema,
   publicSpeakerListSchema,
   publicTagListSchema,
   type ContentType,
   type PublicContentDetail,
   type PublicContentList,
   type PublicHighlights,
+  type PublicLatest,
 } from '@webdakwah/shared';
 import { cache } from 'react';
 
@@ -111,6 +113,10 @@ export const getPublicContent = cache(async (slug: string): Promise<PublicConten
 
 export const getHomeHighlights = cache(async (): Promise<PublicHighlights> =>
   fetchParsed('/public/highlights', publicHighlightsSchema),
+);
+
+export const getLatestContent = cache(async (limit = 8): Promise<PublicLatest> =>
+  fetchParsed(`/public/latest?limit=${limit}`, publicLatestSchema),
 );
 
 /** Semua konten terbit untuk sitemap, dibatasi agar build tidak menggantung. */

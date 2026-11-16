@@ -2,11 +2,7 @@ import { z } from 'zod';
 
 import { CONTENT_TYPES } from '../constants/content.js';
 import { paginationQuerySchema } from './common.js';
-import {
-  publicCategorySchema,
-  publicSpeakerSchema,
-  publicTagSchema,
-} from './taxonomy.js';
+import { publicCategorySchema, publicSpeakerSchema, publicTagSchema } from './taxonomy.js';
 
 /**
  * Bentuk data untuk pengunjung publik. Sengaja tidak memuat email penulis,
@@ -80,6 +76,17 @@ export const publicSearchQuerySchema = paginationQuerySchema.extend({
 });
 
 export type PublicSearchQuery = z.infer<typeof publicSearchQuerySchema>;
+
+export const publicLatestQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(12).default(6),
+});
+
+/** Daftar konten terbaru lintas jenis untuk beranda. */
+export const publicLatestSchema = z.object({
+  items: z.array(publicContentSummarySchema),
+});
+
+export type PublicLatest = z.infer<typeof publicLatestSchema>;
 
 /** Satu konten terbaru per jenis untuk beranda; null bila belum ada terbitan. */
 export const publicHighlightsSchema = z.object({

@@ -2,6 +2,7 @@ import { BadRequestException, Controller, Get, Param, Query } from '@nestjs/comm
 import { Throttle } from '@nestjs/throttler';
 import {
   publicContentQuerySchema,
+  publicLatestQuerySchema,
   publicSearchQuerySchema,
   type PublicContentQuery,
   type PublicSearchQuery,
@@ -26,6 +27,16 @@ function parseSearchQuery(query: unknown): PublicSearchQuery {
 
   if (!parsed.success) {
     throw new BadRequestException('Parameter pencarian tidak valid.');
+  }
+
+  return parsed.data;
+}
+
+function parseLatestQuery(query: unknown): { limit: number } {
+  const parsed = publicLatestQuerySchema.safeParse(query);
+
+  if (!parsed.success) {
+    throw new BadRequestException('Parameter konten terbaru tidak valid.');
   }
 
   return parsed.data;
@@ -65,5 +76,10 @@ export class PublicContentsController {
   @Get('highlights')
   highlights() {
     return this.contents.highlights();
+  }
+
+  @Get('latest')
+  latest(@Query() query: Record<string, unknown>) {
+    return this.contents.latest(parseLatestQuery(query).limit);
   }
 }

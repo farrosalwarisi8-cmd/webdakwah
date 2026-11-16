@@ -23,7 +23,9 @@ export function TaxonomyListPage({
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{title}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">{description}</p>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
+          {description}
+        </p>
 
         {list.items.length === 0 ? (
           <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">

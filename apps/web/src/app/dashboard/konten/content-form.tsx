@@ -68,9 +68,7 @@ export function ContentForm({
   }
 
   function updateLink(index: number, field: 'title' | 'url', value: string) {
-    setLinks((prev) =>
-      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link)),
-    );
+    setLinks((prev) => prev.map((link, i) => (i === index ? { ...link, [field]: value } : link)));
   }
 
   function moveLink(index: number, direction: -1 | 1) {
@@ -141,7 +139,8 @@ export function ContentForm({
 
       <div>
         <label className={labelClass}>
-          Kategori <span className="font-normal text-ink-500">(maksimal 5; wajib saat ajukan review)</span>
+          Kategori{' '}
+          <span className="font-normal text-ink-500">(maksimal 5; wajib saat ajukan review)</span>
         </label>
         <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
           {(taxonomy?.categories ?? []).map((category) => (
@@ -232,9 +231,7 @@ export function ContentForm({
           name="body"
           initialValue={initial?.body ?? ''}
           placeholder={
-            type === 'ARTICLE'
-              ? 'Tulis artikel di sini.'
-              : 'Keterangan singkat tentang media ini.'
+            type === 'ARTICLE' ? 'Tulis artikel di sini.' : 'Keterangan singkat tentang media ini.'
           }
         />
         <p className="mt-1.5 text-xs text-ink-500">
@@ -246,12 +243,14 @@ export function ContentForm({
       {supportsLinks ? (
         <div>
           <label className={labelClass}>
-            Tautan Terkait{' '}
-            <span className="font-normal text-ink-500">(maksimal 10, opsional)</span>
+            Tautan Terkait <span className="font-normal text-ink-500">(maksimal 10, opsional)</span>
           </label>
           <div className="mt-1.5 space-y-2">
             {links.map((link, index) => (
-              <div key={index} className="flex flex-col gap-2 rounded-xl border border-ink-200 bg-white p-3 sm:flex-row sm:items-center">
+              <div
+                key={index}
+                className="flex flex-col gap-2 rounded-xl border border-ink-200 bg-white p-3 sm:flex-row sm:items-center"
+              >
                 <input
                   aria-label="Judul tautan"
                   name="linkTitle"

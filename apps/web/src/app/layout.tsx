@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Amiri, Plus_Jakarta_Sans } from 'next/font/google';
 
+import { AudioMiniPlayer } from '@/components/public/audio-mini-player';
+import { AudioProvider } from '@/components/public/audio-provider';
+import { PublicBottomNav } from '@/components/public/public-bottom-nav';
+
 import './globals.css';
 
 const amiri = Amiri({
@@ -50,7 +54,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className={`${amiri.variable} ${plusJakarta.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <AudioProvider>
+          {children}
+          <AudioMiniPlayer />
+          <PublicBottomNav />
+        </AudioProvider>
+      </body>
     </html>
   );
 }
