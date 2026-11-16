@@ -43,6 +43,7 @@ function contentRow(overrides: Record<string, unknown> = {}) {
     slug: 'adab-menuntut-ilmu-abc123',
     excerpt: null,
     body: 'Isi artikel yang cukup panjang.',
+    transcript: null,
     mediaUrl: null,
     reviewNote: null,
     publishedAt: null,
@@ -80,6 +81,7 @@ const articleInput = {
   title: 'Adab Menuntut Ilmu',
   excerpt: 'Ringkasan singkat.',
   body: 'Isi artikel yang cukup panjang.',
+  transcript: '',
   mediaUrl: '',
   categoryIds: [],
   tagNames: [],
@@ -133,6 +135,29 @@ describe('ContentsService', () => {
     });
 
     expect(prisma.content.update.mock.calls[0]?.[0].data.body).toBe('<p>Baru</p>');
+  });
+
+  it('menyimpan transkrip hanya untuk konten audio', async () => {
+    const { prisma, service } = createService();
+    prisma.content.create.mockResolvedValue(contentRow({ type: 'AUDIO' }));
+
+    await service.create(contributor, {
+      ...articleInput,
+      type: 'AUDIO',
+      mediaUrl: 'https://contoh.com/kajian.mp3',
+      transcript: '  Assalamualaikum, ini transkrip kajian.  ',
+    });
+
+    expect(prisma.content.create.mock.calls[0]?.[0].data.transcript).toBe(
+      'Assalamualaikum, ini transkrip kajian.',
+    );
+
+    await service.create(contributor, {
+      ...articleInput,
+      transcript: 'Transkrip ini tidak boleh tersimpan untuk artikel.',
+    });
+
+    expect(prisma.content.create.mock.calls[1]?.[0].data.transcript).toBeNull();
   });
 
   it('menolak kontributor menyunting konten milik orang lain tanpa membocorkan keberadaannya', async () => {

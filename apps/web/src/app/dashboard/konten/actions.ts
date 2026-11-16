@@ -20,6 +20,7 @@ function readFormData(formData: FormData) {
     title: get('title'),
     excerpt: get('excerpt'),
     body: get('body'),
+    transcript: get('transcript'),
     mediaUrl: get('mediaUrl'),
     categoryIds: formData
       .getAll('categoryIds')

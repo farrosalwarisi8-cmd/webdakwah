@@ -2,6 +2,7 @@
 
 import {
   CONTENT_LINK_TYPES,
+  CONTENT_TRANSCRIPT_MAX_LENGTH,
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
   type ContentType,
@@ -25,6 +26,7 @@ interface ContentFormProps {
     title: string;
     excerpt: string;
     body: string;
+    transcript: string;
     mediaUrl: string;
     categoryIds?: string[];
     tagNames?: string[];
@@ -237,6 +239,24 @@ export function ContentForm({
         <p className="mt-1.5 text-xs text-ink-500">
           Anda tetap bisa menyimpan sebagai draft meski isian belum lengkap. Kelengkapan diperiksa
           saat mengajukan review.
+        </p>
+      </div>
+
+      <div className={type === 'AUDIO' ? undefined : 'hidden'}>
+        <label htmlFor="transcript" className={labelClass}>
+          Transkrip audio <span className="font-normal text-ink-500">(opsional)</span>
+        </label>
+        <textarea
+          id="transcript"
+          name="transcript"
+          rows={8}
+          maxLength={CONTENT_TRANSCRIPT_MAX_LENGTH}
+          defaultValue={initial?.transcript ?? ''}
+          className={fieldClass}
+          placeholder="Tempel atau tulis transkrip kajian di sini."
+        />
+        <p className="mt-1.5 text-xs text-ink-500">
+          Teks polos, tampil sebagai accordion di halaman audio. Baris baru dipertahankan.
         </p>
       </div>
 

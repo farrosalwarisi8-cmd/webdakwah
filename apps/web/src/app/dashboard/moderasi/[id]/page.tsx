@@ -120,6 +120,17 @@ export default async function TinjauKontenPage({
             </p>
           )}
 
+          {content.transcript ? (
+            <details className="mt-4 rounded-2xl border border-ink-200 bg-white">
+              <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-ink-900">
+                Transkrip audio
+              </summary>
+              <div className="border-t border-ink-100 px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-ink-700">
+                {content.transcript}
+              </div>
+            </details>
+          ) : null}
+
           {pending ? (
             <section className="mt-8 rounded-3xl border border-ink-200 bg-white p-6">
               <h2 className="text-base font-semibold text-ink-900">Keputusan moderasi</h2>

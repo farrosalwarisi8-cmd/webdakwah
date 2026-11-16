@@ -67,6 +67,7 @@ const PUBLIC_SUMMARY_SELECT = {
 const PUBLIC_DETAIL_SELECT = {
   ...PUBLIC_SUMMARY_SELECT,
   body: true,
+  transcript: true,
   links: {
     select: { title: true, url: true, order: true },
     orderBy: { order: 'asc' as const },

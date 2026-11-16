@@ -49,6 +49,9 @@ export const CONTENT_BODY_MAX_LENGTH = 50_000;
 /** Batas jumlah elemen HTML agar isi tidak menjadi dokumen raksasa. */
 export const CONTENT_BODY_MAX_ELEMENTS = 2_000;
 
+/** Panjang maksimal transkrip audio (teks polos). */
+export const CONTENT_TRANSCRIPT_MAX_LENGTH = 100_000;
+
 /**
  * Tag yang diizinkan di isi konten. Daftar ini sengaja sempit: tanpa iframe,
  * style, atau atribut event. Atribut dan URL gambar dibatasi di sanitizer API.

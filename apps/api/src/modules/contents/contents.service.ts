@@ -46,6 +46,7 @@ const CONTENT_SUMMARY_SELECT = {
 const CONTENT_DETAIL_SELECT = {
   ...CONTENT_SUMMARY_SELECT,
   body: true,
+  transcript: true,
   links: {
     select: { id: true, title: true, url: true, order: true },
     orderBy: { order: 'asc' as const },
@@ -272,6 +273,7 @@ export class ContentsService {
         slug: await this.buildSlug(input.title),
         excerpt: emptyToNull(input.excerpt),
         body: sanitizeContentBody(input.body),
+        transcript: input.type === 'AUDIO' ? emptyToNull(input.transcript) : null,
         mediaUrl: emptyToNull(input.mediaUrl),
         speakerId: input.speakerId ?? null,
         categories: {
@@ -310,6 +312,7 @@ export class ContentsService {
       title: input.title,
       excerpt: emptyToNull(input.excerpt),
       body: sanitizeContentBody(input.body),
+      transcript: input.type === 'AUDIO' ? emptyToNull(input.transcript) : null,
       mediaUrl,
       speakerId: input.speakerId ?? null,
       categories: {
@@ -369,6 +372,7 @@ export class ContentsService {
       title: row.title,
       excerpt: row.excerpt ?? '',
       body: row.body ?? '',
+      transcript: row.transcript ?? '',
       mediaUrl: row.mediaUrl ?? '',
     });
 
@@ -507,6 +511,7 @@ export class ContentsService {
         type: true,
         excerpt: true,
         body: true,
+        transcript: true,
         mediaUrl: true,
         categories: { select: { categoryId: true } },
         tags: { select: { tagId: true } },

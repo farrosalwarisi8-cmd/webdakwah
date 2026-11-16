@@ -5,6 +5,7 @@ import {
   CONTENT_BODY_MAX_LENGTH,
   CONTENT_LINK_TITLE_MAX_LENGTH,
   CONTENT_STATUSES,
+  CONTENT_TRANSCRIPT_MAX_LENGTH,
   CONTENT_TYPES,
   MAX_CONTENT_LINKS_PER_CONTENT,
 } from '../constants/content.js';
@@ -26,6 +27,15 @@ export const contentBodySchema = z
   .max(
     CONTENT_BODY_MAX_LENGTH,
     `Isi maksimal ${CONTENT_BODY_MAX_LENGTH.toLocaleString('id-ID')} karakter`,
+  );
+
+/** Transkrip audio berupa teks polos, disimpan tanpa markup HTML. */
+export const contentTranscriptSchema = z
+  .string()
+  .trim()
+  .max(
+    CONTENT_TRANSCRIPT_MAX_LENGTH,
+    `Transkrip maksimal ${CONTENT_TRANSCRIPT_MAX_LENGTH.toLocaleString('id-ID')} karakter`,
   );
 
 /** Boleh kosong saat menyimpan draft, tetapi URL yang diisi wajib http/https. */
@@ -73,6 +83,7 @@ const contentFields = z.object({
   title: contentTitleSchema,
   excerpt: contentExcerptSchema.optional().default(''),
   body: contentBodySchema.optional().default(''),
+  transcript: contentTranscriptSchema.optional().default(''),
   mediaUrl: contentMediaUrlSchema.optional().default(''),
   categoryIds: categoryIdsSchema.optional().default([]),
   tagNames: tagNamesSchema.optional().default([]),
@@ -163,6 +174,7 @@ export type ContentLinkDetail = z.infer<typeof contentLinkDetailSchema>;
 
 export const contentDetailSchema = contentSummarySchema.extend({
   body: z.string().nullable(),
+  transcript: z.string().nullable(),
   links: z.array(contentLinkDetailSchema),
 });
 

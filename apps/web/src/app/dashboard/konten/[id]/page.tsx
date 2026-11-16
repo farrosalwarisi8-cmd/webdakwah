@@ -166,6 +166,7 @@ export default async function SuntingKontenPage({
                 title: content.title,
                 excerpt: content.excerpt ?? '',
                 body: content.body ?? '',
+                transcript: content.transcript ?? '',
                 mediaUrl: content.mediaUrl ?? '',
                 categoryIds: content.categories.map((item) => item.id),
                 tagNames: content.tags.map((item) => item.name),

@@ -78,7 +78,11 @@ describe('PublicContentsService', () => {
 
   it('mengambil detail berdasarkan slug yang sudah terbit', async () => {
     const { prisma, service } = createService();
-    prisma.content.findFirst.mockResolvedValue({ ...PUBLISHED_ITEM, body: 'Isi artikel' });
+    prisma.content.findFirst.mockResolvedValue({
+      ...PUBLISHED_ITEM,
+      body: 'Isi artikel',
+      transcript: 'Transkrip kajian.',
+    });
 
     const result = await service.getBySlug(PUBLISHED_ITEM.slug);
 
@@ -87,7 +91,11 @@ describe('PublicContentsService', () => {
         where: { slug: PUBLISHED_ITEM.slug, status: 'PUBLISHED' },
       }),
     );
-    expect(result).toMatchObject({ slug: PUBLISHED_ITEM.slug, body: 'Isi artikel' });
+    expect(result).toMatchObject({
+      slug: PUBLISHED_ITEM.slug,
+      body: 'Isi artikel',
+      transcript: 'Transkrip kajian.',
+    });
   });
 
   it('membersihkan body dan tautan kotor dari data lama di serializer publik', async () => {

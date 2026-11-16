@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 17 — Gambar isi konten**. Kontributor dapat mengunggah dan menyisipkan gambar
-> aman ke dalam artikel, dengan sanitasi allowlist di API.
+> Status: **Fase 18 — Transkrip audio**. Kontributor dapat menambahkan transkrip teks pada konten
+> audio; transkrip tampil sebagai accordion di halaman publik dan ikut ditinjau admin.
 
 ## Teknologi
 
@@ -70,6 +70,9 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Audio, video, dan gambar bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai
   tautan http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM), dan
   gambar 5 MB (JPEG, PNG, WebP, GIF). SVG sengaja tidak diterima untuk gambar isi.
+- Konten audio dapat memiliki transkrip teks polos hingga 100.000 karakter. Transkrip hanya
+  disimpan untuk jenis AUDIO, tampil dalam accordion di halaman audio, dan terlihat oleh admin
+  saat meninjau. Baris baru dipertahankan; teks dirender sebagai teks, bukan HTML.
 
 ### Sanitasi isi konten
 

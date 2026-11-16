@@ -38,6 +38,7 @@ export type PublicContentLink = z.infer<typeof publicContentLinkSchema>;
 
 export const publicContentDetailSchema = publicContentSummarySchema.extend({
   body: z.string().nullable(),
+  transcript: z.string().nullable(),
   links: z.array(publicContentLinkSchema),
 });
 

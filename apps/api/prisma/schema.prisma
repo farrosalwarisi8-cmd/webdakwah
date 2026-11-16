@@ -60,6 +60,7 @@ model Content {
   slug        String        @unique @db.VarChar(220)
   excerpt     String?       @db.VarChar(300)
   body        String?       @db.Text
+  transcript  String?       @db.Text
   mediaUrl    String?       @map("media_url") @db.VarChar(2048)
   reviewNote  String?       @map("review_note") @db.VarChar(500)
   publishedAt DateTime?     @map("published_at") @db.Timestamptz(3)

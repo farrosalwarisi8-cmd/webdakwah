@@ -102,6 +102,17 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
               />
             ) : null}
 
+            {content.type === 'AUDIO' && content.transcript ? (
+              <details className="mt-4 rounded-2xl border border-ink-200 bg-white">
+                <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-ink-900">
+                  Transkrip kajian
+                </summary>
+                <div className="border-t border-ink-100 px-5 py-4 text-sm leading-relaxed whitespace-pre-line text-ink-700">
+                  {content.transcript}
+                </div>
+              </details>
+            ) : null}
+
             {content.excerpt ? (
               <p className="mt-6 rounded-r-xl border-l-4 border-accent-400 bg-accent-50 py-3 pr-3 pl-4 text-base leading-relaxed text-ink-700">
                 {content.excerpt}
