@@ -26,21 +26,21 @@ Prinsip desain:
 
 ### Warna inti
 
-| Token | Hex | Penggunaan |
-| --- | --- | --- |
-| `--color-surface` | `#FFFFFF` | Latar utama dan kartu terang |
-| `--color-surface-soft` | `#FFF9F2` | Latar section, highlight, empty state |
-| `--color-ink` | `#173B32` | Judul, navigasi aktif, tombol gelap |
-| `--color-ink-deep` | `#0E2A24` | Header premium, footer, dashboard sidebar |
-| `--color-brand` | `#F28C28` | CTA, progress audio, badge penting, link aktif |
-| `--color-brand-dark` | `#C96B10` | Hover, pressed state, teks di atas latar terang |
-| `--color-brand-soft` | `#FFF0DC` | Background badge dan highlight oranye |
-| `--color-text` | `#26332F` | Body text |
-| `--color-muted` | `#6F7D77` | Metadata, helper text, placeholder |
-| `--color-border` | `#E7ECE8` | Border kartu, divider, input |
-| `--color-success` | `#2E8B57` | Terbit, disetujui, berhasil |
-| `--color-warning` | `#B87513` | Menunggu review |
-| `--color-danger` | `#B94A48` | Ditolak, validasi error |
+| Token                  | Hex       | Penggunaan                                      |
+| ---------------------- | --------- | ----------------------------------------------- |
+| `--color-surface`      | `#FFFFFF` | Latar utama dan kartu terang                    |
+| `--color-surface-soft` | `#FFF9F2` | Latar section, highlight, empty state           |
+| `--color-ink`          | `#173B32` | Judul, navigasi aktif, tombol gelap             |
+| `--color-ink-deep`     | `#0E2A24` | Header premium, footer, dashboard sidebar       |
+| `--color-brand`        | `#F28C28` | CTA, progress audio, badge penting, link aktif  |
+| `--color-brand-dark`   | `#C96B10` | Hover, pressed state, teks di atas latar terang |
+| `--color-brand-soft`   | `#FFF0DC` | Background badge dan highlight oranye           |
+| `--color-text`         | `#26332F` | Body text                                       |
+| `--color-muted`        | `#6F7D77` | Metadata, helper text, placeholder              |
+| `--color-border`       | `#E7ECE8` | Border kartu, divider, input                    |
+| `--color-success`      | `#2E8B57` | Terbit, disetujui, berhasil                     |
+| `--color-warning`      | `#B87513` | Menunggu review                                 |
+| `--color-danger`       | `#B94A48` | Ditolak, validasi error                         |
 
 ### Aturan kontras
 
@@ -59,16 +59,16 @@ Rekomendasi font:
 
 Skala mobile:
 
-| Elemen | Ukuran | Weight | Line height |
-| --- | --- | --- | --- |
-| Display hero | 32 px | 700 | 1.15 |
-| H1 halaman | 28 px | 700 | 1.2 |
-| H2 section | 22 px | 700 | 1.25 |
-| H3 kartu | 17 px | 650 | 1.35 |
-| Body besar | 16 px | 400 | 1.65 |
-| Body standar | 14 px | 400 | 1.6 |
-| Caption/meta | 12 px | 500 | 1.4 |
-| Label tombol | 14 px | 650 | 1 |
+| Elemen       | Ukuran | Weight | Line height |
+| ------------ | ------ | ------ | ----------- |
+| Display hero | 32 px  | 700    | 1.15        |
+| H1 halaman   | 28 px  | 700    | 1.2         |
+| H2 section   | 22 px  | 700    | 1.25        |
+| H3 kartu     | 17 px  | 650    | 1.35        |
+| Body besar   | 16 px  | 400    | 1.65        |
+| Body standar | 14 px  | 400    | 1.6         |
+| Caption/meta | 12 px  | 500    | 1.4         |
+| Label tombol | 14 px  | 650    | 1           |
 
 Desktop dapat menaikkan display hero menjadi 48–56 px, tetapi body text dibatasi sekitar 65–75 karakter per baris agar nyaman dibaca.
 

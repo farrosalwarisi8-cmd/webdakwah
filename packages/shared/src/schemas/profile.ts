@@ -16,7 +16,10 @@ export type UserSummary = z.infer<typeof userSummarySchema>;
 
 export const userCreateSchema = z.object({
   email: z.email(),
-  password: z.string().min(8, 'Kata sandi minimal 8 karakter').max(128, 'Kata sandi terlalu panjang'),
+  password: z
+    .string()
+    .min(8, 'Kata sandi minimal 8 karakter')
+    .max(128, 'Kata sandi terlalu panjang'),
   fullName: z.string().trim().max(120, 'Nama lengkap maksimal 120 karakter').optional().default(''),
   role: z.enum(ROLES).default('CONTRIBUTOR'),
 });
@@ -38,7 +41,10 @@ export const userUpdateSchema = z
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 export const userPasswordResetSchema = z.object({
-  password: z.string().min(8, 'Kata sandi minimal 8 karakter').max(128, 'Kata sandi terlalu panjang'),
+  password: z
+    .string()
+    .min(8, 'Kata sandi minimal 8 karakter')
+    .max(128, 'Kata sandi terlalu panjang'),
 });
 
 export type UserPasswordResetInput = z.infer<typeof userPasswordResetSchema>;

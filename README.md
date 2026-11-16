@@ -70,6 +70,20 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Audio dan video bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai tautan
   http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM).
 
+### Sanitasi isi konten
+
+Isi konten disanitasi dengan allowlist di API, baik saat disimpan maupun saat dibaca oleh
+serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan ketika dikirim.
+
+- Tag yang diizinkan: `p`, `br`, `h2`–`h4`, `strong`, `em`, `u`, `s`, daftar (`ul`/`ol`/`li`),
+  `blockquote`, `a`, `hr`, dan tabel. Gambar belum diizinkan sampai Fase 17.
+- Tautan hanya boleh `http://` atau `https://`; `javascript:`, `data:`, dan URL relatif dibuang.
+  Setiap tautan aman mendapat `target="_blank"` dan `rel="noopener noreferrer nofollow"`.
+- `style`, `script`, `iframe`, dan atribut event seperti `onclick`/`onerror` dibuang.
+- Batas isi: 50.000 karakter dan 2.000 elemen HTML.
+- Artikel teks polos lama tetap tampil sebagai teks; karakter `<` di-escape dan baris baru menjadi
+  `<br>`, bukan dianggap HTML.
+
 Endpoint API (semua butuh Bearer token):
 
 | Metode & path                      | Keterangan                                     |
@@ -243,13 +257,13 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `R2_PUBLIC_BASE_URL`                           | untuk media | —                       | URL publik bucket, tanpa `/` di akhir         |
 | `R2_ENDPOINT`                                  | opsional    | —                       | Endpoint S3 kustom (MinIO) untuk uji lokal    |
 | `FRONTEND_REVALIDATE_URL`, `REVALIDATE_SECRET` | opsional    | —                       | Pemicu revalidasi cache web (Fase 7)          |
-| `THROTTLE_GLOBAL_PER_MIN`                      | tidak       | `600`                   | Batas laju publik per IP (permintaan/menit)  |
-| `THROTTLE_UPLOAD_PER_MIN`                      | tidak       | `10`                    | Batas laju presign per pengguna              |
-| `THROTTLE_SEARCH_PER_MIN`                      | tidak       | `600`                   | Batas laju pencarian publik per IP           |
-| `THROTTLE_SESSION_PER_MIN`                     | tidak       | `60`                    | Batas laju `GET /api/me` per pengguna        |
-| `UPLOAD_QUOTA_PER_HOUR`                        | tidak       | `20`                    | Kuota presign per pengguna per jam           |
-| `UPLOAD_QUOTA_PER_DAY`                         | tidak       | `60`                    | Kuota presign per pengguna per hari          |
-| `UPLOAD_QUOTA_ADMIN_PER_HOUR`                  | tidak       | `100`                   | Kuota presign admin per jam (bebas harian)   |
+| `THROTTLE_GLOBAL_PER_MIN`                      | tidak       | `600`                   | Batas laju publik per IP (permintaan/menit)   |
+| `THROTTLE_UPLOAD_PER_MIN`                      | tidak       | `10`                    | Batas laju presign per pengguna               |
+| `THROTTLE_SEARCH_PER_MIN`                      | tidak       | `600`                   | Batas laju pencarian publik per IP            |
+| `THROTTLE_SESSION_PER_MIN`                     | tidak       | `60`                    | Batas laju `GET /api/me` per pengguna         |
+| `UPLOAD_QUOTA_PER_HOUR`                        | tidak       | `20`                    | Kuota presign per pengguna per jam            |
+| `UPLOAD_QUOTA_PER_DAY`                         | tidak       | `60`                    | Kuota presign per pengguna per hari           |
+| `UPLOAD_QUOTA_ADMIN_PER_HOUR`                  | tidak       | `100`                   | Kuota presign admin per jam (bebas harian)    |
 
 ### Web (`apps/web/.env.local`)
 

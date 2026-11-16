@@ -90,6 +90,23 @@ describe('PublicContentsService', () => {
     expect(result).toMatchObject({ slug: PUBLISHED_ITEM.slug, body: 'Isi artikel' });
   });
 
+  it('membersihkan body dan tautan kotor dari data lama di serializer publik', async () => {
+    const { prisma, service } = createService();
+    prisma.content.findFirst.mockResolvedValue({
+      ...PUBLISHED_ITEM,
+      body: '<p>Bersih</p><script>alert(1)</script>',
+      links: [
+        { title: 'Aman', url: 'https://contoh.com', order: 0 },
+        { title: 'Jahat', url: 'javascript:alert(1)', order: 1 },
+      ],
+    });
+
+    const result = await service.getBySlug(PUBLISHED_ITEM.slug);
+
+    expect(result.body).toBe('<p>Bersih</p>');
+    expect(result.links).toEqual([{ title: 'Aman', url: 'https://contoh.com', order: 0 }]);
+  });
+
   it('memberi 404 bila slug tidak ada atau belum terbit', async () => {
     const { service } = createService();
 

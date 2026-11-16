@@ -8,11 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import type {
-  UserCreateInput,
-  UserSummary,
-  UserUpdateInput,
-} from '@webdakwah/shared';
+import type { UserCreateInput, UserSummary, UserUpdateInput } from '@webdakwah/shared';
 import { can } from '@webdakwah/shared';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -122,7 +118,10 @@ export class UsersService {
 
     const email = input.email.trim().toLowerCase();
 
-    const existing = await this.prisma.profile.findUnique({ where: { email }, select: { id: true } });
+    const existing = await this.prisma.profile.findUnique({
+      where: { email },
+      select: { id: true },
+    });
     if (existing) {
       throw new BadRequestException('Email sudah terdaftar.');
     }

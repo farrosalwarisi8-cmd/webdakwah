@@ -109,6 +109,28 @@ describe('ContentsService', () => {
     expect(data.slug).toMatch(/^adab-menuntut-ilmu-[0-9a-f]{6}$/);
   });
 
+  it('menyanitasi body saat membuat dan menyunting konten', async () => {
+    const { prisma, service } = createService();
+    prisma.content.create.mockResolvedValue(contentRow());
+
+    await service.create(contributor, {
+      ...articleInput,
+      body: '<p>Aman</p><script>alert(1)</script>',
+    });
+
+    expect(prisma.content.create.mock.calls[0]?.[0].data.body).toBe('<p>Aman</p>');
+
+    prisma.content.findUnique.mockResolvedValue(contentRow());
+    prisma.content.update.mockResolvedValue(contentRow());
+
+    await service.update(contributor, CONTENT_ID, {
+      ...articleInput,
+      body: '<p>Baru</p><img src="x" onerror="alert(1)">',
+    });
+
+    expect(prisma.content.update.mock.calls[0]?.[0].data.body).toBe('<p>Baru</p>');
+  });
+
   it('menolak kontributor menyunting konten milik orang lain tanpa membocorkan keberadaannya', async () => {
     const { prisma, service } = createService();
     prisma.content.findUnique.mockResolvedValue(contentRow());

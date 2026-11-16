@@ -2,6 +2,7 @@ export * from './auth/permissions.js';
 export * from './constants/content.js';
 export * from './constants/roles.js';
 export * from './constants/taxonomy.js';
+export * from './html.js';
 export * from './schemas/common.js';
 export * from './schemas/content.js';
 export * from './schemas/taxonomy.js';

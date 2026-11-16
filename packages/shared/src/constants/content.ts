@@ -43,4 +43,38 @@ export const MAX_CONTENT_LINKS_PER_CONTENT = 10;
 /** Panjang maksimal judul tautan terkait. */
 export const CONTENT_LINK_TITLE_MAX_LENGTH = 200;
 
+/** Panjang maksimal isi konten (HTML atau teks polos). */
+export const CONTENT_BODY_MAX_LENGTH = 50_000;
+
+/** Batas jumlah elemen HTML agar isi tidak menjadi dokumen raksasa. */
+export const CONTENT_BODY_MAX_ELEMENTS = 2_000;
+
+/**
+ * Tag yang diizinkan di isi konten. Daftar ini sengaja sempit: tanpa gambar,
+ * iframe, style, atau atribut event. Gambar akan ditambahkan pada Fase 17.
+ */
+export const CONTENT_HTML_TAGS = [
+  'p',
+  'br',
+  'h2',
+  'h3',
+  'h4',
+  'strong',
+  'em',
+  'u',
+  's',
+  'ul',
+  'ol',
+  'li',
+  'blockquote',
+  'a',
+  'hr',
+  'table',
+  'thead',
+  'tbody',
+  'tr',
+  'th',
+  'td',
+] as const;
+
 export type ContentLinkType = (typeof CONTENT_LINK_TYPES)[number];

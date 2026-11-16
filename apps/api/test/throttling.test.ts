@@ -62,7 +62,11 @@ function createGuard(limit = 1) {
   const reflector = {
     getAllAndOverride: () => undefined,
   } as unknown as Reflector;
-  const guard = new ThrottlerGuard(options, new FakeStorage() as unknown as ThrottlerStorage, reflector);
+  const guard = new ThrottlerGuard(
+    options,
+    new FakeStorage() as unknown as ThrottlerStorage,
+    reflector,
+  );
 
   return guard.onModuleInit().then(() => guard);
 }
@@ -106,7 +110,11 @@ describe('ThrottlerGuard — kunci dan pemisahan bucket', () => {
 
   it('pencarian publik punya penghitung sendiri, tidak menghabiskan daftar', async () => {
     const guard = await createGuard();
-    const list = contextFor({ ip: '198.51.100.7', controller: PublicContentsController, handler: 'list' });
+    const list = contextFor({
+      ip: '198.51.100.7',
+      controller: PublicContentsController,
+      handler: 'list',
+    });
     const search = contextFor({
       ip: '198.51.100.7',
       controller: PublicContentsController,

@@ -5,11 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type {
-  CategoryInput,
-  SpeakerInput,
-  TagRenameInput,
-} from '@webdakwah/shared';
+import type { CategoryInput, SpeakerInput, TagRenameInput } from '@webdakwah/shared';
 import { can } from '@webdakwah/shared';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -153,7 +149,15 @@ export class TaxonomyService {
         bio: input.bio?.trim() || null,
         avatarUrl: input.avatarUrl?.trim() || null,
       },
-      select: { id: true, name: true, slug: true, bio: true, avatarUrl: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        bio: true,
+        avatarUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
@@ -171,7 +175,15 @@ export class TaxonomyService {
         bio: input.bio?.trim() || null,
         avatarUrl: input.avatarUrl?.trim() || null,
       },
-      select: { id: true, name: true, slug: true, bio: true, avatarUrl: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        bio: true,
+        avatarUrl: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 

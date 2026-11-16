@@ -1,11 +1,5 @@
-export function renderBodyHtml(body: string): string {
-  if (/<[a-z][\s\S]*>/i.test(body)) {
-    return body;
-  }
+import { renderContentBody } from '@webdakwah/shared';
 
-  return body
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
+export function renderBodyHtml(body: string): string {
+  return renderContentBody(body);
 }

@@ -17,8 +17,8 @@ import {
   type Permission,
 } from '@webdakwah/shared';
 import { randomUUID } from 'node:crypto';
-import sanitizeHtml from 'sanitize-html';
 
+import { sanitizeContentBody, sanitizeContentBodyForRead } from '../../common/content-html.js';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RevalidationService } from '../revalidation/revalidation.service.js';
@@ -62,17 +62,6 @@ function emptyToNull(value: string | undefined): string | null {
   const trimmed = value?.trim();
 
   return trimmed ? trimmed : null;
-}
-
-/** Sanitasi HTML isi konten agar skrip/atribut berbahaya tidak tersimpan. */
-function sanitizeBody(value: string | undefined): string | null {
-  const trimmed = value?.trim();
-
-  if (!trimmed) return null;
-
-  const cleaned = sanitizeHtml(trimmed);
-
-  return cleaned.trim() ? cleaned : null;
 }
 
 function slugify(value: string): string {
@@ -282,7 +271,7 @@ export class ContentsService {
         title: input.title,
         slug: await this.buildSlug(input.title),
         excerpt: emptyToNull(input.excerpt),
-        body: sanitizeBody(input.body),
+        body: sanitizeContentBody(input.body),
         mediaUrl: emptyToNull(input.mediaUrl),
         speakerId: input.speakerId ?? null,
         categories: {
@@ -320,7 +309,7 @@ export class ContentsService {
       type: input.type,
       title: input.title,
       excerpt: emptyToNull(input.excerpt),
-      body: emptyToNull(input.body),
+      body: sanitizeContentBody(input.body),
       mediaUrl,
       speakerId: input.speakerId ?? null,
       categories: {
@@ -454,14 +443,17 @@ export class ContentsService {
       : record.categories;
     const tags = Array.isArray(record.tags)
       ? record.tags.map((item) =>
-          item && typeof item === 'object' && 'tag' in item
-            ? (item as { tag: unknown }).tag
-            : item,
+          item && typeof item === 'object' && 'tag' in item ? (item as { tag: unknown }).tag : item,
         )
       : record.tags;
     const links = Array.isArray(record.links) ? record.links : [];
+    const mapped: Record<string, unknown> = { ...record, categories, tags, links };
 
-    return { ...record, categories, tags, links } as T;
+    if (typeof record.body === 'string') {
+      mapped.body = sanitizeContentBodyForRead(record.body);
+    }
+
+    return mapped as T;
   }
 
   private assertPermission(role: AuthProfile['role'], permission: Permission): void {

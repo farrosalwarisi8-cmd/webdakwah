@@ -1,11 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type {
-  PublicContentQuery,
-  PublicContentSummary,
-  PublicSearchQuery,
+import {
+  isSafeHttpUrl,
+  type PublicContentQuery,
+  type PublicContentSummary,
+  type PublicSearchQuery,
 } from '@webdakwah/shared';
 
+import { sanitizeContentBodyForRead } from '../../common/content-html.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+
+function hasSafeUrl(item: unknown): boolean {
+  return Boolean(
+    item &&
+    typeof item === 'object' &&
+    'url' in item &&
+    typeof item.url === 'string' &&
+    isSafeHttpUrl(item.url),
+  );
+}
 
 function mapPublicContent<T>(row: T): T {
   if (!row || Array.isArray(row)) {
@@ -25,9 +37,14 @@ function mapPublicContent<T>(row: T): T {
         item && typeof item === 'object' && 'tag' in item ? (item as { tag: unknown }).tag : item,
       )
     : record.tags;
-  const links = Array.isArray(record.links) ? record.links : [];
+  const links = Array.isArray(record.links) ? record.links.filter(hasSafeUrl) : record.links;
+  const mapped: Record<string, unknown> = { ...record, categories, tags, links };
 
-  return { ...record, categories, tags, links } as T;
+  if (typeof record.body === 'string') {
+    mapped.body = sanitizeContentBodyForRead(record.body);
+  }
+
+  return mapped as T;
 }
 
 const PUBLIC_CONTENT_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO', 'LINK'] as const;

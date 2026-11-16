@@ -14,14 +14,7 @@ import { isSafeHttpUrl, paginationQuerySchema } from './common.js';
 /** Normalisasi nama tag sebelum validasi dan penyimpanan. */
 export const tagNameSchema = z
   .string()
-  .transform((value) =>
-    value
-      .trim()
-      .replace(/^#+/, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase(),
-  )
+  .transform((value) => value.trim().replace(/^#+/, '').replace(/\s+/g, ' ').trim().toLowerCase())
   .pipe(
     z
       .string()
