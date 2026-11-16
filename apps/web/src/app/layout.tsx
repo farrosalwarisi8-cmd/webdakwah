@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Amiri } from 'next/font/google';
+import { Amiri, Plus_Jakarta_Sans } from 'next/font/google';
 
 import './globals.css';
 
@@ -8,6 +8,12 @@ const amiri = Amiri({
   weight: ['400', '700'],
   display: 'swap',
   variable: '--font-amiri',
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jakarta',
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -38,12 +44,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#047857',
+  themeColor: '#173b32',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={amiri.variable}>
+    <html lang="id" className={`${amiri.variable} ${plusJakarta.variable}`}>
       <body className="font-sans">{children}</body>
     </html>
   );

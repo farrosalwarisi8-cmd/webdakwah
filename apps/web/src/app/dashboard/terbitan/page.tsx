@@ -19,11 +19,11 @@ type ManagedStatus = 'PUBLISHED' | 'ARCHIVED';
 
 const TABS: { value: ManagedStatus; label: string }[] = [
   { value: 'PUBLISHED', label: 'Terbit' },
-  { value: 'ARCHIVED', label: 'Diarsipkan' },
+  { value: 'ARCHIVED', label: 'Disembunyikan' },
 ];
 
 const SUCCESS_MESSAGES: Record<string, string> = {
-  diarsipkan: 'Konten diarsipkan dan tidak lagi tampil di halaman publik.',
+  diarsipkan: 'Konten disembunyikan dan tidak lagi tampil di halaman publik.',
   dipulihkan: 'Konten dipulihkan dan kembali tampil di halaman publik.',
 };
 
@@ -173,7 +173,7 @@ export default async function TerbitanPage({
                               : 'bg-ink-100 text-ink-700'
                           }`}
                         >
-                          {status === 'PUBLISHED' ? 'Terbit' : 'Diarsipkan'}
+                          {status === 'PUBLISHED' ? 'Terbit' : 'Disembunyikan'}
                         </span>
                       </div>
 

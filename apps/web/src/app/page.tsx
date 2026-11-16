@@ -4,6 +4,7 @@ import {
   BookOpen,
   Headphones,
   Link2,
+  Search,
   ShieldCheck,
   Video,
   type LucideIcon,
@@ -54,18 +55,18 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-dvh bg-ink-50">
+    <div className="min-h-dvh bg-surface-soft">
       <SiteHeader />
 
       <main id="atas">
         <section className="relative overflow-hidden border-b border-ink-200/70">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_30rem_at_50%_-10rem,var(--color-brand-100),transparent)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_30rem_at_50%_-10rem,var(--color-accent-100),transparent)]"
           />
           <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/70 px-3 py-1 text-xs font-medium text-brand-800">
-              <span className="size-1.5 rounded-full bg-brand-500" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent-200 bg-white/70 px-3 py-1 text-xs font-medium text-brand-800">
+              <span className="size-1.5 rounded-full bg-accent-500" />
               Dikurasi &amp; ditinjau sebelum terbit
             </span>
 
@@ -79,12 +80,36 @@ export default async function HomePage() {
               satu tempat yang tenang — tanpa iklan, tanpa distraksi.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <form
+              action="/cari"
+              role="search"
+              className="mt-8 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-[0_8px_24px_rgba(23,59,50,0.08)]"
+            >
+              <Search aria-hidden className="ml-2 size-4 shrink-0 text-ink-400" />
+              <label htmlFor="beranda-cari" className="sr-only">
+                Cari kajian, ustadz, atau topik
+              </label>
+              <input
+                id="beranda-cari"
+                type="search"
+                name="q"
+                placeholder="Cari kajian, ustadz, atau topik"
+                className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+              >
+                Cari
+              </button>
+            </form>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <a
                 href="#kategori"
-                className="inline-flex items-center justify-center rounded-full bg-brand-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-800"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-accent-400"
               >
-                Mulai membaca
+                Mulai menjelajah
               </a>
               <a
                 href="#tentang"
@@ -97,7 +122,7 @@ export default async function HomePage() {
             <p
               dir="rtl"
               lang="ar"
-              className="mt-12 font-serif-arabic text-2xl text-brand-800/80 sm:text-3xl"
+              className="mt-12 font-serif-arabic text-2xl leading-loose text-brand-800/80 sm:text-3xl"
             >
               وَقُل رَّبِّ زِدْنِي عِلْمًا
             </p>
@@ -126,7 +151,7 @@ export default async function HomePage() {
                     href={sectionPath(type)}
                     className="group flex h-full flex-col rounded-3xl border border-ink-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-sm"
                   >
-                    <span className="grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
+                    <span className="grid size-11 place-items-center rounded-2xl bg-accent-100 text-accent-700 transition group-hover:bg-accent-200">
                       <Icon aria-hidden className="size-5" />
                     </span>
                     <h3 className="mt-5 text-base font-semibold text-ink-900">{section.title}</h3>

@@ -5,10 +5,10 @@ import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-200/80 bg-ink-50/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-ink-200/80 bg-surface-soft/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-50">
+          <span className="grid size-9 place-items-center rounded-full bg-accent-500 text-ink-950">
             <BookOpen aria-hidden className="size-5" />
           </span>
           <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
@@ -30,13 +30,13 @@ export function SiteHeader() {
           <Link
             href="/cari"
             aria-label="Cari konten"
-            className="grid size-9 place-items-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-brand-300 hover:text-brand-700"
+            className="grid size-9 place-items-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-accent-300 hover:text-accent-700"
           >
             <Search aria-hidden className="size-4" />
           </Link>
           <Link
             href="/masuk"
-            className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+            className="rounded-full bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
           >
             Masuk
           </Link>

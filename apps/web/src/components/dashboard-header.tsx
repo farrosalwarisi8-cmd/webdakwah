@@ -9,10 +9,10 @@ export async function DashboardHeader() {
   const isAdmin = viewer.status === 'authenticated' && viewer.profile?.role === 'ADMIN';
 
   return (
-    <header className="border-b border-ink-200/80 bg-ink-50/85">
+    <header className="border-b border-ink-200/80 bg-surface-soft/85">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-50">
+          <span className="grid size-9 place-items-center rounded-full bg-accent-500 text-ink-950">
             <BookOpen aria-hidden className="size-5" />
           </span>
           <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>

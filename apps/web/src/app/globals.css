@@ -3,28 +3,56 @@
 
 @theme {
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-display:
+    var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
   --font-serif-arabic: var(--font-amiri), 'Traditional Arabic', serif;
 
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
-  --color-brand-950: #022c22;
+  /* Permukaan dan teks */
+  --color-surface: #ffffff;
+  --color-surface-soft: #fff9f2;
+  --color-ink-50: #fff9f2;
+  --color-ink-100: #f3f6f4;
+  --color-ink-200: #e7ece8;
+  --color-ink-300: #c7d2cd;
+  --color-ink-400: #9aa7a1;
+  --color-ink-500: #6f7d77;
+  --color-ink-600: #56645e;
+  --color-ink-700: #3d4b46;
+  --color-ink-800: #26332f;
+  --color-ink-900: #173b32;
+  --color-ink-950: #0e2a24;
 
-  --color-ink-50: #f8fafc;
-  --color-ink-100: #f1f5f9;
-  --color-ink-200: #e2e8f0;
-  --color-ink-400: #94a3b8;
-  --color-ink-600: #475569;
-  --color-ink-800: #1e293b;
-  --color-ink-900: #0f172a;
+  /* Hijau tua: identitas dan tindakan utama */
+  --color-brand-50: #edf5f1;
+  --color-brand-100: #d8e8e1;
+  --color-brand-200: #b9d5ca;
+  --color-brand-300: #8fbba9;
+  --color-brand-400: #5f9a84;
+  --color-brand-500: #3d7d67;
+  --color-brand-600: #2c6352;
+  --color-brand-700: #1e4f41;
+  --color-brand-800: #173b32;
+  --color-brand-900: #0e2a24;
+  --color-brand-950: #071b17;
+
+  /* Oranye: aksen, badge, dan CTA */
+  --color-accent-50: #fff9f2;
+  --color-accent-100: #fff0dc;
+  --color-accent-200: #ffe0bc;
+  --color-accent-300: #fbc98f;
+  --color-accent-400: #f7aa55;
+  --color-accent-500: #f28c28;
+  --color-accent-600: #c96b10;
+  --color-accent-700: #a5540a;
+  --color-accent-800: #7e3f08;
+  --color-accent-900: #5c2e06;
+
+  --color-success: #2e8b57;
+  --color-warning: #b87513;
+  --color-danger: #b94a48;
 }
 
 @layer base {
@@ -34,12 +62,12 @@
   }
 
   body {
-    @apply bg-ink-50 text-ink-800 antialiased;
+    @apply bg-surface-soft text-ink-800 antialiased;
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    @apply bg-brand-200 text-brand-950;
+    @apply bg-accent-200 text-ink-950;
   }
 
   :focus-visible {

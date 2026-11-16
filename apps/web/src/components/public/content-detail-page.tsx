@@ -42,7 +42,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
   }
 
   return (
-    <div className="min-h-dvh bg-ink-50">
+    <div className="min-h-dvh bg-surface-soft">
       <SiteHeader />
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
@@ -60,9 +60,9 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
           </div>
         ) : (
           <article className="mt-5">
-            <p className="text-xs font-medium text-brand-700">
+            <span className="inline-flex rounded-lg bg-accent-100 px-2 py-1 text-xs font-semibold tracking-wide text-accent-800">
               {CONTENT_TYPE_LABELS[content.type]}
-            </p>
+            </span>
             <h1 className="mt-2 text-3xl leading-tight font-semibold tracking-tight text-ink-900 sm:text-4xl">
               {content.title}
             </h1>
@@ -72,7 +72,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
             </p>
 
             {content.excerpt ? (
-              <p className="mt-6 border-l-2 border-brand-300 pl-4 text-base leading-relaxed text-ink-600">
+              <p className="mt-6 rounded-r-xl border-l-4 border-accent-400 bg-accent-50 py-3 pr-3 pl-4 text-base leading-relaxed text-ink-700">
                 {content.excerpt}
               </p>
             ) : null}
@@ -82,11 +82,17 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                 href={content.mediaUrl}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-400"
               >
                 <ExternalLink aria-hidden className="size-4 shrink-0" />
                 {MEDIA_ACTION_LABELS[content.type]}
               </a>
+            ) : null}
+
+            {content.mediaUrl && content.type !== 'ARTICLE' ? (
+              <p className="mt-2 text-xs text-ink-500">
+                Anda akan diarahkan ke website lain.
+              </p>
             ) : null}
 
             {content.body ? (

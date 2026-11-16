@@ -36,11 +36,11 @@ export default async function MasukPage({
   const { next } = await searchParams;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink-50">
-      <header className="border-b border-ink-200/80 bg-ink-50/85">
+    <div className="flex min-h-dvh flex-col bg-surface-soft">
+      <header className="border-b border-ink-200/80 bg-surface-soft/85">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid size-9 place-items-center rounded-xl bg-brand-700 text-brand-50">
+            <span className="grid size-9 place-items-center rounded-full bg-accent-500 text-ink-950">
               <BookOpen aria-hidden className="size-5" />
             </span>
             <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>

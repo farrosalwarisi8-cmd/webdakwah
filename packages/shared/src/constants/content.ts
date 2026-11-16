@@ -18,8 +18,8 @@ export const CONTENT_STATUS_LABELS: Record<ContentStatus, string> = {
   DRAFT: 'Draft',
   PENDING_REVIEW: 'Menunggu Review',
   PUBLISHED: 'Terbit',
-  REJECTED: 'Ditolak',
-  ARCHIVED: 'Diarsipkan',
+  REJECTED: 'Perlu Perbaikan',
+  ARCHIVED: 'Disembunyikan',
 };
 
 /** Jenis konten yang punya alur status sama. */
