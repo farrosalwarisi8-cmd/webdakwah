@@ -104,6 +104,17 @@ describe('StorageService — presign', () => {
 
     expect(result.key.endsWith('.webm')).toBe(true);
   });
+
+  it('memakai ekstensi gambar yang sesuai', async () => {
+    const service = createService(CONFIGURED);
+
+    const result = await service.createPresignedPut(PROFILE_ID, {
+      contentType: 'image/webp',
+      size: 1024,
+    });
+
+    expect(result.key.endsWith('.webp')).toBe(true);
+  });
 });
 
 describe('StorageService — hapus objek', () => {

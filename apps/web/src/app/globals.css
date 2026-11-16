@@ -80,3 +80,9 @@
     }
   }
 }
+
+@layer components {
+  .content-body img {
+    @apply my-6 h-auto max-w-full rounded-xl border border-ink-200;
+  }
+}

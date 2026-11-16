@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 15 — Dashboard statistik**. Admin dapat melihat ringkasan konten per status/jenis,
-> total pengguna, dan aktivitas terbaru melalui `/dashboard/statistik`.
+> Status: **Fase 17 — Gambar isi konten**. Kontributor dapat mengunggah dan menyisipkan gambar
+> aman ke dalam artikel, dengan sanitasi allowlist di API.
 
 ## Teknologi
 
@@ -67,8 +67,9 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
   semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
 - Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
-- Audio dan video bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai tautan
-  http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM).
+- Audio, video, dan gambar bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai
+  tautan http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM), dan
+  gambar 5 MB (JPEG, PNG, WebP, GIF). SVG sengaja tidak diterima untuk gambar isi.
 
 ### Sanitasi isi konten
 
@@ -76,9 +77,13 @@ Isi konten disanitasi dengan allowlist di API, baik saat disimpan maupun saat di
 serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan ketika dikirim.
 
 - Tag yang diizinkan: `p`, `br`, `h2`–`h4`, `strong`, `em`, `u`, `s`, daftar (`ul`/`ol`/`li`),
-  `blockquote`, `a`, `hr`, dan tabel. Gambar belum diizinkan sampai Fase 17.
+  `blockquote`, `a`, `hr`, `img`, dan tabel.
 - Tautan hanya boleh `http://` atau `https://`; `javascript:`, `data:`, dan URL relatif dibuang.
   Setiap tautan aman mendapat `target="_blank"` dan `rel="noopener noreferrer nofollow"`.
+- Gambar hanya boleh `src` berprotokol `http://`/`https://` dengan atribut `src`, `alt`, dan
+  `title`. Sanitizer menambahkan `loading="lazy"`, `decoding="async"`, dan
+  `referrerpolicy="no-referrer"`. Gambar tanpa URL aman dibuang, termasuk `data:`, `javascript:`,
+  URL protokol-relatif, dan SVG inline.
 - `style`, `script`, `iframe`, dan atribut event seperti `onclick`/`onerror` dibuang.
 - Batas isi: 50.000 karakter dan 2.000 elemen HTML.
 - Artikel teks polos lama tetap tampil sebagai teks; karakter `<` di-escape dan baris baru menjadi
@@ -120,7 +125,7 @@ tidak memuat email penulis, catatan review, atau status internal.
   lalu mengembalikan `{ uploadUrl, publicUrl, key, expiresIn }`. URL PUT berlaku 10 menit.
 - Browser mengunggah berkas **langsung ke R2** lewat `PUT` (dengan progres), jadi berkas tidak
   melewati API dan batas body API tetap kecil. Setelah selesai, kolom tautan media terisi
-  otomatis dengan `publicUrl`.
+  otomatis dengan `publicUrl`; gambar isi langsung disisipkan ke editor.
 - Server memvalidasi ulang jenis dan ukuran (allowlist MIME + batas per jenis); permintaan yang
   tidak sesuai ditolak `400`. Bila kredensial R2 belum lengkap, endpoint mengembalikan `503`.
 - Objek disimpan sebagai `media/<user-id>/<uuid>.<ext>`; `Content-Type` dan `Content-Length`
@@ -130,7 +135,8 @@ tidak memuat email penulis, catatan review, atau status internal.
   dengan header `Content-Type`, dan akses baca publik lewat domain kustom atau `r2.dev`.
 - Objek R2 dihapus otomatis saat tautan media konten diganti atau dikosongkan, dan saat konten
   dihapus. Objek diarsipkan tidak dihapus. Hanya berkas pada folder `media/<penulis-konten>/`
-  milik bucket ini yang disentuh; URL eksternal dibiarkan.
+  milik bucket ini yang disentuh; URL eksternal dibiarkan. Gambar yang disisipkan ke dalam isi
+  tidak dilacak sebagai `mediaUrl`, jadi menghapusnya dari isi belum menghapus objek R2 otomatis.
 - Untuk uji lokal tanpa akun R2, isi `R2_ENDPOINT` ke server S3-compatible seperti MinIO dan
   set `forcePathStyle` otomatis aktif. Alur presign/PUT/GET sudah diuji dengan endpoint S3
   tiruan; verifikasi terhadap R2 asli menunggu kredensial produksi.

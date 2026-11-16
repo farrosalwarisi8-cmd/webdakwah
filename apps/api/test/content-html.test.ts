@@ -11,16 +11,50 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeContentBody, sanitizeContentBodyForRead } from '../src/common/content-html.js';
 
 describe('sanitizeContentBody', () => {
-  it('membuang script, iframe, style, gambar, dan event handler', () => {
+  it('membuang script, iframe, style, dan event handler, tetapi mempertahankan gambar aman', () => {
     const body = [
       '<p onclick="alert(1)">Halo <strong>dunia</strong></p>',
       '<script>alert(1)</script>',
       '<iframe src="https://contoh.com"></iframe>',
       '<style>body { color: red; }</style>',
-      '<img src="https://contoh.com/x.png" onerror="alert(1)">',
+      '<img src="https://contoh.com/x.png" alt="Gambar" onerror="alert(1)">',
     ].join('');
 
-    expect(sanitizeContentBody(body)).toBe('<p>Halo <strong>dunia</strong></p>');
+    const cleaned = sanitizeContentBody(body);
+
+    expect(cleaned).toContain('<p>Halo <strong>dunia</strong></p>');
+    expect(cleaned).toContain('<img src="https://contoh.com/x.png" alt="Gambar"');
+    expect(cleaned).toContain('loading="lazy"');
+    expect(cleaned).toContain('decoding="async"');
+    expect(cleaned).toContain('referrerpolicy="no-referrer"');
+    expect(cleaned).not.toContain('script');
+    expect(cleaned).not.toContain('iframe');
+    expect(cleaned).not.toContain('style');
+    expect(cleaned).not.toContain('onerror');
+    expect(cleaned).not.toContain('onclick');
+  });
+
+  it('membuang gambar dengan URL atau atribut tidak aman', () => {
+    const cleaned = sanitizeContentBody(
+      [
+        '<p>Sebelum</p>',
+        '<img src="javascript:alert(1)" alt="Jahat">',
+        '<img src="data:image/svg+xml,<svg onload=alert(1)></svg>" alt="Data">',
+        '<img src="//contoh.com/x.png" alt="Relatif">',
+        '<img src="https://contoh.com/aman.png" style="width:9999px" width="9999" onerror="alert(1)">',
+        '<p>Sesudah</p>',
+      ].join(''),
+    );
+
+    expect(cleaned).toContain('<p>Sebelum</p>');
+    expect(cleaned).toContain('<img src="https://contoh.com/aman.png"');
+    expect(cleaned).not.toContain('javascript:');
+    expect(cleaned).not.toContain('data:');
+    expect(cleaned).not.toContain('//contoh.com/x.png');
+    expect(cleaned).not.toContain('style=');
+    expect(cleaned).not.toContain('width=');
+    expect(cleaned).not.toContain('onerror');
+    expect((cleaned?.match(/<img\b/g) ?? []).length).toBe(1);
   });
 
   it('hanya mengizinkan tautan http/https dan menambahkan rel yang aman', () => {
@@ -72,7 +106,9 @@ describe('sanitizeContentBody', () => {
 
   it('membersihkan data kotor pada jalur baca tanpa melempar error', () => {
     expect(
-      sanitizeContentBodyForRead('<p onclick="alert(1)">Aman</p><script>alert(1)</script>'),
+      sanitizeContentBodyForRead(
+        '<p onclick="alert(1)">Aman</p><img src="javascript:alert(1)"><script>alert(1)</script>',
+      ),
     ).toBe('<p>Aman</p>');
   });
 });

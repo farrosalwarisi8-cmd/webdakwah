@@ -94,7 +94,7 @@ describe('PublicContentsService', () => {
     const { prisma, service } = createService();
     prisma.content.findFirst.mockResolvedValue({
       ...PUBLISHED_ITEM,
-      body: '<p>Bersih</p><script>alert(1)</script>',
+      body: '<p>Bersih</p><img src="https://contoh.com/x.png" onerror="alert(1)"><script>alert(1)</script>',
       links: [
         { title: 'Aman', url: 'https://contoh.com', order: 0 },
         { title: 'Jahat', url: 'javascript:alert(1)', order: 1 },
@@ -103,7 +103,10 @@ describe('PublicContentsService', () => {
 
     const result = await service.getBySlug(PUBLISHED_ITEM.slug);
 
-    expect(result.body).toBe('<p>Bersih</p>');
+    expect(result.body).toContain('<p>Bersih</p>');
+    expect(result.body).toContain('<img src="https://contoh.com/x.png"');
+    expect(result.body).not.toContain('onerror');
+    expect(result.body).not.toContain('script');
     expect(result.links).toEqual([{ title: 'Aman', url: 'https://contoh.com', order: 0 }]);
   });
 

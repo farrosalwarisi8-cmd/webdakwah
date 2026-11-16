@@ -16,14 +16,21 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedTags: [...CONTENT_HTML_TAGS],
   allowedAttributes: {
     a: ['href', 'title', 'target', 'rel'],
+    img: ['src', 'alt', 'title', 'loading', 'decoding', 'referrerpolicy'],
     th: ['colspan', 'rowspan'],
     td: ['colspan', 'rowspan'],
   },
   allowedSchemes: ['http', 'https'],
-  allowedSchemesByTag: { a: ['http', 'https'] },
+  allowedSchemesByTag: {
+    a: ['http', 'https'],
+    img: ['http', 'https'],
+  },
   allowProtocolRelative: false,
   disallowedTagsMode: 'discard',
   nonTextTags: ['script', 'style', 'textarea', 'option', 'noscript', 'iframe', 'object', 'embed'],
+  exclusiveFilter: (frame) =>
+    frame.tag === 'img' &&
+    (typeof frame.attribs.src !== 'string' || !isSafeHttpUrl(frame.attribs.src)),
   transformTags: {
     a: (tagName, attribs) => {
       const href = attribs.href;
@@ -40,6 +47,27 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
       return {
         tagName,
         attribs: { ...attribs, href, target: '_blank', rel: LINK_REL },
+      };
+    },
+    img: (tagName, attribs) => {
+      const src = attribs.src;
+
+      if (typeof src !== 'string' || !isSafeHttpUrl(src)) {
+        const cleaned = { ...attribs };
+        delete cleaned.src;
+
+        return { tagName, attribs: cleaned };
+      }
+
+      return {
+        tagName,
+        attribs: {
+          ...attribs,
+          src,
+          loading: 'lazy',
+          decoding: 'async',
+          referrerpolicy: 'no-referrer',
+        },
       };
     },
   },

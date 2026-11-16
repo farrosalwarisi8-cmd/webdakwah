@@ -98,4 +98,18 @@ describe('uploadRequestSchema', () => {
     expect(audio.success).toBe(false);
     expect(video.success).toBe(true);
   });
+
+  it('menerima gambar sampai 5 MB dan menolak gambar yang lebih besar', () => {
+    const image = uploadRequestSchema.safeParse({
+      contentType: 'image/webp',
+      size: 5 * 1024 * 1024,
+    });
+    const terlaluBesar = uploadRequestSchema.safeParse({
+      contentType: 'image/png',
+      size: 5 * 1024 * 1024 + 1,
+    });
+
+    expect(image.success).toBe(true);
+    expect(terlaluBesar.success).toBe(false);
+  });
 });

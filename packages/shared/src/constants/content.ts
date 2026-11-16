@@ -50,8 +50,8 @@ export const CONTENT_BODY_MAX_LENGTH = 50_000;
 export const CONTENT_BODY_MAX_ELEMENTS = 2_000;
 
 /**
- * Tag yang diizinkan di isi konten. Daftar ini sengaja sempit: tanpa gambar,
- * iframe, style, atau atribut event. Gambar akan ditambahkan pada Fase 17.
+ * Tag yang diizinkan di isi konten. Daftar ini sengaja sempit: tanpa iframe,
+ * style, atau atribut event. Atribut dan URL gambar dibatasi di sanitizer API.
  */
 export const CONTENT_HTML_TAGS = [
   'p',
@@ -68,6 +68,7 @@ export const CONTENT_HTML_TAGS = [
   'li',
   'blockquote',
   'a',
+  'img',
   'hr',
   'table',
   'thead',

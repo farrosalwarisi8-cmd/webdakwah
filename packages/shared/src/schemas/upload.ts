@@ -8,9 +8,21 @@ export const UPLOAD_MIME_TYPES = [
   'audio/ogg',
   'video/mp4',
   'video/webm',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
 ] as const;
 
 export type UploadMimeType = (typeof UPLOAD_MIME_TYPES)[number];
+
+/** Format gambar yang aman untuk disisipkan ke isi konten (tanpa SVG). */
+export const UPLOAD_IMAGE_MIME_TYPES: readonly UploadMimeType[] = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 
 const MEGABYTE = 1024 * 1024;
 
@@ -22,6 +34,10 @@ export const UPLOAD_MAX_BYTES: Record<UploadMimeType, number> = {
   'audio/ogg': 50 * MEGABYTE,
   'video/mp4': 200 * MEGABYTE,
   'video/webm': 200 * MEGABYTE,
+  'image/jpeg': 5 * MEGABYTE,
+  'image/png': 5 * MEGABYTE,
+  'image/webp': 5 * MEGABYTE,
+  'image/gif': 5 * MEGABYTE,
 };
 
 export function uploadMaxMegabytes(contentType: UploadMimeType): number {

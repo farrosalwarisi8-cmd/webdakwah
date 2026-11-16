@@ -15,6 +15,10 @@ const FILE_EXTENSIONS: Record<UploadMimeType, string> = {
   'audio/ogg': 'ogg',
   'video/mp4': 'mp4',
   'video/webm': 'webm',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
 };
 
 interface StorageSettings {

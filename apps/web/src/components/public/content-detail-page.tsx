@@ -126,7 +126,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
 
             {content.body ? (
               <div
-                className="mt-8 text-base leading-relaxed text-ink-800"
+                className="content-body mt-8 text-base leading-relaxed text-ink-800"
                 dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
               />
             ) : content.type !== 'ARTICLE' ? (

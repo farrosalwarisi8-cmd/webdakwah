@@ -111,7 +111,7 @@ export default async function TinjauKontenPage({
 
           {content.body ? (
             <article
-              className="mt-4 rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800"
+              className="content-body mt-4 rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800"
               dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
             />
           ) : (
