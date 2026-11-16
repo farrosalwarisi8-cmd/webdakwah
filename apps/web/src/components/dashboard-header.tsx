@@ -41,6 +41,12 @@ export async function DashboardHeader() {
               >
                 Moderasi
               </Link>
+              <Link
+                href="/dashboard/pengguna"
+                className="text-ink-600 transition hover:text-brand-700"
+              >
+                Pengguna
+              </Link>
             </>
           ) : null}
           <Link

@@ -17,6 +17,7 @@ import {
   THROTTLE_TTL_MS,
 } from './modules/throttling/throttling.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
+import { UsersModule } from './modules/users/users.module.js';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
     PublicContentsModule,
     TaxonomyModule,
     UploadsModule,
+    UsersModule,
     HealthModule,
   ],
   providers: [
