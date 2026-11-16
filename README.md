@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 11 — Kategori, Tag, dan Penceramah**. Konten dapat dikategorikan, ditandai,
-> dan dihubungkan ke penceramah; taksonomi dikelola admin dan tersedia untuk filter publik.
+> Status: **Fase 12 — Tautan terkait (ContentLink)**. Konten artikel/audio/video dapat memuat
+> hingga 10 tautan terkait yang ikut alur review; tampil sebagai kotak "Referensi" di halaman publik.
 
 ## Teknologi
 

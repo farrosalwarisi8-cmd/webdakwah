@@ -27,6 +27,16 @@ function readFormData(formData: FormData) {
       .map((value) => value.trim())
       .filter(Boolean),
     speakerId: get('speakerId') || null,
+    links: formData
+      .getAll('linkTitle')
+      .map((title, index) => ({
+        title: typeof title === 'string' ? title : '',
+        url: (() => {
+          const value = formData.getAll('linkUrl')[index];
+          return typeof value === 'string' ? value : '';
+        })(),
+      }))
+      .filter((link) => link.title.trim() !== '' || link.url.trim() !== ''),
   };
 }
 

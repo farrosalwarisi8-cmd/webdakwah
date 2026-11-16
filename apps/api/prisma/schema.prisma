@@ -71,6 +71,7 @@ model Content {
   speaker     Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
   categories  ContentCategory[]
   tags        ContentTag[]
+  links       ContentLink[]
 
   @@index([authorId, updatedAt])
   @@index([status, publishedAt])
@@ -152,4 +153,18 @@ model ContentTag {
   @@id([contentId, tagId])
   @@index([tagId])
   @@map("content_tags")
+}
+
+model ContentLink {
+  id        String   @id @default(uuid()) @db.Uuid
+  contentId String   @map("content_id") @db.Uuid
+  title     String   @db.VarChar(200)
+  url       String   @db.VarChar(2048)
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId, order])
+  @@map("content_links")
 }

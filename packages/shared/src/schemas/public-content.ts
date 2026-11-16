@@ -32,8 +32,17 @@ export const publicContentSummarySchema = z.object({
 
 export type PublicContentSummary = z.infer<typeof publicContentSummarySchema>;
 
+export const publicContentLinkSchema = z.object({
+  title: z.string(),
+  url: z.string(),
+  order: z.number().int(),
+});
+
+export type PublicContentLink = z.infer<typeof publicContentLinkSchema>;
+
 export const publicContentDetailSchema = publicContentSummarySchema.extend({
   body: z.string().nullable(),
+  links: z.array(publicContentLinkSchema),
 });
 
 export type PublicContentDetail = z.infer<typeof publicContentDetailSchema>;

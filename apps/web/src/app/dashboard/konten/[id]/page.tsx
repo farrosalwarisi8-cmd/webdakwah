@@ -174,6 +174,7 @@ export default async function SuntingKontenPage({
                   categoryIds: content.categories.map((item) => item.id),
                   tagNames: content.tags.map((item) => item.name),
                   speakerId: content.speaker?.id ?? null,
+                  links: content.links.map((item) => ({ title: item.title, url: item.url })),
                 }}
                 taxonomy={taxonomy}
               />

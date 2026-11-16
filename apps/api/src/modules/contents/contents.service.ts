@@ -42,7 +42,14 @@ const CONTENT_SUMMARY_SELECT = {
   speaker: { select: { id: true, name: true, slug: true } },
 };
 
-const CONTENT_DETAIL_SELECT = { ...CONTENT_SUMMARY_SELECT, body: true };
+const CONTENT_DETAIL_SELECT = {
+  ...CONTENT_SUMMARY_SELECT,
+  body: true,
+  links: {
+    select: { id: true, title: true, url: true, order: true },
+    orderBy: { order: 'asc' as const },
+  },
+};
 
 /** Status yang masih boleh disunting penulis. */
 const AUTHOR_EDITABLE: readonly ContentStatus[] = ['DRAFT', 'REJECTED'];
@@ -272,6 +279,13 @@ export class ContentsService {
         tags: {
           create: tags.map((tag) => ({ tagId: tag.id })),
         },
+        links: {
+          create: (input.links ?? []).map((link, index) => ({
+            title: link.title,
+            url: link.url,
+            order: link.order ?? index,
+          })),
+        },
       },
       select: CONTENT_DETAIL_SELECT,
     });
@@ -304,6 +318,14 @@ export class ContentsService {
       tags: {
         deleteMany: {},
         create: tags.map((tag) => ({ tagId: tag.id })),
+      },
+      links: {
+        deleteMany: {},
+        create: (input.links ?? []).map((link, index) => ({
+          title: link.title,
+          url: link.url,
+          order: link.order ?? index,
+        })),
       },
       ...(input.title === row.title ? {} : { slug: await this.buildSlug(input.title) }),
     };
@@ -425,8 +447,9 @@ export class ContentsService {
             : item,
         )
       : record.tags;
+    const links = Array.isArray(record.links) ? record.links : [];
 
-    return { ...record, categories, tags } as T;
+    return { ...record, categories, tags, links } as T;
   }
 
   private assertPermission(role: AuthProfile['role'], permission: Permission): void {

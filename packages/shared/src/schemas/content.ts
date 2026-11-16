@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { CONTENT_STATUSES, CONTENT_TYPES } from '../constants/content.js';
+import {
+  CONTENT_LINK_TITLE_MAX_LENGTH,
+  CONTENT_STATUSES,
+  CONTENT_TYPES,
+  MAX_CONTENT_LINKS_PER_CONTENT,
+} from '../constants/content.js';
 import { isSafeHttpUrl, paginationQuerySchema } from './common.js';
 import {
   categoryIdsSchema,
@@ -28,6 +33,30 @@ export const contentMediaUrlSchema = z
     'URL harus diawali http:// atau https://',
   );
 
+export const contentLinkTitleSchema = z
+  .string()
+  .trim()
+  .min(1, 'Judul tautan wajib diisi')
+  .max(CONTENT_LINK_TITLE_MAX_LENGTH, `Judul tautan maksimal ${CONTENT_LINK_TITLE_MAX_LENGTH} karakter`);
+
+export const contentLinkUrlSchema = z
+  .string()
+  .trim()
+  .max(2048, 'URL terlalu panjang')
+  .refine((value) => isSafeHttpUrl(value), 'URL harus diawali http:// atau https://');
+
+export const contentLinkSchema = z.object({
+  title: contentLinkTitleSchema,
+  url: contentLinkUrlSchema,
+  order: z.number().int().min(0).optional(),
+});
+
+export type ContentLinkInput = z.infer<typeof contentLinkSchema>;
+
+export const contentLinksSchema = z
+  .array(contentLinkSchema)
+  .max(MAX_CONTENT_LINKS_PER_CONTENT, `Maksimal ${MAX_CONTENT_LINKS_PER_CONTENT} tautan terkait per konten`);
+
 const contentFields = z.object({
   type: z.enum(CONTENT_TYPES),
   title: contentTitleSchema,
@@ -37,6 +66,7 @@ const contentFields = z.object({
   categoryIds: categoryIdsSchema.optional().default([]),
   tagNames: tagNamesSchema.optional().default([]),
   speakerId: speakerIdSchema.optional().default(null),
+  links: contentLinksSchema.optional().default([]),
 });
 
 /**
@@ -107,8 +137,18 @@ export const contentSummarySchema = z.object({
 
 export type ContentSummary = z.infer<typeof contentSummarySchema>;
 
+export const contentLinkDetailSchema = z.object({
+  id: z.uuid(),
+  title: z.string(),
+  url: z.string(),
+  order: z.number().int(),
+});
+
+export type ContentLinkDetail = z.infer<typeof contentLinkDetailSchema>;
+
 export const contentDetailSchema = contentSummarySchema.extend({
   body: z.string().nullable(),
+  links: z.array(contentLinkDetailSchema),
 });
 
 export type ContentDetail = z.infer<typeof contentDetailSchema>;

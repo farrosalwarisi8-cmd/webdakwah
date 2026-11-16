@@ -97,6 +97,26 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                 Konten ini berupa tautan media. Gunakan tombol di atas untuk membukanya.
               </p>
             ) : null}
+
+            {content.links && content.links.length > 0 ? (
+              <section className="mt-8 rounded-2xl border border-ink-200 bg-white p-5">
+                <h2 className="text-sm font-semibold text-ink-900">Referensi</h2>
+                <ul className="mt-3 space-y-2">
+                  {content.links.map((link) => (
+                    <li key={`${link.order}-${link.url}`}>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="text-sm text-brand-700 transition hover:text-brand-800"
+                      >
+                        {link.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
           </article>
         )}
       </main>

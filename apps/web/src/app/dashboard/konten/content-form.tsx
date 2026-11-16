@@ -1,6 +1,11 @@
 'use client';
 
-import { CONTENT_TYPES, CONTENT_TYPE_LABELS, type ContentType } from '@webdakwah/shared';
+import {
+  CONTENT_LINK_TYPES,
+  CONTENT_TYPES,
+  CONTENT_TYPE_LABELS,
+  type ContentType,
+} from '@webdakwah/shared';
 import { useActionState, useState } from 'react';
 
 import type { ContentFormState } from './form-state';
@@ -23,6 +28,7 @@ interface ContentFormProps {
     categoryIds?: string[];
     tagNames?: string[];
     speakerId?: string | null;
+    links?: { title: string; url: string }[];
   };
   taxonomy?: {
     categories: TaxonomyOption[];
@@ -46,8 +52,37 @@ export function ContentForm({
   const [state, formAction, pending] = useActionState(action, { error: null });
   const [type, setType] = useState<ContentType>(initial?.type ?? 'ARTICLE');
   const [mediaUrl, setMediaUrl] = useState(initial?.mediaUrl ?? '');
+  const [links, setLinks] = useState<{ title: string; url: string }[]>(initial?.links ?? []);
 
   const needsMedia = type !== 'ARTICLE';
+  const supportsLinks = (CONTENT_LINK_TYPES as readonly string[]).includes(type);
+
+  function addLink() {
+    if (links.length >= 10) return;
+    setLinks((prev) => [...prev, { title: '', url: '' }]);
+  }
+
+  function removeLink(index: number) {
+    setLinks((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateLink(index: number, field: 'title' | 'url', value: string) {
+    setLinks((prev) =>
+      prev.map((link, i) => (i === index ? { ...link, [field]: value } : link)),
+    );
+  }
+
+  function moveLink(index: number, direction: -1 | 1) {
+    setLinks((prev) => {
+      const next = [...prev];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return prev;
+      const temp = next[index];
+      next[index] = next[target] as { title: string; url: string };
+      next[target] = temp as { title: string; url: string };
+      return next;
+    });
+  }
 
   return (
     <form action={formAction} className="mt-6 space-y-5">
@@ -210,6 +245,74 @@ export function ContentForm({
           saat mengajukan review.
         </p>
       </div>
+
+      {supportsLinks ? (
+        <div>
+          <label className={labelClass}>
+            Tautan Terkait{' '}
+            <span className="font-normal text-ink-500">(maksimal 10, opsional)</span>
+          </label>
+          <div className="mt-1.5 space-y-2">
+            {links.map((link, index) => (
+              <div key={index} className="flex flex-col gap-2 rounded-xl border border-ink-200 bg-white p-3 sm:flex-row sm:items-center">
+                <input
+                  aria-label="Judul tautan"
+                  name="linkTitle"
+                  value={link.title}
+                  onChange={(event) => updateLink(index, 'title', event.target.value)}
+                  className={fieldClass}
+                  placeholder="Judul tautan"
+                />
+                <input
+                  aria-label="URL tautan"
+                  name="linkUrl"
+                  type="url"
+                  value={link.url}
+                  onChange={(event) => updateLink(index, 'url', event.target.value)}
+                  className={fieldClass}
+                  placeholder="https://contoh.com"
+                />
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveLink(index, -1)}
+                    disabled={index === 0}
+                    className="rounded-lg border border-ink-200 px-2 py-1 text-xs text-ink-600 disabled:opacity-40"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveLink(index, 1)}
+                    disabled={index === links.length - 1}
+                    className="rounded-lg border border-ink-200 px-2 py-1 text-xs text-ink-600 disabled:opacity-40"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeLink(index)}
+                    className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addLink}
+            disabled={links.length >= 10}
+            className="mt-2 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-ink-300 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Tambah tautan
+          </button>
+          {links.length === 0 ? (
+            <p className="mt-1.5 text-xs text-ink-500">Belum ada tautan terkait.</p>
+          ) : null}
+        </div>
+      ) : null}
 
       {state.error ? (
         <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700">

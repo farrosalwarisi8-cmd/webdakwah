@@ -37,4 +37,10 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
 /** Jenis konten yang boleh punya "tautan terkait" (ContentLink). */
 export const CONTENT_LINK_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO'] as const;
 
+/** Batas jumlah tautan terkait per konten. */
+export const MAX_CONTENT_LINKS_PER_CONTENT = 10;
+
+/** Panjang maksimal judul tautan terkait. */
+export const CONTENT_LINK_TITLE_MAX_LENGTH = 200;
+
 export type ContentLinkType = (typeof CONTENT_LINK_TYPES)[number];

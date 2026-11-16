@@ -27,8 +27,9 @@ function mapPublicContent<T>(row: T): T {
           : item,
       )
     : record.tags;
+  const links = Array.isArray(record.links) ? record.links : [];
 
-  return { ...record, categories, tags } as T;
+  return { ...record, categories, tags, links } as T;
 }
 
 const PUBLIC_CONTENT_TYPES = ['ARTICLE', 'AUDIO', 'VIDEO', 'LINK'] as const;
@@ -48,7 +49,14 @@ const PUBLIC_SUMMARY_SELECT = {
   speaker: { select: { name: true, slug: true } },
 };
 
-const PUBLIC_DETAIL_SELECT = { ...PUBLIC_SUMMARY_SELECT, body: true };
+const PUBLIC_DETAIL_SELECT = {
+  ...PUBLIC_SUMMARY_SELECT,
+  body: true,
+  links: {
+    select: { title: true, url: true, order: true },
+    orderBy: { order: 'asc' as const },
+  },
+};
 
 @Injectable()
 export class PublicContentsService {
