@@ -18,6 +18,7 @@ import {
 } from './modules/throttling/throttling.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { StatsModule } from './modules/stats/stats.module.js';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from './modules/users/users.module.js';
     TaxonomyModule,
     UploadsModule,
     UsersModule,
+    StatsModule,
     HealthModule,
   ],
   providers: [

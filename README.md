@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 14 — Manajemen pengguna**. Admin dapat membuat, menonaktifkan, mengubah role,
-> dan menghapus akun pengguna melalui `/dashboard/pengguna`.
+> Status: **Fase 15 — Dashboard statistik**. Admin dapat melihat ringkasan konten per status/jenis,
+> total pengguna, dan aktivitas terbaru melalui `/dashboard/statistik`.
 
 ## Teknologi
 

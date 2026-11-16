@@ -47,6 +47,12 @@ export async function DashboardHeader() {
               >
                 Pengguna
               </Link>
+              <Link
+                href="/dashboard/statistik"
+                className="text-ink-600 transition hover:text-brand-700"
+              >
+                Statistik
+              </Link>
             </>
           ) : null}
           <Link
