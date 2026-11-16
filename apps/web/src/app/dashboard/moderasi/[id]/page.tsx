@@ -7,6 +7,7 @@ import { DashboardHeader } from '@/components/dashboard-header';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 import { formatDateTime } from '@/lib/format';
+import { renderBodyHtml } from '@/lib/body-html';
 
 import { publishContentAction, rejectContentAction } from '../actions';
 
@@ -113,9 +114,10 @@ export default async function TinjauKontenPage({
             ) : null}
 
             {content.body ? (
-              <article className="mt-4 whitespace-pre-line rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800">
-                {content.body}
-              </article>
+              <article
+                className="mt-4 rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800"
+                dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
+              />
             ) : (
               <p className="mt-4 rounded-2xl bg-ink-100 px-4 py-3 text-sm text-ink-600">
                 Tidak ada isi teks. Tinjau tautan media di atas.

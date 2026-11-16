@@ -10,6 +10,7 @@ import { useActionState, useState } from 'react';
 
 import type { ContentFormState } from './form-state';
 import { MediaUploadField } from './media-upload-field';
+import { RichTextEditor } from './rich-text-editor';
 
 interface TaxonomyOption {
   id: string;
@@ -227,16 +228,12 @@ export function ContentForm({
             <span className="font-normal text-ink-500"> (opsional)</span>
           )}
         </label>
-        <textarea
-          id="body"
+        <RichTextEditor
           name="body"
-          rows={type === 'ARTICLE' ? 14 : 6}
-          maxLength={50000}
-          defaultValue={initial?.body ?? ''}
-          className={fieldClass}
+          initialValue={initial?.body ?? ''}
           placeholder={
             type === 'ARTICLE'
-              ? 'Tulis artikel di sini. Gunakan baris kosong untuk memisahkan paragraf.'
+              ? 'Tulis artikel di sini.'
               : 'Keterangan singkat tentang media ini.'
           }
         />

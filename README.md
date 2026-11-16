@@ -3,8 +3,8 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 12 — Tautan terkait (ContentLink)**. Konten artikel/audio/video dapat memuat
-> hingga 10 tautan terkait yang ikut alur review; tampil sebagai kotak "Referensi" di halaman publik.
+> Status: **Fase 13 — Editor Tiptap dan sanitasi HTML**. Isi konten ditulis dengan editor rich text
+> (Tiptap) dan disanitasi di API sebelum disimpan; halaman publik merender HTML yang aman.
 
 ## Teknologi
 

@@ -17,6 +17,7 @@ import {
   type Permission,
 } from '@webdakwah/shared';
 import { randomUUID } from 'node:crypto';
+import sanitizeHtml from 'sanitize-html';
 
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -61,6 +62,17 @@ function emptyToNull(value: string | undefined): string | null {
   const trimmed = value?.trim();
 
   return trimmed ? trimmed : null;
+}
+
+/** Sanitasi HTML isi konten agar skrip/atribut berbahaya tidak tersimpan. */
+function sanitizeBody(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+
+  if (!trimmed) return null;
+
+  const cleaned = sanitizeHtml(trimmed);
+
+  return cleaned.trim() ? cleaned : null;
 }
 
 function slugify(value: string): string {
@@ -270,7 +282,7 @@ export class ContentsService {
         title: input.title,
         slug: await this.buildSlug(input.title),
         excerpt: emptyToNull(input.excerpt),
-        body: emptyToNull(input.body),
+        body: sanitizeBody(input.body),
         mediaUrl: emptyToNull(input.mediaUrl),
         speakerId: input.speakerId ?? null,
         categories: {

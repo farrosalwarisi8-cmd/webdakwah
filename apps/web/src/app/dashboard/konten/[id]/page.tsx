@@ -12,6 +12,7 @@ import { ConfirmButton } from '@/components/confirm-button';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
+import { renderBodyHtml } from '@/lib/body-html';
 import { STATUS_BADGE_STYLES, isAuthorEditable } from '@/lib/content-ui';
 import { formatDate, formatDateTime } from '@/lib/format';
 
@@ -179,9 +180,10 @@ export default async function SuntingKontenPage({
                 taxonomy={taxonomy}
               />
             ) : content.body ? (
-              <article className="mt-6 whitespace-pre-line rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800">
-                {content.body}
-              </article>
+              <article
+                className="mt-6 rounded-3xl border border-ink-200 bg-white p-6 text-sm leading-relaxed text-ink-800"
+                dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
+              />
             ) : null}
 
             <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink-200 pt-6">

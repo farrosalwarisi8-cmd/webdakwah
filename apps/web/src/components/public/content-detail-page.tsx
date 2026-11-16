@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { PublicApiError, getPublicContent } from '@/lib/api/public';
+import { renderBodyHtml } from '@/lib/body-html';
 import { CONTENT_SECTIONS, sectionPath } from '@/lib/content-routes';
 import { formatDate } from '@/lib/format';
 
@@ -89,9 +90,10 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
             ) : null}
 
             {content.body ? (
-              <div className="mt-8 whitespace-pre-line text-base leading-relaxed text-ink-800">
-                {content.body}
-              </div>
+              <div
+                className="mt-8 text-base leading-relaxed text-ink-800"
+                dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
+              />
             ) : content.type !== 'ARTICLE' ? (
               <p className="mt-8 rounded-2xl bg-ink-100 px-4 py-3 text-sm text-ink-600">
                 Konten ini berupa tautan media. Gunakan tombol di atas untuk membukanya.
