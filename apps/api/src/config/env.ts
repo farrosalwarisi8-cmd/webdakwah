@@ -40,8 +40,22 @@ export const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * Variabel opsional yang dikosongkan (mis. `R2_ACCOUNT_ID=` dari `.env` atau
+ * dashboard hosting) diperlakukan sebagai tidak diisi, bukan sebagai string
+ * kosong. Tanpa ini, field seperti URL/min-length menolak nilai kosong dan
+ * server gagal start meski fitur tersebut memang belum dipakai.
+ */
+function withoutEmptyValues(config: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(config).filter(
+      ([, value]) => !(typeof value === 'string' && value.trim() === ''),
+    ),
+  );
+}
+
 export function validateEnv(config: Record<string, unknown>): Env {
-  const parsed = envSchema.safeParse(config);
+  const parsed = envSchema.safeParse(withoutEmptyValues(config));
 
   if (!parsed.success) {
     const details = parsed.error.issues
