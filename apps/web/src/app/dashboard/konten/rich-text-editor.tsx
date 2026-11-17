@@ -1,6 +1,11 @@
 'use client';
 
+import type { Editor } from '@tiptap/core';
 import Image from '@tiptap/extension-image';
+import { Table } from '@tiptap/extension-table';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableRow } from '@tiptap/extension-table-row';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
@@ -11,6 +16,8 @@ import {
 } from '@webdakwah/shared';
 import { useEffect, useRef, useState } from 'react';
 
+import { DirectionalHeading, DirectionalParagraph } from './directional-extensions';
+import { QuoteBlock, type QuoteBlockKind } from './quote-block-extension';
 import { requestUploadAction } from './upload-actions';
 
 interface RichTextEditorProps {
@@ -21,14 +28,33 @@ interface RichTextEditorProps {
 
 const imageMaxMegabytes = Math.max(...UPLOAD_IMAGE_MIME_TYPES.map(uploadMaxMegabytes));
 
+function directionalTarget(editor: Editor | null): 'paragraph' | 'heading' | null {
+  if (!editor) return null;
+  if (editor.isActive('heading')) return 'heading';
+  if (editor.isActive('paragraph')) return 'paragraph';
+
+  return null;
+}
+
 export function RichTextEditor({ name, initialValue, placeholder }: RichTextEditorProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const editor = useEditor({
-    extensions: [StarterKit, Image.configure({ allowBase64: false })],
+    extensions: [
+      StarterKit.configure({ paragraph: false, heading: false }),
+      DirectionalParagraph,
+      DirectionalHeading,
+      Image.configure({ allowBase64: false }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      QuoteBlock,
+    ],
     content: initialValue ?? '',
     immediatelyRender: false,
+    shouldRerenderOnTransaction: true,
     editorProps: {
       attributes: {
         class:
@@ -46,6 +72,26 @@ export function RichTextEditor({ name, initialValue, placeholder }: RichTextEdit
     const input = document.getElementById(`${name}-input`) as HTMLInputElement | null;
     if (input && editor) input.value = editor.getHTML();
   }, [editor, name]);
+
+  const activeTarget = directionalTarget(editor);
+  const rtlActive = activeTarget !== null && editor?.getAttributes(activeTarget).dir === 'rtl';
+
+  function toggleRtl() {
+    const target = directionalTarget(editor);
+
+    if (!editor || !target) return;
+
+    const isRtl = editor.getAttributes(target).dir === 'rtl';
+    editor
+      .chain()
+      .focus()
+      .updateAttributes(target, { dir: isRtl ? null : 'rtl' })
+      .run();
+  }
+
+  function insertQuote(kind: QuoteBlockKind) {
+    editor?.chain().focus().insertContent({ type: 'quoteBlock', attrs: { kind } }).run();
+  }
 
   async function handleImageFile(file: File) {
     setImageError(null);
@@ -136,6 +182,53 @@ export function RichTextEditor({ name, initialValue, placeholder }: RichTextEdit
           />
           <span aria-hidden className="mx-1 h-6 w-px bg-ink-200" />
           <ToolbarButton
+            onClick={toggleRtl}
+            active={rtlActive}
+            disabled={activeTarget === null}
+            label="Arab RTL"
+          />
+          <ToolbarButton onClick={() => insertQuote('AYAH')} active={false} label="Ayat" />
+          <ToolbarButton onClick={() => insertQuote('HADITH')} active={false} label="Hadis" />
+          <span aria-hidden className="mx-1 h-6 w-px bg-ink-200" />
+          {editor?.isActive('table') ? (
+            <>
+              <ToolbarButton
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+                active={false}
+                label="+Baris"
+              />
+              <ToolbarButton
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+                active={false}
+                label="+Kolom"
+              />
+              <ToolbarButton
+                onClick={() => editor.chain().focus().deleteRow().run()}
+                active={false}
+                label="−Baris"
+              />
+              <ToolbarButton
+                onClick={() => editor.chain().focus().deleteColumn().run()}
+                active={false}
+                label="−Kolom"
+              />
+              <ToolbarButton
+                onClick={() => editor.chain().focus().deleteTable().run()}
+                active={false}
+                label="Hapus tabel"
+              />
+            </>
+          ) : (
+            <ToolbarButton
+              onClick={() =>
+                editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+              }
+              active={false}
+              label="Tabel"
+            />
+          )}
+          <span aria-hidden className="mx-1 h-6 w-px bg-ink-200" />
+          <ToolbarButton
             onClick={() => imageInputRef.current?.click()}
             active={false}
             disabled={uploadingImage}
@@ -166,7 +259,8 @@ export function RichTextEditor({ name, initialValue, placeholder }: RichTextEdit
           </p>
         ) : (
           <p className="px-3.5 pb-2.5 text-xs text-ink-500">
-            Sisipkan gambar JPEG, PNG, WebP, atau GIF maksimal {imageMaxMegabytes} MB.
+            Sisipkan gambar JPEG, PNG, WebP, atau GIF maksimal {imageMaxMegabytes} MB. Gunakan
+            Ayat/Hadis untuk kutipan Arab beserta terjemahan, dan Arab RTL untuk paragraf Arab.
           </p>
         )}
       </div>

@@ -70,6 +70,7 @@ export const CONTENT_HTML_TAGS = [
   'ol',
   'li',
   'blockquote',
+  'div',
   'a',
   'img',
   'hr',

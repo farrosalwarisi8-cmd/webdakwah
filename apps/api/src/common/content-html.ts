@@ -17,8 +17,18 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedAttributes: {
     a: ['href', 'title', 'target', 'rel'],
     img: ['src', 'alt', 'title', 'loading', 'decoding', 'referrerpolicy'],
+    div: ['class', 'data-quote-block', 'data-kind'],
+    p: ['class', 'dir', 'lang'],
+    h2: ['dir', 'lang'],
+    h3: ['dir', 'lang'],
+    h4: ['dir', 'lang'],
+    blockquote: ['dir', 'lang'],
     th: ['colspan', 'rowspan'],
     td: ['colspan', 'rowspan'],
+  },
+  allowedClasses: {
+    div: ['quote-block'],
+    p: ['quote-source', 'quote-arabic', 'quote-translation'],
   },
   allowedSchemes: ['http', 'https'],
   allowedSchemesByTag: {
@@ -32,6 +42,20 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     frame.tag === 'img' &&
     (typeof frame.attribs.src !== 'string' || !isSafeHttpUrl(frame.attribs.src)),
   transformTags: {
+    div: (tagName, attribs) => {
+      if (!('data-quote-block' in attribs)) {
+        return { tagName, attribs: {} as Record<string, string> };
+      }
+
+      return {
+        tagName,
+        attribs: {
+          class: 'quote-block',
+          'data-quote-block': '',
+          'data-kind': attribs['data-kind'] === 'HADITH' ? 'HADITH' : 'AYAH',
+        },
+      };
+    },
     a: (tagName, attribs) => {
       const href = attribs.href;
 

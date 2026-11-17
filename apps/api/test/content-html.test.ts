@@ -78,6 +78,57 @@ describe('sanitizeContentBody', () => {
     expect(cleaned).not.toContain('href="//contoh.com"');
   });
 
+  it('mempertahankan blok Ayat/Hadis dan arah RTL tanpa atribut asing', () => {
+    const body = [
+      '<div data-quote-block data-kind="HADITH" class="quote-block jahat" onclick="alert(1)">',
+      '<p class="quote-source">Hadis · HR. Bukhari no. 1</p>',
+      '<p class="quote-arabic" dir="rtl" lang="ar" style="color:red">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ</p>',
+      '<p class="quote-translation" dir="ltr">Sesungguhnya amal bergantung pada niat.</p>',
+      '<script>alert(1)</script>',
+      '</div>',
+    ].join('');
+
+    const cleaned = sanitizeContentBody(body);
+
+    expect(cleaned).toContain('data-quote-block');
+    expect(cleaned).toContain('data-kind="HADITH"');
+    expect(cleaned).toContain('class="quote-block"');
+    expect(cleaned).toContain('dir="rtl"');
+    expect(cleaned).toContain('lang="ar"');
+    expect(cleaned).toContain('quote-translation');
+    expect(cleaned).not.toContain('jahat');
+    expect(cleaned).not.toContain('style=');
+    expect(cleaned).not.toContain('onclick');
+    expect(cleaned).not.toContain('script');
+  });
+
+  it('menormalkan jenis blok kutipan yang tidak dikenal', () => {
+    const cleaned = sanitizeContentBody(
+      '<div data-quote-block data-kind="SCRIPT"><p class="quote-arabic" dir="rtl">العلم</p></div>',
+    );
+
+    expect(cleaned).toContain('data-kind="AYAH"');
+    expect(cleaned).not.toContain('SCRIPT');
+  });
+
+  it('mempertahankan tabel beserta colspan/rowspan dan membuang event handler', () => {
+    const cleaned = sanitizeContentBody(
+      [
+        '<table onmouseover="alert(1)">',
+        '<thead><tr><th colspan="2" onclick="alert(1)">Judul</th></tr></thead>',
+        '<tbody><tr><td rowspan="2">Isi</td><td>Nilai</td></tr></tbody>',
+        '</table>',
+      ].join(''),
+    );
+
+    expect(cleaned).toContain('<table>');
+    expect(cleaned).toContain('colspan="2"');
+    expect(cleaned).toContain('rowspan="2"');
+    expect(cleaned).toContain('<th colspan="2">Judul</th>');
+    expect(cleaned).not.toContain('onmouseover');
+    expect(cleaned).not.toContain('onclick');
+  });
+
   it('mempertahankan teks polos lama yang memuat tanda lebih kecil', () => {
     const plain = 'Nilai 5 < 10 dan a < b.\nBaris kedua.';
 

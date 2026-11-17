@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 19 — Siaran langsung**. Admin dapat mengatur alamat dengar radio mitra dan jadwal
-> siaran; pengunjung memutar siaran di `/siaran` tanpa meninggalkan halaman. Kredensial panel
-> radio tidak pernah disimpan di aplikasi.
+> Status: **Fase 20 — Editor tabel, RTL Arab, dan blok Ayat/Hadis**. Editor kini mendukung tabel,
+> arah tulisan Arab, serta kutipan Ayat/Hadis dengan sumber dan terjemahan. Semua markup tetap
+> melewati allowlist sanitizer sebelum disimpan dan ditampilkan.
 
 ## Teknologi
 
@@ -74,6 +74,9 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Konten audio dapat memiliki transkrip teks polos hingga 100.000 karakter. Transkrip hanya
   disimpan untuk jenis AUDIO, tampil dalam accordion di halaman audio, dan terlihat oleh admin
   saat meninjau. Baris baru dipertahankan; teks dirender sebagai teks, bukan HTML.
+- Editor mendukung **tabel** (sisip 3×3, tambah/hapus baris dan kolom), tombol **Arab RTL** untuk
+  paragraf/judul berbahasa Arab, serta blok **Ayat** dan **Hadis** berisi sumber, teks Arab, dan
+  terjemahan. Blok kutipan tampil dengan latar aksen dan font Arab Amiri di halaman publik.
 
 ### Sanitasi isi konten
 
@@ -81,7 +84,11 @@ Isi konten disanitasi dengan allowlist di API, baik saat disimpan maupun saat di
 serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan ketika dikirim.
 
 - Tag yang diizinkan: `p`, `br`, `h2`–`h4`, `strong`, `em`, `u`, `s`, daftar (`ul`/`ol`/`li`),
-  `blockquote`, `a`, `hr`, `img`, dan tabel.
+  `blockquote`, `div`, `a`, `hr`, `img`, dan tabel.
+- Blok Ayat/Hadis hanya memakai `div.quote-block` dengan `data-quote-block` dan `data-kind`
+  (`AYAH`/`HADITH`, nilai lain dinormalkan). Kelas paragraf dibatasi ke `quote-source`,
+  `quote-arabic`, dan `quote-translation`; `dir` hanya dipertahankan untuk `rtl`. Kelas, atribut
+  `data-*` lain, dan event handler di luar itu dibuang.
 - Tautan hanya boleh `http://` atau `https://`; `javascript:`, `data:`, dan URL relatif dibuang.
   Setiap tautan aman mendapat `target="_blank"` dan `rel="noopener noreferrer nofollow"`.
 - Gambar hanya boleh `src` berprotokol `http://`/`https://` dengan atribut `src`, `alt`, dan
