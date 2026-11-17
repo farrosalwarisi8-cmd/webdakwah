@@ -1,7 +1,8 @@
-import { ROLE_LABELS } from '@webdakwah/shared';
-import { BookOpen, ExternalLink } from 'lucide-react';
+import { notificationUnreadSchema, ROLE_LABELS } from '@webdakwah/shared';
+import { Bell, BookOpen, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
+import { apiFetch } from '@/lib/api/server';
 import { signOutAction } from '@/lib/auth/actions';
 import { getViewer } from '@/lib/auth/viewer';
 
@@ -18,6 +19,15 @@ export async function DashboardHeader() {
   const viewer = await getViewer();
   const profile = viewer.status === 'authenticated' ? viewer.profile : null;
   const displayName = profile?.fullName ?? profile?.email ?? '';
+  let unread = 0;
+
+  if (profile) {
+    try {
+      unread = notificationUnreadSchema.parse(await apiFetch('/notifications/unread-count')).unread;
+    } catch {
+      // Lonceng tidak boleh membuat dashboard gagal tampil.
+    }
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-surface-soft/95 backdrop-blur">
@@ -30,6 +40,21 @@ export async function DashboardHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
+          {profile ? (
+            <Link
+              href="/dashboard/notifikasi"
+              aria-label={unread > 0 ? `Notifikasi, ${unread} belum dibaca` : 'Notifikasi'}
+              className="relative grid size-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+            >
+              <Bell aria-hidden className="size-4.5" />
+              {unread > 0 ? (
+                <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-accent-500 px-1 text-[10px] leading-5 font-bold text-ink-950">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+
           <Link
             href="/"
             className="hidden min-h-11 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700 sm:inline-flex"

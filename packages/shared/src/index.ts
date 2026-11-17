@@ -7,6 +7,7 @@ export * from './html.js';
 export * from './schemas/common.js';
 export * from './schemas/content.js';
 export * from './schemas/live.js';
+export * from './schemas/notification.js';
 export * from './schemas/taxonomy.js';
 export * from './schemas/public-content.js';
 export * from './schemas/profile.js';

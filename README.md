@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 20 — Editor tabel, RTL Arab, dan blok Ayat/Hadis**. Editor kini mendukung tabel,
-> arah tulisan Arab, serta kutipan Ayat/Hadis dengan sumber dan terjemahan. Semua markup tetap
-> melewati allowlist sanitizer sebelum disimpan dan ditampilkan.
+> Status: **Fase 21 — Notifikasi review**. Kontributor mendapat kabar saat kontennya diterbitkan
+> atau ditolak, admin mendapat kabar saat ada kiriman baru, dan lonceng dashboard menandai yang
+> belum dibaca.
 
 ## Teknologi
 
@@ -77,6 +77,12 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
 - Editor mendukung **tabel** (sisip 3×3, tambah/hapus baris dan kolom), tombol **Arab RTL** untuk
   paragraf/judul berbahasa Arab, serta blok **Ayat** dan **Hadis** berisi sumber, teks Arab, dan
   terjemahan. Blok kutipan tampil dengan latar aksen dan font Arab Amiri di halaman publik.
+- **Notifikasi review** dibuat otomatis saat konten diajukan (untuk semua admin aktif lain),
+  diterbitkan, atau ditolak (untuk penulis). Lonceng di header dashboard menampilkan jumlah yang
+  belum dibaca; halaman `/dashboard/notifikasi` memiliki daftar, penanda baru, paginasi, tombol
+  **Tandai dibaca**, dan **Tandai semua dibaca**. Setiap pengguna hanya bisa membaca dan menandai
+  notifikasinya sendiri. Pembuatan notifikasi bersifat best-effort: kegagalan notifikasi tidak
+  membatalkan terbit/tolak yang sudah berhasil.
 
 ### Sanitasi isi konten
 
@@ -102,28 +108,31 @@ serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan 
 
 Endpoint API (semua butuh Bearer token):
 
-| Metode & path                         | Keterangan                                     |
-| ------------------------------------- | ---------------------------------------------- |
-| `GET /api/contents/mine`              | Daftar konten sendiri (`?status=`, `?page=`)   |
-| `GET /api/contents/:id`               | Detail untuk pemilik atau admin                |
-| `POST /api/contents`                  | Buat draft baru                                |
-| `PATCH /api/contents/:id`             | Sunting draft/konten ditolak                   |
-| `POST /api/contents/:id/submit`       | Ajukan review (validasi kelengkapan)           |
-| `POST /api/contents/:id/withdraw`     | Tarik kembali ke draft                         |
-| `DELETE /api/contents/:id`            | Hapus draft/konten ditolak                     |
-| `GET /api/contents/review`            | Antrean `PENDING_REVIEW` (admin saja)          |
-| `POST /api/contents/:id/publish`      | Terbitkan konten (admin saja)                  |
-| `POST /api/contents/:id/reject`       | Tolak + catatan wajib (admin saja)             |
-| `GET /api/contents/managed`           | Daftar terbit/arsip (admin saja)               |
-| `POST /api/contents/:id/archive`      | Arsipkan konten terbit (admin saja)            |
-| `POST /api/contents/:id/unarchive`    | Pulihkan konten arsip (admin saja)             |
-| `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif) |
-| `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                 |
-| `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)            |
-| `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)               |
-| `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)              |
-| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                |
-| `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja)               |
+| Metode & path                         | Keterangan                                      |
+| ------------------------------------- | ----------------------------------------------- |
+| `GET /api/contents/mine`              | Daftar konten sendiri (`?status=`, `?page=`)    |
+| `GET /api/contents/:id`               | Detail untuk pemilik atau admin                 |
+| `POST /api/contents`                  | Buat draft baru                                 |
+| `PATCH /api/contents/:id`             | Sunting draft/konten ditolak                    |
+| `POST /api/contents/:id/submit`       | Ajukan review (validasi kelengkapan)            |
+| `POST /api/contents/:id/withdraw`     | Tarik kembali ke draft                          |
+| `DELETE /api/contents/:id`            | Hapus draft/konten ditolak                      |
+| `GET /api/contents/review`            | Antrean `PENDING_REVIEW` (admin saja)           |
+| `POST /api/contents/:id/publish`      | Terbitkan konten (admin saja)                   |
+| `POST /api/contents/:id/reject`       | Tolak + catatan wajib (admin saja)              |
+| `GET /api/contents/managed`           | Daftar terbit/arsip (admin saja)                |
+| `POST /api/contents/:id/archive`      | Arsipkan konten terbit (admin saja)             |
+| `POST /api/contents/:id/unarchive`    | Pulihkan konten arsip (admin saja)              |
+| `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif)  |
+| `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                  |
+| `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)             |
+| `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)                |
+| `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)               |
+| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                 |     | `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja) |
+| `GET /api/notifications?page=`        | Notifikasi milik pengguna + jumlah belum dibaca |
+| `GET /api/notifications/unread-count` | Jumlah notifikasi belum dibaca                  |
+| `POST /api/notifications/:id/read`    | Tandai satu notifikasi milik sendiri            |
+| `POST /api/notifications/read-all`    | Tandai semua notifikasi sendiri sebagai dibaca  |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -192,6 +201,23 @@ tidak memuat email penulis, catatan review, atau status internal.
 - Aktif hanya bila API dan web sama-sama mengisi `FRONTEND_REVALIDATE_URL` dan
   `REVALIDATE_SECRET` (minimal 16 karakter). Tanpa itu, konten baru muncul paling lama 60 detik
   kemudian dan aksi admin tetap berhasil (webhook bersifat best-effort).
+
+## Notifikasi Review (Fase 21)
+
+Tabel `notifications` menyimpan satu baris per penerima dengan `type`
+(`CONTENT_SUBMITTED`, `CONTENT_PUBLISHED`, `CONTENT_REJECTED`), judul, pesan, tautan dashboard,
+`content_id`, dan status baca. RLS membatasi `SELECT`/`UPDATE` ke `auth.uid() = user_id`; API
+tetap menambahkan filter `user_id` pada setiap query.
+
+- **Diajukan** → semua profil `ADMIN` yang aktif selain pengaju mendapat notifikasi menuju
+  `/dashboard/moderasi/<id>`.
+- **Diterbitkan / ditolak** → penulis mendapat notifikasi menuju `/dashboard/konten/<id>`;
+  penolakan menyertakan catatan admin (dipotong hingga batas kolom). Admin yang menerbitkan
+  kontennya sendiri tidak mengirim notifikasi ke diri sendiri.
+- Judul dan pesan disalin saat notifikasi dibuat, jadi riwayat tetap terbaca bila konten berubah.
+  Menghapus konten ikut menghapus notifikasi terkait melalui `ON DELETE CASCADE`.
+- Notifikasi dibuat setelah transisi konten berhasil dan dibungkus best-effort: kegagalan menulis
+  notifikasi dicatat sebagai peringatan, bukan menggagalkan aksi utama.
 
 ## Siaran Langsung (Fase 19)
 

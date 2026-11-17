@@ -20,6 +20,7 @@ import { randomUUID } from 'node:crypto';
 
 import { sanitizeContentBody, sanitizeContentBodyForRead } from '../../common/content-html.js';
 import type { AuthProfile } from '../auth/auth.types.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RevalidationService } from '../revalidation/revalidation.service.js';
 import { StorageService } from '../storage/storage.service.js';
@@ -84,6 +85,7 @@ export class ContentsService {
     private readonly revalidation?: RevalidationService,
     @Optional() private readonly storage?: StorageService,
     @Optional() private readonly taxonomy?: TaxonomyService,
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
 
   async listMine(profile: AuthProfile, query: ContentListQuery) {
@@ -216,6 +218,7 @@ export class ContentsService {
       select: CONTENT_DETAIL_SELECT,
     });
 
+    await this.notifications?.notifyPublished(profile, updated);
     await this.revalidation?.trigger();
 
     return this.mapContent(updated);
@@ -237,6 +240,8 @@ export class ContentsService {
       data: { status: 'REJECTED', reviewNote: parsed.data.reviewNote },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.notifications?.notifyRejected(profile, updated);
 
     return this.mapContent(updated);
   }
@@ -385,6 +390,8 @@ export class ContentsService {
       data: { status: 'PENDING_REVIEW', reviewNote: null },
       select: CONTENT_DETAIL_SELECT,
     });
+
+    await this.notifications?.notifySubmitted(profile, updated);
 
     return this.mapContent(updated);
   }

@@ -3,6 +3,7 @@
 import {
   Archive,
   BarChart3,
+  Bell,
   FileText,
   LayoutDashboard,
   Plus,
@@ -25,6 +26,7 @@ interface NavItem {
 
 const ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Ringkasan', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
   { href: '/dashboard/konten', label: 'Konten saya', icon: FileText, exact: true },
   { href: '/dashboard/konten/baru', label: 'Buat konten', icon: Plus },
   { href: '/dashboard/moderasi', label: 'Review konten', icon: ShieldCheck, adminOnly: true },

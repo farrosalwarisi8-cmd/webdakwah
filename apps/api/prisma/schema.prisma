@@ -28,8 +28,9 @@ model Profile {
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  contents  Content[]
-  uploads   UploadRequestLog[]
+  contents      Content[]
+  uploads       UploadRequestLog[]
+  notifications Notification[]
 
   @@map("profiles")
 }
@@ -70,9 +71,10 @@ model Content {
 
   author      Profile @relation(fields: [authorId], references: [id], onDelete: Cascade)
   speaker     Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
-  categories  ContentCategory[]
-  tags        ContentTag[]
-  links       ContentLink[]
+  categories    ContentCategory[]
+  tags          ContentTag[]
+  links         ContentLink[]
+  notifications Notification[]
 
   @@index([authorId, updatedAt])
   @@index([status, publishedAt])
@@ -198,6 +200,35 @@ model BroadcastSchedule {
   @@index([dayOfWeek, startTime])
   @@index([date])
   @@map("broadcast_schedules")
+}
+
+enum NotificationType {
+  CONTENT_SUBMITTED
+  CONTENT_PUBLISHED
+  CONTENT_REJECTED
+}
+
+/// Pemberitahuan untuk satu penerima. `title` dan `message` disalin saat
+/// dibuat agar riwayat tetap terbaca walau konten diubah; `href` hanya berisi
+/// rute dashboard internal yang dibuat server.
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String           @db.VarChar(200)
+  message   String?          @db.VarChar(500)
+  href      String?          @db.VarChar(300)
+  contentId String?          @map("content_id") @db.Uuid
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user    Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content Content? @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+  @@index([contentId])
+  @@map("notifications")
 }
 
 model ContentLink {

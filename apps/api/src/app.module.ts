@@ -10,6 +10,7 @@ import { RolesGuard } from './modules/auth/roles.guard.js';
 import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
 import { ContentsModule } from './modules/contents/contents.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { PublicContentsModule } from './modules/public/public-contents.module.js';
 import { TaxonomyModule } from './modules/taxonomy/taxonomy.module.js';
 import {
@@ -43,6 +44,7 @@ import { StatsModule } from './modules/stats/stats.module.js';
     AuthModule,
     BroadcastModule,
     ContentsModule,
+    NotificationsModule,
     PublicContentsModule,
     TaxonomyModule,
     UploadsModule,
