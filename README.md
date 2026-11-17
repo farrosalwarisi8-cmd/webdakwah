@@ -3,8 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 18 — Transkrip audio**. Kontributor dapat menambahkan transkrip teks pada konten
-> audio; transkrip tampil sebagai accordion di halaman publik dan ikut ditinjau admin.
+> Status: **Fase 19 — Siaran langsung**. Admin dapat mengatur alamat dengar radio mitra dan jadwal
+> siaran; pengunjung memutar siaran di `/siaran` tanpa meninggalkan halaman. Kredensial panel
+> radio tidak pernah disimpan di aplikasi.
 
 ## Teknologi
 
@@ -45,8 +46,8 @@ webdakwah/
 - API memverifikasi Bearer token setiap request (JWKS/ES256, atau HS256 untuk proyek lama), lalu
   `RolesGuard` membaca role **dari database** dan menolak akun yang dinonaktifkan.
 - Matriks izin ada di `packages/shared/src/auth/permissions.ts`
-  (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`).
-  Kontributor hanya mendapat dua izin pertama.
+  (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`,
+  `taxonomy:manage`, `broadcast:manage`). Kontributor hanya mendapat dua izin pertama.
 - `/dashboard`, `/dashboard/konten`, dan `/dashboard/moderasi` dijaga oleh `proxy.ts` (pengganti
   middleware di Next 16). Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
 
@@ -94,22 +95,28 @@ serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan 
 
 Endpoint API (semua butuh Bearer token):
 
-| Metode & path                      | Keterangan                                     |
-| ---------------------------------- | ---------------------------------------------- |
-| `GET /api/contents/mine`           | Daftar konten sendiri (`?status=`, `?page=`)   |
-| `GET /api/contents/:id`            | Detail untuk pemilik atau admin                |
-| `POST /api/contents`               | Buat draft baru                                |
-| `PATCH /api/contents/:id`          | Sunting draft/konten ditolak                   |
-| `POST /api/contents/:id/submit`    | Ajukan review (validasi kelengkapan)           |
-| `POST /api/contents/:id/withdraw`  | Tarik kembali ke draft                         |
-| `DELETE /api/contents/:id`         | Hapus draft/konten ditolak                     |
-| `GET /api/contents/review`         | Antrean `PENDING_REVIEW` (admin saja)          |
-| `POST /api/contents/:id/publish`   | Terbitkan konten (admin saja)                  |
-| `POST /api/contents/:id/reject`    | Tolak + catatan wajib (admin saja)             |
-| `GET /api/contents/managed`        | Daftar terbit/arsip (admin saja)               |
-| `POST /api/contents/:id/archive`   | Arsipkan konten terbit (admin saja)            |
-| `POST /api/contents/:id/unarchive` | Pulihkan konten arsip (admin saja)             |
-| `POST /api/uploads/presign`        | URL PUT sementara ke R2 (semua pengguna aktif) |
+| Metode & path                         | Keterangan                                     |
+| ------------------------------------- | ---------------------------------------------- |
+| `GET /api/contents/mine`              | Daftar konten sendiri (`?status=`, `?page=`)   |
+| `GET /api/contents/:id`               | Detail untuk pemilik atau admin                |
+| `POST /api/contents`                  | Buat draft baru                                |
+| `PATCH /api/contents/:id`             | Sunting draft/konten ditolak                   |
+| `POST /api/contents/:id/submit`       | Ajukan review (validasi kelengkapan)           |
+| `POST /api/contents/:id/withdraw`     | Tarik kembali ke draft                         |
+| `DELETE /api/contents/:id`            | Hapus draft/konten ditolak                     |
+| `GET /api/contents/review`            | Antrean `PENDING_REVIEW` (admin saja)          |
+| `POST /api/contents/:id/publish`      | Terbitkan konten (admin saja)                  |
+| `POST /api/contents/:id/reject`       | Tolak + catatan wajib (admin saja)             |
+| `GET /api/contents/managed`           | Daftar terbit/arsip (admin saja)               |
+| `POST /api/contents/:id/archive`      | Arsipkan konten terbit (admin saja)            |
+| `POST /api/contents/:id/unarchive`    | Pulihkan konten arsip (admin saja)             |
+| `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif) |
+| `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                 |
+| `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)            |
+| `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)               |
+| `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)              |
+| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                |
+| `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja)               |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -121,6 +128,7 @@ tidak memuat email penulis, catatan review, atau status internal.
 | `GET /api/public/contents/:slug`        | Detail konten terbit berdasarkan slug; lainnya 404 |
 | `GET /api/public/highlights`            | Satu terbitan terbaru per jenis untuk beranda      |
 | `GET /api/public/search?q=&type=&page=` | Cari judul/ringkasan/isi konten terbit (q 2–100)   |
+| `GET /api/public/live`                  | Pengaturan siaran publik, jadwal terdekat, status  |
 
 ## Unggah Media ke R2
 
@@ -150,6 +158,10 @@ tidak memuat email penulis, catatan review, atau status internal.
 - `/artikel/[slug]`, `/audio/[slug]`, `/video/[slug]`, `/rujukan/[slug]` — halaman baca dengan
   metadata judul, deskripsi, canonical, dan OpenGraph. URL memakai slug, bukan UUID.
 - Beranda menampilkan satu terbitan terbaru per jenis; bila belum ada, tampil ajakan menunggu.
+- `/siaran` menampilkan siaran langsung radio mitra: pemutar memakai audio provider global,
+  status siaran, jadwal mingguan WIB, acara khusus, dan tautan Telegram. Bila radio memakai
+  alamat http atau mode `EXTERNAL`, tombol membuka tab baru dengan `rel="noopener noreferrer"`.
+  API lambat atau mati tidak membuat halaman error; tampil pesan ramah.
 - `/cari` mencari judul, ringkasan, dan isi konten terbit, dengan filter jenis dan paginasi.
   Halaman hasil ditandai `noindex` agar tidak membanjiri mesin pencari, dan tautan cari tersedia
   di header.
@@ -173,6 +185,43 @@ tidak memuat email penulis, catatan review, atau status internal.
 - Aktif hanya bila API dan web sama-sama mengisi `FRONTEND_REVALIDATE_URL` dan
   `REVALIDATE_SECRET` (minimal 16 karakter). Tanpa itu, konten baru muncul paling lama 60 detik
   kemudian dan aksi admin tetap berhasil (webhook bersifat best-effort).
+
+## Siaran Langsung (Fase 19)
+
+Server radio **tidak** dibuat di proyek ini. Radio mitra memberi akses siaran kepada penyiarnya,
+dan website hanya menyimpan **alamat dengar publik** serta jadwal. Kredensial panel radio atau
+akun siaran tidak pernah ditulis di kode, database, `.env.example`, README, atau log.
+
+Model:
+
+- `LiveStream` — satu baris pengaturan: `title`, `description`, `streamUrl`, `playMode`
+  (`EMBED`/`EXTERNAL`), `statusUrl`, `telegramUrl`, `isEnabled`, `updatedAt`.
+- `BroadcastSchedule` — `title`, `speakerId` (opsional), `dayOfWeek` (0–6) **atau** `date`
+  (salah satu wajib, ditegakkan juga oleh constraint database), `startTime` (`HH:mm` WIB),
+  `durationMin`, `notes`, `isActive`.
+
+Aturan validasi (di `packages/shared`):
+
+- `streamUrl` boleh dikosongkan selama siaran belum aktif; bila diisi wajib `http`/`https` dan
+  tanpa kredensial tertanam (`user:pass@`). Mengaktifkan siaran mewajibkan alamat dengar.
+- Alamat `https` boleh `EMBED`. Alamat `http` selalu dipaksa `EXTERNAL` karena browser memblokir
+  audio http di halaman https (mixed content). Form admin menampilkan peringatan ini.
+- `statusUrl` dan `telegramUrl` hanya boleh `https` tanpa kredensial.
+- Pemeriksaan status dijalankan di server: hanya https, tanpa redirect, timeout 3 detik, respons
+  maksimal 32 KB, cache ±30 detik. Nama host/IP privat, loopback, link-local, dan alamat hasil DNS
+  yang mengarah ke jaringan privat ditolak (proteksi SSRF). Kegagalan menghasilkan
+  `UNKNOWN` → "Status tidak tersedia", bukan error.
+- `GET /api/public/live` hanya mengembalikan `isEnabled`, `title`, `description`, `streamUrl`,
+  `playMode`, `telegramUrl`, jadwal aktif terdekat, dan `liveStatus`; `statusUrl` serta data
+  internal tidak pernah ikut. Endpoint memakai throttle sendiri dan cache pendek.
+- Halaman `/siaran` memakai revalidasi 30 detik, memutar audio lewat provider global yang sudah
+  ada (`preload`/tanpa autoplay), dan tetap tampil dengan pesan ramah bila API lambat atau mati.
+- Dashboard `/dashboard/siaran` (admin saja, izin `broadcast:manage`) berisi form pengaturan dan
+  CRUD jadwal.
+
+Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan siaran manual ke
+Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai
+placeholder `<diisi dari pengelola radio>` dan tidak memuat kredensial.
 
 ## Menjalankan Secara Lokal
 
@@ -270,6 +319,7 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `THROTTLE_UPLOAD_PER_MIN`                      | tidak       | `10`                    | Batas laju presign per pengguna               |
 | `THROTTLE_SEARCH_PER_MIN`                      | tidak       | `600`                   | Batas laju pencarian publik per IP            |
 | `THROTTLE_SESSION_PER_MIN`                     | tidak       | `60`                    | Batas laju `GET /api/me` per pengguna         |
+| `THROTTLE_LIVE_PER_MIN`                        | tidak       | `120`                   | Batas laju `GET /api/public/live` per IP      |
 | `UPLOAD_QUOTA_PER_HOUR`                        | tidak       | `20`                    | Kuota presign per pengguna per jam            |
 | `UPLOAD_QUOTA_PER_DAY`                         | tidak       | `60`                    | Kuota presign per pengguna per hari           |
 | `UPLOAD_QUOTA_ADMIN_PER_HOUR`                  | tidak       | `100`                   | Kuota presign admin per jam (bebas harian)    |

@@ -27,6 +27,9 @@ export function SiteHeader() {
               {CONTENT_SECTIONS[type].title}
             </Link>
           ))}
+          <Link href="/siaran" className="text-sm text-ink-600 transition hover:text-brand-700">
+            Siaran
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">

@@ -54,7 +54,8 @@ describe('matriks izin', () => {
     expect(can('ADMIN', 'content:publish')).toBe(true);
     expect(can('ADMIN', 'content:delete-any')).toBe(true);
     expect(can('ADMIN', 'users:manage')).toBe(true);
-    expect(permissionsFor('ADMIN')).toHaveLength(6);
+    expect(can('ADMIN', 'broadcast:manage')).toBe(true);
+    expect(permissionsFor('ADMIN')).toHaveLength(7);
   });
 
   it('mencocokkan role yang diizinkan secara eksak', () => {

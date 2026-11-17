@@ -6,6 +6,7 @@ import {
   FileText,
   LayoutDashboard,
   Plus,
+  Radio,
   ShieldCheck,
   UserRound,
   Users,
@@ -29,6 +30,7 @@ const ITEMS: NavItem[] = [
   { href: '/dashboard/moderasi', label: 'Review konten', icon: ShieldCheck, adminOnly: true },
   { href: '/dashboard/terbitan', label: 'Semua konten', icon: Archive, adminOnly: true },
   { href: '/dashboard/pengguna', label: 'Pengguna', icon: Users, adminOnly: true },
+  { href: '/dashboard/siaran', label: 'Siaran', icon: Radio, adminOnly: true },
   { href: '/dashboard/statistik', label: 'Statistik', icon: BarChart3, adminOnly: true },
   { href: '/akun', label: 'Akun', icon: UserRound },
 ];

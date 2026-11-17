@@ -11,6 +11,7 @@ export const PERMISSIONS = [
   'content:delete-any',
   'users:manage',
   'taxonomy:manage',
+  'broadcast:manage',
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

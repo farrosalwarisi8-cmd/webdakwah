@@ -4,6 +4,7 @@ import {
   publicContentListSchema,
   publicHighlightsSchema,
   publicLatestSchema,
+  publicLiveSchema,
   publicSpeakerListSchema,
   publicTagListSchema,
   type ContentType,
@@ -11,6 +12,7 @@ import {
   type PublicContentList,
   type PublicHighlights,
   type PublicLatest,
+  type PublicLive,
 } from '@webdakwah/shared';
 import { cache } from 'react';
 
@@ -35,12 +37,16 @@ interface Schema<T> {
   safeParse: (value: unknown) => { success: true; data: T } | { success: false };
 }
 
-async function fetchParsed<T>(path: string, schema: Schema<T>): Promise<T> {
+async function fetchParsed<T>(
+  path: string,
+  schema: Schema<T>,
+  revalidateSeconds = REVALIDATE_SECONDS,
+): Promise<T> {
   let response: Response;
 
   try {
     response = await fetch(`${API_URL}/api${path}`, {
-      next: { revalidate: REVALIDATE_SECONDS, tags: [PUBLIC_CONTENT_TAG] },
+      next: { revalidate: revalidateSeconds, tags: [PUBLIC_CONTENT_TAG] },
     });
   } catch {
     throw new PublicApiError(503, 'Server konten sedang tidak dapat dihubungi.');
@@ -117,6 +123,14 @@ export const getHomeHighlights = cache(async (): Promise<PublicHighlights> =>
 
 export const getLatestContent = cache(async (limit = 8): Promise<PublicLatest> =>
   fetchParsed(`/public/latest?limit=${limit}`, publicLatestSchema),
+);
+
+/**
+ * Informasi siaran langsung. Revalidasi pendek supaya perubahan jadwal dan
+ * status cepat terlihat, tanpa membebani API setiap kunjungan.
+ */
+export const getPublicLive = cache(async (): Promise<PublicLive> =>
+  fetchParsed('/public/live', publicLiveSchema, 30),
 );
 
 /** Semua konten terbit untuk sitemap, dibatasi agar build tidak menggantung. */

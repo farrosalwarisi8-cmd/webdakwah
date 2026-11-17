@@ -1,12 +1,13 @@
 'use client';
 
-import { Bookmark, Compass, Home, UserRound } from 'lucide-react';
+import { Bookmark, Compass, Home, Radio, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const ITEMS = [
   { href: '/', label: 'Beranda', icon: Home },
   { href: '/cari', label: 'Jelajah', icon: Compass },
+  { href: '/siaran', label: 'Siaran', icon: Radio },
   { href: '/simpanan', label: 'Simpanan', icon: Bookmark },
   { href: '/akun', label: 'Profil', icon: UserRound },
 ] as const;
@@ -41,7 +42,7 @@ export function PublicBottomNav() {
         aria-label="Navigasi utama"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
       >
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {ITEMS.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
 

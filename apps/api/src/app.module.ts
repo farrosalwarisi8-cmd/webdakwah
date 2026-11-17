@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { validateEnv } from './config/env.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { BroadcastModule } from './modules/broadcast/broadcast.module.js';
 import { RolesGuard } from './modules/auth/roles.guard.js';
 import { SupabaseAuthGuard } from './modules/auth/supabase-auth.guard.js';
 import { ContentsModule } from './modules/contents/contents.module.js';
@@ -40,6 +41,7 @@ import { StatsModule } from './modules/stats/stats.module.js';
       errorMessage: 'Terlalu banyak permintaan. Coba lagi sebentar lagi.',
     }),
     AuthModule,
+    BroadcastModule,
     ContentsModule,
     PublicContentsModule,
     TaxonomyModule,

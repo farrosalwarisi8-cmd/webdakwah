@@ -31,6 +31,7 @@ export const envSchema = z.object({
   THROTTLE_UPLOAD_PER_MIN: z.coerce.number().int().positive().default(10),
   THROTTLE_SEARCH_PER_MIN: z.coerce.number().int().positive().default(600),
   THROTTLE_SESSION_PER_MIN: z.coerce.number().int().positive().default(60),
+  THROTTLE_LIVE_PER_MIN: z.coerce.number().int().positive().default(120),
   /** Kuota presign per pengguna; admin bebas kuota harian dan punya batas jam sendiri. */
   UPLOAD_QUOTA_PER_HOUR: z.coerce.number().int().positive().default(20),
   UPLOAD_QUOTA_PER_DAY: z.coerce.number().int().positive().default(60),
