@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 21 — Notifikasi review**. Kontributor mendapat kabar saat kontennya diterbitkan
-> atau ditolak, admin mendapat kabar saat ada kiriman baru, dan lonceng dashboard menandai yang
-> belum dibaca.
+> Status: **Fase 22 — Jelajah taksonomi publik**. Halaman kategori, tag, dan penceramah kini
+> dapat dibuka tanpa login dan hanya menampilkan taksonomi yang punya konten terbit. Notifikasi
+> review dari Fase 21 tetap berjalan seperti sebelumnya.
 
 ## Teknologi
 
@@ -146,6 +146,13 @@ tidak memuat email penulis, catatan review, atau status internal.
 | `GET /api/public/highlights`            | Satu terbitan terbaru per jenis untuk beranda      |
 | `GET /api/public/search?q=&type=&page=` | Cari judul/ringkasan/isi konten terbit (q 2–100)   |
 | `GET /api/public/live`                  | Pengaturan siaran publik, jadwal terdekat, status  |
+| `GET /api/categories`                   | Kategori yang punya konten terbit (`name`, `slug`) |
+| `GET /api/tags`                         | Tag yang punya konten terbit (`name`, `slug`)      |
+| `GET /api/speakers`                     | Penceramah yang punya konten terbit                |
+
+Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `GET
+/api/categories/options`, `GET /api/speakers/options`, dan seluruh rute `manage`, `POST`, `PATCH`,
+`DELETE` tetap membutuhkan login (admin untuk perubahan).
 
 ## Unggah Media ke R2
 
@@ -175,6 +182,9 @@ tidak memuat email penulis, catatan review, atau status internal.
 - `/artikel/[slug]`, `/audio/[slug]`, `/video/[slug]`, `/rujukan/[slug]` — halaman baca dengan
   metadata judul, deskripsi, canonical, dan OpenGraph. URL memakai slug, bukan UUID.
 - Beranda menampilkan satu terbitan terbaru per jenis; bila belum ada, tampil ajakan menunggu.
+- `/kategori/[slug]`, `/tag/[slug]`, dan `/penceramah/[slug]` menampilkan konten terbit yang
+  terkait, 12 per halaman. Slug yang tidak dikenal atau taksonomi tanpa konten terbit → 404.
+  Chip kategori/tag di beranda dan tautan kategori pada halaman baca mengarah ke halaman ini.
 - `/siaran` menampilkan siaran langsung radio mitra: pemutar memakai audio provider global,
   status siaran, jadwal mingguan WIB, acara khusus, dan tautan Telegram. Bila radio memakai
   alamat http atau mode `EXTERNAL`, tombol membuka tab baru dengan `rel="noopener noreferrer"`.

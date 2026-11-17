@@ -20,7 +20,7 @@ import {
   type TagRenameInput,
 } from '@webdakwah/shared';
 
-import { CurrentProfile, Roles } from '../auth/auth.decorators.js';
+import { CurrentProfile, Public, Roles } from '../auth/auth.decorators.js';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { TaxonomyService } from './taxonomy.service.js';
 
@@ -68,7 +68,9 @@ function parseTagMerge(body: unknown): TagMergeInput {
 export class CategoriesController {
   constructor(private readonly taxonomy: TaxonomyService) {}
 
+  /** Daftar kategori yang punya konten terbit; dipakai halaman publik. */
   @Get()
+  @Public()
   listPublic() {
     return this.taxonomy.listPublicCategories();
   }
@@ -119,7 +121,9 @@ export class CategoriesController {
 export class SpeakersController {
   constructor(private readonly taxonomy: TaxonomyService) {}
 
+  /** Daftar penceramah yang punya konten terbit; dipakai halaman publik. */
   @Get()
+  @Public()
   listPublic() {
     return this.taxonomy.listPublicSpeakers();
   }
@@ -170,7 +174,9 @@ export class SpeakersController {
 export class TagsController {
   constructor(private readonly taxonomy: TaxonomyService) {}
 
+  /** Daftar tag yang punya konten terbit; dipakai halaman publik. */
   @Get()
+  @Public()
   listPublic() {
     return this.taxonomy.listPublicTags();
   }
