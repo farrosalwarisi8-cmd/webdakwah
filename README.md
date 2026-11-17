@@ -128,7 +128,8 @@ Endpoint API (semua butuh Bearer token):
 | `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)             |
 | `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)                |
 | `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)               |
-| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                 |     | `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja) |
+| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                 |
+| `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja)                |
 | `GET /api/notifications?page=`        | Notifikasi milik pengguna + jumlah belum dibaca |
 | `GET /api/notifications/unread-count` | Jumlah notifikasi belum dibaca                  |
 | `POST /api/notifications/:id/read`    | Tandai satu notifikasi milik sendiri            |
