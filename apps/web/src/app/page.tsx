@@ -97,17 +97,17 @@ export default async function HomePage() {
 
       <main id="atas">
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-ink-200/70 bg-surface">
+        <section className="relative overflow-hidden border-b border-ink-200/80 bg-surface">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] max-w-[520px] text-brand-900 lg:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-14/15 max-w-[560px] text-ink-900 lg:block"
           >
             <svg
               viewBox="0 0 420 620"
               preserveAspectRatio="xMidYMax slice"
               fill="none"
               stroke="currentColor"
-              className="h-full w-full opacity-[0.09]"
+              className="h-full w-full opacity-[0.10]"
             >
               <path
                 strokeWidth="1.5"
@@ -122,16 +122,16 @@ export default async function HomePage() {
             </svg>
           </div>
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 pt-8 sm:gap-10 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-20 lg:pt-16 xl:pt-20">
+            <div className="grid gap-8 pt-8 sm:gap-10 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20 lg:pt-16 xl:pt-20">
               <div className="max-w-[44rem]">
                 <div className="flex items-center gap-3">
-                  <span aria-hidden className="h-px w-10 bg-accent-500" />
-                  <p className="text-[11px] font-semibold tracking-[0.26em] text-ink-500 uppercase">
+                  <span aria-hidden className="h-px w-12 bg-ink-900/70" />
+                  <p className="text-[11px] font-semibold tracking-[0.28em] text-ink-500 uppercase">
                     Kajian Islam terkurasi
                   </p>
                 </div>
 
-                <h1 className="mt-5 text-[2.05rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance text-ink-950 sm:mt-6 sm:text-[3rem] sm:leading-[1.08] lg:text-[3.5rem] xl:text-[3.9rem]">
+                <h1 className="mt-5 text-[2.1rem] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-ink-950 sm:mt-6 sm:text-[3rem] sm:leading-[1.08] lg:text-[3.55rem] xl:text-[3.95rem]">
                   Temukan kajian yang menenangkan hati.
                 </h1>
 
@@ -143,7 +143,7 @@ export default async function HomePage() {
                 <form
                   action="/cari"
                   role="search"
-                  className="mt-7 flex max-w-lg items-center gap-2 border-b border-ink-300 pb-2 transition-colors focus-within:border-brand-700 sm:mt-9"
+                  className="mt-8 flex max-w-md items-center gap-2 border-b border-ink-300 pb-2.5 transition-colors focus-within:border-ink-950 sm:mt-9"
                 >
                   <Search aria-hidden className="size-4 shrink-0 text-ink-500" />
                   <label htmlFor="beranda-cari" className="sr-only">
@@ -158,7 +158,7 @@ export default async function HomePage() {
                   />
                   <button
                     type="submit"
-                    className="btn-press inline-flex min-h-11 items-center rounded-lg bg-ink-950 px-4 text-sm font-semibold text-white transition hover:bg-brand-900"
+                    className="btn-press inline-flex min-h-11 items-center rounded-lg bg-ink-950 px-4 text-sm font-semibold text-white transition hover:bg-ink-800"
                   >
                     Cari
                   </button>
@@ -187,10 +187,10 @@ export default async function HomePage() {
               </div>
 
               <nav aria-label="Jelajah format" className="hidden lg:block">
-                <p className="text-[10px] font-semibold tracking-[0.26em] text-ink-500 uppercase">
+                <p className="text-[10px] font-semibold tracking-[0.28em] text-ink-500 uppercase">
                   Jelajah format
                 </p>
-                <ul className="mt-3 border-t border-ink-200/80">
+                <ul className="mt-1 border-t border-ink-200/80">
                   {CONTENT_TYPE_ORDER.map((type, index) => (
                     <li key={type}>
                       <Link
@@ -198,7 +198,7 @@ export default async function HomePage() {
                         className="group flex items-baseline justify-between gap-4 border-b border-ink-200/80 py-4"
                       >
                         <span className="flex items-baseline gap-3">
-                          <span className="text-[10px] tabular-nums tracking-[0.1em] text-ink-400">
+                          <span className="text-[10px] tabular-nums tracking-[0.12em] text-ink-400">
                             0{index + 1}
                           </span>
                           <span className="text-sm font-medium text-ink-800 transition-colors group-hover:text-brand-700">
@@ -207,7 +207,7 @@ export default async function HomePage() {
                         </span>
                         <ArrowRight
                           aria-hidden
-                          className="size-3.5 -translate-x-1 text-brand-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                          className="size-3.5 -translate-x-1 text-ink-400 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
                         />
                       </Link>
                     </li>
@@ -216,18 +216,20 @@ export default async function HomePage() {
               </nav>
             </div>
 
-            <div className="mt-8 flex flex-col gap-2 border-t border-ink-200/70 py-5 sm:mt-12 sm:gap-3 lg:flex-row lg:items-baseline lg:justify-between lg:gap-12 lg:py-6">
-              <p
-                dir="rtl"
-                lang="ar"
-                className="font-serif-arabic text-2xl leading-[1.9] text-ink-800 sm:text-3xl"
-              >
-                وَقُل رَّبِّ زِدْنِي عِلْمًا
-              </p>
-              <p className="text-xs leading-relaxed text-ink-500 lg:max-w-sm lg:text-right">
-                “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”{' '}
-                <span className="whitespace-nowrap text-ink-400">QS. Taha: 114</span>
-              </p>
+            <div className="mt-6 flex flex-col gap-3 border-t border-ink-200/70 pt-5 sm:mt-8 sm:gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-14 lg:pt-6">
+              <div className="max-w-sm lg:max-w-none">
+                <p
+                  dir="rtl"
+                  lang="ar"
+                  className="font-serif-arabic text-2xl leading-[1.9] text-ink-900 sm:text-3xl"
+                >
+                  وَقُل رَّبِّ زِدْنِي عِلْمًا
+                </p>
+                <p className="mt-2.5 text-xs leading-relaxed text-ink-500 lg:text-right">
+                  “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”{' '}
+                  <span className="whitespace-nowrap text-ink-400">QS. Taha: 114</span>
+                </p>
+              </div>
             </div>
           </div>
         </section>
