@@ -70,7 +70,7 @@ function Pagination({
         <span aria-hidden />
       )}
 
-      <span className="text-xs text-ink-500">
+      <span className="text-xs text-ink-600">
         Halaman {page} dari {totalPages}
       </span>
 
@@ -121,11 +121,11 @@ export default async function CariPage({
   }
 
   return (
-    <div className="min-h-dvh bg-ink-50">
+    <div className="min-h-dvh bg-white">
       <SiteHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-        <nav aria-label="Remah roti" className="text-xs text-ink-500">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <nav aria-label="Remah roti" className="text-xs text-ink-600">
           <Link href="/" className="transition hover:text-brand-700">
             Beranda
           </Link>
@@ -133,15 +133,21 @@ export default async function CariPage({
           <span className="text-ink-700">Cari</span>
         </nav>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
-          Cari Konten
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Telusuri judul, ringkasan, dan isi konten yang sudah terbit. Masukkan minimal dua
-          karakter.
-        </p>
+        <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-ink-200/70 bg-surface-soft p-6 sm:p-8">
+          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70" />
+          <div className="relative">
+            <p className="text-[10px] font-semibold tracking-[0.2em] text-brand-600 uppercase">
+              Pencarian
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+              Cari Konten
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
+              Telusuri judul, ringkasan, dan isi konten yang sudah terbit. Masukkan minimal dua
+              karakter.
+            </p>
 
-        <form action="/cari" method="get" className="mt-6 flex flex-col gap-2 sm:flex-row">
+        <form action="/cari" method="get" className="mt-5 flex flex-col gap-2 sm:flex-row">
           <label htmlFor="q" className="sr-only">
             Kata kunci
           </label>
@@ -157,13 +163,13 @@ export default async function CariPage({
               defaultValue={query}
               maxLength={100}
               placeholder="Misalnya: sabar, ilmu, kajian…"
-              className="w-full rounded-full border border-ink-200 bg-white py-2.5 pr-4 pl-11 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none"
+              className="min-h-12 w-full rounded-full border border-ink-200 bg-white py-2.5 pr-4 pl-11 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none"
             />
           </div>
           {type ? <input type="hidden" name="type" value={type} /> : null}
           <button
             type="submit"
-            className="rounded-full bg-brand-700 px-6 py-2.5 text-sm font-medium text-brand-50 transition hover:bg-brand-800"
+            className="btn-press inline-flex min-h-12 items-center justify-center rounded-full bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
           >
             Cari
           </button>
@@ -174,8 +180,8 @@ export default async function CariPage({
             href={searchHref(query, null)}
             className={
               type === null
-                ? 'rounded-full bg-brand-700 px-3.5 py-1.5 text-sm font-medium text-brand-50'
-                : 'rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
+                ? 'inline-flex min-h-10 items-center rounded-full bg-brand-900 px-3.5 py-1.5 text-sm font-medium text-white'
+                : 'inline-flex min-h-10 items-center rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
             }
           >
             Semua
@@ -186,14 +192,16 @@ export default async function CariPage({
               href={searchHref(query, item)}
               className={
                 type === item
-                  ? 'rounded-full bg-brand-700 px-3.5 py-1.5 text-sm font-medium text-brand-50'
-                  : 'rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
+                  ? 'inline-flex min-h-10 items-center rounded-full bg-brand-900 px-3.5 py-1.5 text-sm font-medium text-white'
+                  : 'inline-flex min-h-10 items-center rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
               }
             >
               {CONTENT_SECTIONS[item].title}
             </Link>
           ))}
         </nav>
+          </div>
+        </section>
 
         {tooShort ? (
           <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -212,7 +220,7 @@ export default async function CariPage({
         ) : !query ? (
           <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">
             <p className="text-sm font-medium text-ink-800">Mulai dengan kata kunci.</p>
-            <p className="mt-1 text-sm text-ink-500">
+            <p className="mt-1 text-sm text-ink-600">
               Hasil hanya menampilkan konten yang sudah diterbitkan.
             </p>
           </div>
@@ -221,17 +229,17 @@ export default async function CariPage({
             <p className="text-sm font-medium text-ink-800">
               Tidak ada konten yang cocok dengan “{query}”.
             </p>
-            <p className="mt-1 text-sm text-ink-500">
+            <p className="mt-1 text-sm text-ink-600">
               Coba kata kunci lain atau pilih jenis konten yang berbeda.
             </p>
           </div>
         ) : list ? (
           <>
-            <p className="mt-6 text-xs text-ink-500">
+            <p className="mt-6 text-xs text-ink-600">
               {list.total} konten ditemukan untuk “{query}”
             </p>
 
-            <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {list.items.map((item) => (
                 <li key={item.id}>
                   <PublicContentCard item={item} />

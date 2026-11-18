@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ConfirmButton } from '@/components/confirm-button';
+import { DashboardPageHeader } from '@/components/dashboard/page-header';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 import { formatDate } from '@/lib/format';
@@ -70,12 +71,11 @@ export default async function TerbitanPage({
 
   return (
     <main className="py-2 sm:py-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Kelola terbitan</h1>
-        <p className="mt-1 text-sm text-ink-600">
-          Arsipkan konten yang sudah tidak relevan, atau pulihkan kembali ke halaman publik.
-        </p>
-      </div>
+      <DashboardPageHeader
+        eyebrow="Kelola"
+        title="Kelola terbitan"
+        description="Arsipkan konten yang sudah tidak relevan, atau pulihkan kembali ke halaman publik."
+      />
 
       {sukses && SUCCESS_MESSAGES[sukses] ? (
         <p className="mt-6 rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-800">
@@ -132,7 +132,7 @@ export default async function TerbitanPage({
                   ? 'Belum ada konten terbit.'
                   : 'Belum ada konten yang diarsipkan.'}
               </p>
-              <p className="mt-1 text-sm text-ink-500">
+              <p className="mt-1 text-sm text-ink-600">
                 {status === 'PUBLISHED'
                   ? 'Terbitkan konten dari antrean moderasi terlebih dahulu.'
                   : 'Konten yang diarsipkan akan muncul di sini.'}
@@ -140,7 +140,7 @@ export default async function TerbitanPage({
             </div>
           ) : (
             <>
-              <p className="mt-5 text-xs text-ink-500">{list.total} konten</p>
+              <p className="mt-5 text-xs text-ink-600">{list.total} konten</p>
 
               <ul className="mt-3 space-y-3">
                 {list.items.map((item) => (
@@ -156,7 +156,7 @@ export default async function TerbitanPage({
                         >
                           {item.title}
                         </Link>
-                        <p className="mt-1 text-xs text-ink-500">
+                        <p className="mt-1 text-xs text-ink-600">
                           {CONTENT_TYPE_LABELS[item.type]} ·{' '}
                           {item.author.fullName ?? item.author.email} · Terbit{' '}
                           {item.publishedAt ? formatDate(item.publishedAt) : '—'}
@@ -222,7 +222,7 @@ export default async function TerbitanPage({
                   ) : (
                     <span aria-hidden />
                   )}
-                  <span className="text-xs text-ink-500">
+                  <span className="text-xs text-ink-600">
                     Halaman {list.page} dari {list.totalPages}
                   </span>
                   {page < list.totalPages ? (

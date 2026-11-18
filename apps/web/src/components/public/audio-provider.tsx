@@ -20,6 +20,8 @@ export interface AudioTrack {
 interface AudioPlayerContextValue {
   track: AudioTrack | null;
   isPlaying: boolean;
+  isBuffering: boolean;
+  ended: boolean;
   currentTime: number;
   duration: number;
   volume: number;
@@ -47,6 +49,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [track, setTrack] = useState<AudioTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(1);
@@ -61,12 +65,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
 
       setError(null);
+      setEnded(false);
 
       if (track?.slug === next.slug) {
         if (audio.paused) {
+          setIsBuffering(true);
           void audio.play().catch(() => {
             setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
             setIsPlaying(false);
+            setIsBuffering(false);
           });
         } else {
           audio.pause();
@@ -78,12 +85,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setTrack(next);
       setCurrentTime(0);
       setDuration(0);
+      setIsBuffering(true);
       audio.src = next.src;
       audio.load();
 
       void audio.play().catch(() => {
         setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
         setIsPlaying(false);
+        setIsBuffering(false);
       });
     },
     [track?.slug],
@@ -98,9 +107,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     if (audio.paused) {
       setError(null);
+      setEnded(false);
+      setIsBuffering(true);
       void audio.play().catch(() => {
         setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
         setIsPlaying(false);
+        setIsBuffering(false);
       });
     } else {
       audio.pause();
@@ -116,6 +128,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     audio.currentTime = seconds;
     setCurrentTime(seconds);
+    setEnded(false);
   }, []);
 
   const setVolume = useCallback((next: number) => {
@@ -141,6 +154,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     setTrack(null);
     setIsPlaying(false);
+    setIsBuffering(false);
+    setEnded(false);
     setCurrentTime(0);
     setDuration(0);
     setError(null);
@@ -150,6 +165,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     () => ({
       track,
       isPlaying,
+      isBuffering,
+      ended,
       currentTime,
       duration,
       volume,
@@ -160,7 +177,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setVolume,
       close,
     }),
-    [track, isPlaying, currentTime, duration, volume, error, play, toggle, seek, setVolume, close],
+    [
+      track,
+      isPlaying,
+      isBuffering,
+      ended,
+      currentTime,
+      duration,
+      volume,
+      error,
+      play,
+      toggle,
+      seek,
+      setVolume,
+      close,
+    ],
   );
 
   return (
@@ -170,9 +201,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         ref={audioRef}
         preload="metadata"
         className="hidden"
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          setIsPlaying(true);
+          setEnded(false);
+        }}
+        onPlaying={() => setIsBuffering(false)}
+        onWaiting={() => setIsBuffering(true)}
+        onCanPlay={() => setIsBuffering(false)}
         onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setIsBuffering(false);
+          setEnded(true);
+        }}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onLoadedMetadata={(event) =>
           setDuration(
@@ -182,6 +223,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         onError={() => {
           setError('Audio tidak dapat dimuat. Coba buka sumber aslinya.');
           setIsPlaying(false);
+          setIsBuffering(false);
         }}
       />
     </AudioPlayerContext.Provider>

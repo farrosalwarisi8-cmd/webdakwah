@@ -1,8 +1,10 @@
 import type { ContentType } from '@webdakwah/shared';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { PublicApiError, getPublicList } from '@/lib/api/public';
-import { CONTENT_SECTIONS, sectionPath } from '@/lib/content-routes';
+import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
+import { CONTENT_TYPE_VISUALS } from '@/lib/content-visuals';
 
 import { PublicContentCard } from './content-card';
 import { SiteFooter } from './site-footer';
@@ -26,24 +28,26 @@ function Pagination({
       {page > 1 ? (
         <Link
           href={`${basePath}?page=${page - 1}`}
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+          className="btn-press inline-flex min-h-11 items-center gap-2 rounded-full border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
         >
-          ← Sebelumnya
+          <ArrowLeft aria-hidden className="size-4" />
+          Sebelumnya
         </Link>
       ) : (
         <span aria-hidden />
       )}
 
-      <span className="text-xs text-ink-500">
+      <span className="text-xs text-ink-600">
         Halaman {page} dari {totalPages}
       </span>
 
       {page < totalPages ? (
         <Link
           href={`${basePath}?page=${page + 1}`}
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+          className="btn-press inline-flex min-h-11 items-center gap-2 rounded-full border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
         >
-          Berikutnya →
+          Berikutnya
+          <ArrowRight aria-hidden className="size-4" />
         </Link>
       ) : (
         <span aria-hidden />
@@ -54,6 +58,8 @@ function Pagination({
 
 export async function ContentListPage({ type, page }: { type: ContentType; page: number }) {
   const section = CONTENT_SECTIONS[type];
+  const visual = CONTENT_TYPE_VISUALS[type];
+  const Icon = visual.icon;
 
   let list = null;
   let error: string | null = null;
@@ -68,47 +74,111 @@ export async function ContentListPage({ type, page }: { type: ContentType; page:
   }
 
   return (
-    <div className="min-h-dvh bg-ink-50">
+    <div className="min-h-dvh bg-white">
       <SiteHeader />
 
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-        <nav aria-label="Remah roti" className="text-xs text-ink-500">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <nav aria-label="Remah roti" className="flex items-center gap-2 text-xs text-ink-600">
           <Link href="/" className="transition hover:text-brand-700">
             Beranda
           </Link>
-          <span aria-hidden> / </span>
+          <span aria-hidden>/</span>
           <span className="text-ink-700">{section.title}</span>
         </nav>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
-          {section.title}
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          {section.description}
-        </p>
+        <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-ink-200/70 bg-surface-soft p-6 sm:p-8 lg:p-10">
+          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70" />
+          <div className="relative">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-4">
+                <span
+                  className={`grid size-12 shrink-0 place-items-center rounded-2xl ${visual.iconWrap}`}
+                >
+                  <Icon aria-hidden className="size-6" />
+                </span>
+                <div>
+                  <p className="text-[10px] font-semibold tracking-[0.2em] text-ink-600 uppercase">
+                    Koleksi
+                  </p>
+                  <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
+                    {section.title}
+                  </h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
+                    {section.description}
+                  </p>
+                </div>
+              </div>
+
+              {list ? (
+                <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-ink-200 bg-white px-3 py-1.5 text-xs font-medium whitespace-nowrap text-ink-600">
+                  {list.total} konten terbit
+                </span>
+              ) : null}
+            </div>
+
+            <nav aria-label="Jelajah format" className="mt-6 flex flex-wrap gap-2">
+              {CONTENT_TYPE_ORDER.map((itemType) => {
+                const itemVisual = CONTENT_TYPE_VISUALS[itemType];
+                const FormatIcon = itemVisual.icon;
+                const active = itemType === type;
+
+                return (
+                  <Link
+                    key={itemType}
+                    href={sectionPath(itemType)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                      active
+                        ? 'border-brand-900 bg-brand-900 text-white'
+                        : 'border-ink-200 bg-white text-ink-600 hover:border-brand-300 hover:text-brand-800'
+                    }`}
+                  >
+                    <FormatIcon aria-hidden className="size-3.5" />
+                    {itemVisual.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </section>
 
         {error ? (
-          <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-red-800">
+          <div
+            role="alert"
+            className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-red-800"
+          >
             {error}
           </div>
         ) : !list || list.items.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">
-            <p className="text-sm font-medium text-ink-800">Belum ada konten terbit.</p>
-            <p className="mt-1 text-sm text-ink-500">
+          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-surface-soft p-8 text-center sm:p-12">
+            <span
+              className={`mx-auto grid size-12 place-items-center rounded-2xl ${visual.iconWrap}`}
+            >
+              <Icon aria-hidden className="size-6" />
+            </span>
+            <p className="mt-4 text-sm font-semibold text-ink-800">Belum ada konten terbit.</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
               Konten yang sudah ditinjau admin akan tampil di sini.
             </p>
             <Link
               href={sectionPath(type)}
-              className="mt-4 inline-flex text-sm font-medium text-brand-700 hover:underline"
+              className="btn-press mt-5 inline-flex min-h-11 items-center rounded-full bg-brand-900 px-5 text-sm font-semibold text-white transition hover:bg-brand-800"
             >
               Muat ulang halaman
             </Link>
           </div>
         ) : (
           <>
-            <p className="mt-6 text-xs text-ink-500">{list.total} konten terbit</p>
+            <div className="mt-8 flex items-center justify-between gap-3">
+              <p className="text-xs text-ink-600">
+                Menampilkan {list.items.length} dari {list.total} konten
+              </p>
+              <span className="hidden text-xs text-ink-400 sm:block">
+                Diurutkan dari yang terbaru
+              </span>
+            </div>
 
-            <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+            <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {list.items.map((item) => (
                 <li key={item.id}>
                   <PublicContentCard item={item} />

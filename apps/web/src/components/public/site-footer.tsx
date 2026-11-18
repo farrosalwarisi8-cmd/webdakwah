@@ -1,25 +1,48 @@
+import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
 import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 bg-ink-900 text-ink-100">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
-        <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          <Link href="/" className="transition hover:text-accent-400">
-            Beranda
-          </Link>
-          {CONTENT_TYPE_ORDER.map((type) => (
-            <Link key={type} href={sectionPath(type)} className="transition hover:text-accent-400">
-              {CONTENT_SECTIONS[type].title}
+    <footer className="bg-brand-950 text-white">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-8 border-b border-white/10 pb-8 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-sm">
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <span className="grid size-10 place-items-center rounded-2xl bg-white/10 text-accent-400">
+                <BookOpen aria-hidden className="size-5" />
+              </span>
+              <span className="text-lg font-semibold tracking-tight">WebDakwah</span>
             </Link>
-          ))}
-        </nav>
+            <p className="mt-3 text-sm leading-relaxed text-white/60">
+              Ruang kajian yang tenang: artikel, audio, video, dan rujukan yang ditinjau sebelum
+              terbit.
+            </p>
+          </div>
 
-        <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-xs text-ink-300 sm:flex-row sm:items-center sm:justify-between">
+          <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-3 text-sm">
+            <Link href="/" className="text-white/65 transition hover:text-accent-300">
+              Beranda
+            </Link>
+            {CONTENT_TYPE_ORDER.map((type) => (
+              <Link
+                key={type}
+                href={sectionPath(type)}
+                className="text-white/65 transition hover:text-accent-300"
+              >
+                {CONTENT_SECTIONS[type].title}
+              </Link>
+            ))}
+            <Link href="/siaran" className="text-white/65 transition hover:text-accent-300">
+              Siaran
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex flex-col gap-2 pt-6 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} WebDakwah. Dibangun untuk kebaikan.</p>
-          <p>Konten ditinjau admin sebelum terbit.</p>
+          <p>Setiap konten ditinjau admin sebelum terbit.</p>
         </div>
       </div>
     </footer>

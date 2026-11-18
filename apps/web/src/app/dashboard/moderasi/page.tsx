@@ -2,6 +2,7 @@ import { CONTENT_TYPE_LABELS, contentListSchema, type ContentList } from '@webda
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { DashboardPageHeader } from '@/components/dashboard/page-header';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 import { formatDateTime } from '@/lib/format';
@@ -39,19 +40,18 @@ export default async function ModerasiPage({
 
   return (
     <main className="py-2 sm:py-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Antrean moderasi</h1>
-          <p className="mt-1 text-sm text-ink-600">
-            Konten yang diajukan kontributor, diurutkan dari yang paling lama menunggu.
-          </p>
-        </div>
-        {isAdmin && list ? (
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-            {list.total} menunggu review
-          </span>
-        ) : null}
-      </div>
+      <DashboardPageHeader
+        eyebrow="Kelola"
+        title="Antrean moderasi"
+        description="Konten yang diajukan kontributor, diurutkan dari yang paling lama menunggu."
+        actions={
+          isAdmin && list ? (
+            <span className="inline-flex min-h-11 items-center rounded-full border border-accent-200 bg-accent-50 px-4 text-xs font-semibold text-accent-900">
+              {list.total} menunggu review
+            </span>
+          ) : null
+        }
+      />
 
       {sukses && SUCCESS_MESSAGES[sukses] ? (
         <p className="mt-6 rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-800">
@@ -83,7 +83,7 @@ export default async function ModerasiPage({
       ) : !list || list.items.length === 0 ? (
         <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">
           <p className="text-sm font-medium text-ink-800">Tidak ada konten yang menunggu review.</p>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-ink-600">
             Kiriman kontributor akan muncul di sini setelah diajukan.
           </p>
         </div>
@@ -99,7 +99,7 @@ export default async function ModerasiPage({
                   >
                     {item.title}
                   </Link>
-                  <p className="mt-1 text-xs text-ink-500">
+                  <p className="mt-1 text-xs text-ink-600">
                     {CONTENT_TYPE_LABELS[item.type]} · {item.author.fullName ?? item.author.email} ·
                     Diajukan {formatDateTime(item.updatedAt)}
                   </p>
@@ -117,7 +117,7 @@ export default async function ModerasiPage({
 
               <Link
                 href={`/dashboard/moderasi/${item.id}`}
-                className="mt-4 inline-flex rounded-full bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-800"
+                className="mt-4 inline-flex min-h-10 items-center rounded-full bg-brand-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-800"
               >
                 Tinjau konten
               </Link>

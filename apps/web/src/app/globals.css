@@ -50,9 +50,25 @@
   --color-accent-800: #7e3f08;
   --color-accent-900: #5c2e06;
 
+  /* Teal: pembeda jenis video dari artikel yang memakai hijau tua. */
+  --color-sea-50: #eaf4f2;
+  --color-sea-100: #d3e9e5;
+  --color-sea-200: #a8d3cc;
+  --color-sea-300: #74b6ac;
+  --color-sea-400: #42948a;
+  --color-sea-500: #2c7a70;
+  --color-sea-600: #22625a;
+  --color-sea-700: #1b4f49;
+  --color-sea-800: #163f3a;
+  --color-sea-900: #11312e;
+
   --color-success: #2e8b57;
   --color-warning: #b87513;
   --color-danger: #b94a48;
+
+  --shadow-soft: 0 1px 2px rgb(23 59 50 / 0.04), 0 16px 40px -24px rgb(23 59 50 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(23 59 50 / 0.05), 0 24px 48px -20px rgb(23 59 50 / 0.24);
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 18px 50px -30px rgb(14 42 36 / 0.45);
 }
 
 @layer base {
@@ -78,10 +94,116 @@
     html {
       scroll-behavior: auto;
     }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
+  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terang. */
+  .pattern-islamic {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M60 6 71 34 99 23 88 51 116 60 88 69 99 97 71 86 60 114 49 86 21 97 32 69 4 60 32 51 21 23 49 34Z'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+
+  .pattern-islamic-ink {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23173b32' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M60 6 71 34 99 23 88 51 116 60 88 69 99 97 71 86 60 114 49 86 21 97 32 69 4 60 32 51 21 23 49 34Z'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+
+  .card-lift {
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease,
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .btn-press {
+    transition:
+      transform 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .btn-press:active {
+    transform: scale(0.98);
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Slider audio: track oranye mengikuti progres yang dihitung di komponen. */
+  .audio-range {
+    --audio-progress: 0%;
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full;
+    background: linear-gradient(
+      to right,
+      var(--color-accent-500) var(--audio-progress),
+      var(--color-ink-200) var(--audio-progress)
+    );
+  }
+
+  .audio-range::-webkit-slider-thumb {
+    @apply size-4 appearance-none rounded-full border-2 border-white bg-accent-500 shadow;
+    box-shadow: 0 1px 4px rgb(14 42 36 / 0.35);
+  }
+
+  .audio-range::-moz-range-thumb {
+    @apply size-4 rounded-full border-2 border-white bg-accent-500;
+  }
+
+  .audio-range:disabled {
+    @apply cursor-not-allowed opacity-70;
+  }
+
+  .audio-range-dark {
+    --audio-progress: 0%;
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full;
+    background: linear-gradient(
+      to right,
+      var(--color-accent-500) var(--audio-progress),
+      rgb(255 255 255 / 0.22) var(--audio-progress)
+    );
+  }
+
+  .audio-range-dark::-webkit-slider-thumb {
+    @apply size-4 appearance-none rounded-full border-2 border-brand-950 bg-accent-400;
+  }
+
+  .audio-range-dark::-moz-range-thumb {
+    @apply size-4 rounded-full border-2 border-brand-950 bg-accent-400;
+  }
+
+  .audio-range-dark:disabled {
+    @apply cursor-not-allowed opacity-70;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-lift:hover,
+    .btn-press:active {
+      transform: none;
+    }
+  }
+
   .content-body img {
     @apply my-6 h-auto max-w-full rounded-xl border border-ink-200;
   }

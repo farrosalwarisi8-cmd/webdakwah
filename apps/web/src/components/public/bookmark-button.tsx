@@ -29,9 +29,9 @@ export function BookmarkButton({ item }: { item: PublicContentSummary }) {
       type="button"
       aria-pressed={saved}
       onClick={() => setSaved(toggleBookmark(toBookmarkItem(item)))}
-      className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+      className={`btn-press inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${
         saved
-          ? 'border-brand-300 bg-brand-50 text-brand-800'
+          ? 'border-brand-900 bg-brand-900 text-white'
           : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:text-brand-700'
       }`}
     >

@@ -1,19 +1,5 @@
-import type {
-  ContentType,
-  PublicHighlights,
-  PublicLatest,
-  PublicContentSummary,
-} from '@webdakwah/shared';
-import {
-  ArrowRight,
-  BookOpen,
-  Headphones,
-  Link2,
-  Search,
-  ShieldCheck,
-  Video,
-  type LucideIcon,
-} from 'lucide-react';
+import type { PublicContentSummary, PublicHighlights, PublicLatest } from '@webdakwah/shared';
+import { ArrowRight, BookOpen, Search, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 import { FeaturedContentCard } from '@/components/public/featured-content-card';
@@ -28,15 +14,9 @@ import {
   getPublicTags,
 } from '@/lib/api/public';
 import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
+import { CONTENT_TYPE_VISUALS } from '@/lib/content-visuals';
 
 export const revalidate = 60;
-
-const categoryIcons: Record<ContentType, LucideIcon> = {
-  ARTICLE: BookOpen,
-  AUDIO: Headphones,
-  VIDEO: Video,
-  LINK: Link2,
-};
 
 const pillars = [
   {
@@ -116,24 +96,25 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main id="atas">
-        <section className="relative overflow-hidden border-b border-ink-200/70">
+        {/* Hero */}
+        <section className="relative overflow-hidden border-b border-ink-200/60">
+          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0" />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_30rem_at_20%_-10rem,var(--color-accent-100),transparent)]"
+            className="pointer-events-none absolute -top-24 right-0 size-[34rem] rounded-full bg-accent-100/60 blur-3xl"
           />
-          <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-14 lg:px-8 lg:py-24">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-200 bg-white/70 px-3 py-1 text-xs font-medium text-brand-800">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-brand-800">
                 <span className="size-1.5 rounded-full bg-accent-500" />
                 Dikurasi &amp; ditinjau sebelum terbit
               </span>
 
-              <h1 className="mt-6 max-w-3xl text-[2rem] leading-[1.15] font-bold tracking-tight text-ink-900 sm:text-5xl">
-                Temukan kajian yang
-                <span className="block text-brand-700">menenangkan hati.</span>
+              <h1 className="mt-6 max-w-3xl text-[2.15rem] leading-[1.12] font-bold tracking-tight text-ink-900 text-balance sm:text-5xl lg:text-[3.4rem]">
+                Temukan kajian yang <span className="block text-brand-700">menenangkan hati.</span>
               </h1>
 
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-600 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
                 Artikel, audio kajian, video pendek, dan tautan rujukan dalam satu tempat yang
                 tenang — tanpa iklan, tanpa distraksi.
               </p>
@@ -141,7 +122,7 @@ export default async function HomePage() {
               <form
                 action="/cari"
                 role="search"
-                className="mt-8 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-[0_8px_24px_rgba(23,59,50,0.08)]"
+                className="mt-8 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-soft transition focus-within:border-brand-300"
               >
                 <Search aria-hidden className="ml-2 size-4 shrink-0 text-ink-400" />
                 <label htmlFor="beranda-cari" className="sr-only">
@@ -156,7 +137,7 @@ export default async function HomePage() {
                 />
                 <button
                   type="submit"
-                  className="min-h-11 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+                  className="btn-press min-h-11 rounded-xl bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
                 >
                   Cari
                 </button>
@@ -165,48 +146,124 @@ export default async function HomePage() {
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <a
                   href="#terbaru"
-                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-accent-400"
+                  className="btn-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-soft transition hover:bg-accent-400"
                 >
                   Lihat kajian terbaru
+                  <ArrowRight aria-hidden className="size-4" />
                 </a>
                 <a
                   href="#tentang"
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-ink-200 bg-white px-6 py-3 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-700"
+                  className="btn-press inline-flex min-h-12 items-center justify-center rounded-full border border-ink-200 bg-white px-6 py-3 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-700"
                 >
                   Kenapa WebDakwah?
                 </a>
               </div>
-
-              <p
-                dir="rtl"
-                lang="ar"
-                className="mt-10 font-serif-arabic text-2xl leading-loose text-brand-800/80 sm:text-3xl"
-              >
-                وَقُل رَّبِّ زِدْنِي عِلْمًا
-              </p>
             </div>
 
-            <div className="lg:pl-4">
-              {featured ? (
-                <FeaturedContentCard item={featured} />
-              ) : (
-                <div className="rounded-3xl border border-ink-200 bg-white p-8">
-                  <p className="text-sm font-medium text-ink-800">Belum ada kajian terbit.</p>
-                  <p className="mt-1 text-sm text-ink-500">
-                    Kajian yang sudah ditinjau admin akan tampil di sini.
-                  </p>
+            <div className="relative overflow-hidden rounded-[2rem] bg-brand-950 p-7 text-white shadow-panel sm:p-9 lg:p-10">
+              <div aria-hidden className="pattern-islamic absolute inset-0 opacity-70" />
+              <div
+                aria-hidden
+                className="absolute -top-16 -right-10 size-56 rounded-full bg-accent-500/20 blur-3xl"
+              />
+
+              <div className="relative">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-semibold tracking-[0.16em] text-white/65 uppercase">
+                    <BookOpen aria-hidden className="size-3.5 text-accent-400" />
+                    Ruang belajar
+                  </span>
+                  <span className="text-[10px] tracking-[0.24em] text-white/35">01</span>
                 </div>
-              )}
+
+                <p
+                  dir="rtl"
+                  lang="ar"
+                  className="mt-8 font-serif-arabic text-3xl leading-loose text-white sm:text-4xl"
+                >
+                  وَقُل رَّبِّ زِدْنِي عِلْمًا
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-white/60">
+                  “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”
+                  <span className="mt-1 block text-[11px] tracking-wide text-white/60">
+                    QS. Taha: 114
+                  </span>
+                </p>
+
+                <div className="mt-8 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-2">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Empat format</p>
+                    <p className="mt-1 text-xs leading-relaxed text-white/65">
+                      Baca, simak, tonton, atau telusuri sumbernya.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                      <ShieldCheck aria-hidden className="size-4 text-accent-400" />
+                      Ditinjau admin
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-white/65">
+                      Layak terbit sebelum sampai ke Anda.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* Sorotan */}
+        <section className="relative overflow-hidden bg-brand-950 py-14 sm:py-16 lg:py-20">
+          <div
+            aria-hidden
+            className="pattern-islamic pointer-events-none absolute inset-0 opacity-30"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 left-1/3 size-[30rem] rounded-full bg-brand-700/30 blur-3xl"
+          />
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.22em] text-accent-400 uppercase">
+                  Sorotan
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  Satu kajian untuk menemani waktu Anda
+                </h2>
+              </div>
+              <Link
+                href="/cari"
+                className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-white/65 transition hover:text-accent-300"
+              >
+                Telusuri semua
+                <ArrowRight aria-hidden className="size-4" />
+              </Link>
+            </div>
+
+            {featured ? (
+              <FeaturedContentCard item={featured} />
+            ) : (
+              <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10">
+                <p className="text-sm font-medium text-white">Belum ada kajian terbit.</p>
+                <p className="mt-1 text-sm text-white/55">
+                  Kajian yang sudah ditinjau admin akan tampil di sini.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Empat pintu */}
         <section
           id="kategori"
-          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:px-6 sm:py-16"
+          className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
         >
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+            <p className="text-[10px] font-semibold tracking-[0.22em] text-brand-600 uppercase">
+              Mulai dari sini
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
               Empat pintu menuju ilmu
             </h2>
             <p className="mt-3 text-ink-600">
@@ -214,39 +271,55 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {CONTENT_TYPE_ORDER.map((type) => {
               const section = CONTENT_SECTIONS[type];
-              const Icon = categoryIcons[type];
+              const visual = CONTENT_TYPE_VISUALS[type];
+              const Icon = visual.icon;
               const item = highlights?.[type] ?? null;
 
               return (
                 <li key={type}>
                   <Link
                     href={sectionPath(type)}
-                    className="group flex h-full flex-col rounded-2xl border border-ink-200 bg-white p-5 shadow-[0_8px_24px_rgba(23,59,50,0.04)] transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-[0_8px_24px_rgba(23,59,50,0.08)]"
+                    className="card-lift group relative flex h-full flex-col overflow-hidden rounded-3xl border border-ink-200/80 bg-white p-5 shadow-soft hover:border-brand-200"
                   >
-                    <span className="grid size-11 place-items-center rounded-2xl bg-accent-100 text-accent-700 transition group-hover:bg-accent-200">
-                      <Icon aria-hidden className="size-5" />
-                    </span>
+                    <span aria-hidden className={`absolute inset-x-0 top-0 h-1 ${visual.accent}`} />
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`grid size-11 place-items-center rounded-2xl ${visual.iconWrap}`}
+                      >
+                        <Icon aria-hidden className="size-5" />
+                      </span>
+                      <span className="text-[10px] text-ink-400">
+                        0{CONTENT_TYPE_ORDER.indexOf(type) + 1}
+                      </span>
+                    </div>
+
                     <h3 className="mt-4 text-base font-semibold text-ink-900">{section.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-600">
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-600">
                       {section.description}
                     </p>
 
-                    <div className="mt-4 border-t border-ink-100 pt-3">
+                    <div className="mt-5 border-t border-ink-100 pt-4">
+                      <p className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase">
+                        Terbaru
+                      </p>
                       {item ? (
-                        <p className="line-clamp-2 text-sm font-medium text-ink-800 transition group-hover:text-brand-700">
+                        <p className="mt-1.5 line-clamp-2 text-sm font-medium text-ink-800 transition group-hover:text-brand-700">
                           {item.title}
                         </p>
                       ) : (
-                        <p className="text-xs text-ink-500">Belum ada konten terbit</p>
+                        <p className="mt-1.5 text-xs text-ink-600">Belum ada konten terbit</p>
                       )}
                     </div>
 
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-700">
+                    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-brand-700">
                       Lihat semua
-                      <ArrowRight aria-hidden className="size-3.5" />
+                      <ArrowRight
+                        aria-hidden
+                        className="size-3.5 transition group-hover:translate-x-0.5"
+                      />
                     </span>
                   </Link>
                 </li>
@@ -255,11 +328,15 @@ export default async function HomePage() {
           </ul>
         </section>
 
-        <section id="terbaru" className="scroll-mt-24 border-y border-ink-200/70 bg-white/70">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+        {/* Terbaru */}
+        <section id="terbaru" className="scroll-mt-24 border-y border-ink-200/70 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+                <p className="text-[10px] font-semibold tracking-[0.22em] text-brand-600 uppercase">
+                  Baru terbit
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
                   Terbaru
                 </h2>
                 <p className="mt-3 max-w-2xl text-ink-600">
@@ -268,7 +345,7 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/cari"
-                className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800"
+                className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-brand-700 transition hover:text-brand-800"
               >
                 Jelajah semua
                 <ArrowRight aria-hidden className="size-4" />
@@ -281,55 +358,128 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Topik */}
         {topics.length > 0 ? (
-          <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-                Topik populer
-              </h2>
-              <p className="mt-3 text-ink-600">Mulai dari tema yang sering dicari jamaah.</p>
-            </div>
+          <section className="bg-surface-soft">
+            <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+              <div className="max-w-2xl">
+                <p className="text-[10px] font-semibold tracking-[0.22em] text-brand-600 uppercase">
+                  Telusuri
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+                  Topik yang sering dicari
+                </h2>
+                <p className="mt-3 text-ink-600">
+                  Mulai dari tema yang dekat dengan keseharian jamaah.
+                </p>
+              </div>
 
-            <ul className="mt-6 flex flex-wrap gap-2">
-              {topics.map((topic) => (
-                <li key={`${topic.kind}-${topic.slug}`}>
-                  <Link
-                    href={topic.href}
-                    className="inline-flex min-h-11 items-center rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-800 transition hover:border-brand-300 hover:bg-brand-100"
-                  >
-                    {topic.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+              <ul className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {topics.map((topic) => (
+                  <li key={`${topic.kind}-${topic.slug}`}>
+                    <Link
+                      href={topic.href}
+                      className="group flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-ink-200/80 bg-white px-4 py-3.5 transition hover:border-brand-300 hover:bg-brand-50/40"
+                    >
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-semibold tracking-[0.16em] text-ink-400 uppercase">
+                          {topic.kind}
+                        </span>
+                        <span className="mt-0.5 block truncate text-sm font-medium text-ink-900 group-hover:text-brand-800">
+                          {topic.name}
+                        </span>
+                      </span>
+                      <ArrowRight
+                        aria-hidden
+                        className="size-4 shrink-0 text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-brand-700"
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         ) : null}
 
-        <section id="tentang" className="scroll-mt-24 border-t border-ink-200/70 bg-white/60">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-            <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr]">
+        {/* Prinsip */}
+        <section id="tentang" className="scroll-mt-24 border-t border-ink-200/70 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.4fr] lg:gap-16">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">
+                <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-800">
                   <ShieldCheck aria-hidden className="size-3.5" />
                   Dikurasi &amp; ditinjau
                 </span>
                 <h2 className="mt-5 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
                   Prinsip yang kami pegang
                 </h2>
-                <p className="mt-3 text-ink-600">
+                <p className="mt-3 max-w-md text-ink-600">
                   Dakwah bukan soal banyaknya konten, tetapi soal tepatnya isi. Karena itu setiap
                   materi melewati pemeriksaan sebelum dipublikasikan.
                 </p>
+                <Link
+                  href="/cari"
+                  className="mt-6 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand-700 transition hover:text-brand-900"
+                >
+                  Mulai telusuri kajian
+                  <ArrowRight aria-hidden className="size-4" />
+                </Link>
               </div>
 
-              <ul className="space-y-3">
-                {pillars.map(({ title, description }) => (
-                  <li key={title} className="rounded-2xl border border-ink-200 bg-white p-5 sm:p-6">
-                    <h3 className="text-base font-semibold text-ink-900">{title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-ink-600">{description}</p>
+              <ul className="grid gap-0 sm:grid-cols-1">
+                {pillars.map(({ title, description }, index) => (
+                  <li
+                    key={title}
+                    className="grid gap-3 border-t border-ink-200/80 py-6 first:border-t-0 first:pt-0 sm:grid-cols-[auto_1fr] sm:gap-6 sm:py-7"
+                  >
+                    <span className="font-display text-2xl leading-none text-accent-600 sm:text-3xl">
+                      0{index + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-base font-semibold text-ink-900">{title}</h3>
+                      <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-600">
+                        {description}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA penutup */}
+        <section className="relative overflow-hidden bg-brand-900">
+          <div aria-hidden className="pattern-islamic absolute inset-0 opacity-40" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-20 -bottom-24 size-80 rounded-full bg-accent-500/15 blur-3xl"
+          />
+          <div className="relative mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 sm:py-20">
+            <p className="text-[10px] font-semibold tracking-[0.24em] text-accent-300 uppercase">
+              Langkah kecil hari ini
+            </p>
+            <h2 className="mt-3 text-2xl leading-tight font-bold tracking-tight text-white text-balance sm:text-4xl">
+              Mulai dari satu kajian, lalu jaga ritmenya.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/60 sm:text-base">
+              Simpan kajian yang ingin Anda dalami, lalu kembali saat waktu luang. Tidak perlu
+              terburu-buru.
+            </p>
+            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link
+                href="/cari"
+                className="btn-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent-500 px-6 text-sm font-semibold text-ink-950 transition hover:bg-accent-400"
+              >
+                Jelajah konten
+                <ArrowRight aria-hidden className="size-4" />
+              </Link>
+              <Link
+                href="/simpanan"
+                className="btn-press inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Buka simpanan
+              </Link>
             </div>
           </div>
         </section>

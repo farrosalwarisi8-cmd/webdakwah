@@ -13,6 +13,7 @@ export default tseslint.config(
       '**/next-env.d.ts',
       '**/*.d.ts',
       '**/src/generated/**',
+      '.tmp-shots/**',
     ],
   },
   js.configs.recommended,

@@ -4,10 +4,10 @@
   "private": true,
   "description": "Frontend Next.js (App Router) untuk website dakwah.",
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
-    "start": "next start --port 3000",
-    "typecheck": "next typegen && tsc --noEmit",
+    "dev": "pnpm --filter @webdakwah/shared build && next dev --port 3000",
+    "build": "pnpm --filter @webdakwah/shared build && next build",
+    "start": "pnpm --filter @webdakwah/shared build && next start --port 3000",
+    "typecheck": "pnpm --filter @webdakwah/shared build && next typegen && tsc --noEmit",
     "clean": "rm -rf .next"
   },
   "dependencies": {

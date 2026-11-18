@@ -10,6 +10,7 @@ import { Plus } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { DashboardPageHeader } from '@/components/dashboard/page-header';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 import { STATUS_BADGE_STYLES, isAuthorEditable } from '@/lib/content-ui';
@@ -54,21 +55,20 @@ export default async function KontenPage({
 
   return (
     <main className="py-2 sm:py-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Konten saya</h1>
-          <p className="mt-1 text-sm text-ink-600">
-            Tulis draft, lalu ajukan ke admin untuk ditinjau sebelum terbit.
-          </p>
-        </div>
-        <Link
-          href="/dashboard/konten/baru"
-          className="inline-flex items-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
-        >
-          <Plus aria-hidden className="size-4" />
-          Konten baru
-        </Link>
-      </div>
+      <DashboardPageHeader
+        eyebrow="Ruang kerja"
+        title="Konten saya"
+        description="Tulis draft, lalu ajukan ke admin untuk ditinjau sebelum terbit."
+        actions={
+          <Link
+            href="/dashboard/konten/baru"
+            className="btn-press inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-900 px-4 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-800"
+          >
+            <Plus aria-hidden className="size-4" />
+            Konten baru
+          </Link>
+        }
+      />
 
       {dihapus ? (
         <p className="mt-6 rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-800">
@@ -94,7 +94,7 @@ export default async function KontenPage({
           <nav className="mt-6 flex flex-wrap gap-2" aria-label="Filter status konten">
             <Link
               href="/dashboard/konten"
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+              className={`inline-flex min-h-9 items-center rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
                 statusFilter
                   ? 'border border-ink-200 bg-white text-ink-600 hover:border-brand-300 hover:text-brand-700'
                   : 'bg-brand-700 text-white'
@@ -106,7 +106,7 @@ export default async function KontenPage({
               <Link
                 key={value}
                 href={`/dashboard/konten?status=${value}`}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
+                className={`inline-flex min-h-9 items-center rounded-full px-3.5 py-1.5 text-xs font-medium transition ${
                   statusFilter === value
                     ? 'bg-brand-700 text-white'
                     : 'border border-ink-200 bg-white text-ink-600 hover:border-brand-300 hover:text-brand-700'
@@ -122,7 +122,7 @@ export default async function KontenPage({
               <p className="text-sm font-medium text-ink-800">
                 {statusFilter ? 'Tidak ada konten dengan status ini.' : 'Belum ada konten.'}
               </p>
-              <p className="mt-1 text-sm text-ink-500">
+              <p className="mt-1 text-sm text-ink-600">
                 Mulai dengan menulis artikel atau menautkan kajian.
               </p>
               <Link
@@ -144,7 +144,7 @@ export default async function KontenPage({
                       >
                         {item.title}
                       </Link>
-                      <p className="mt-1 text-xs text-ink-500">
+                      <p className="mt-1 text-xs text-ink-600">
                         {CONTENT_TYPE_LABELS[item.type]} · Diperbarui {formatDate(item.updatedAt)}
                       </p>
                     </div>

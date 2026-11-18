@@ -2,6 +2,7 @@ import { notificationUnreadSchema, ROLE_LABELS } from '@webdakwah/shared';
 import { Bell, BookOpen, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
+import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
 import { apiFetch } from '@/lib/api/server';
 import { signOutAction } from '@/lib/auth/actions';
 import { getViewer } from '@/lib/auth/viewer';
@@ -30,21 +31,33 @@ export async function DashboardHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-surface-soft/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-full bg-accent-500 text-ink-950">
-            <BookOpen aria-hidden className="size-5" />
+    <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-surface-soft/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            href="/dashboard"
+            aria-label="WebDakwah, dashboard"
+            className="group flex shrink-0 items-center gap-2.5"
+          >
+            <span className="grid size-10 place-items-center rounded-2xl bg-brand-900 text-accent-400 shadow-soft transition group-hover:bg-brand-800">
+              <BookOpen aria-hidden className="size-5" />
+            </span>
+            <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
+          </Link>
+          <span aria-hidden className="hidden h-6 w-px bg-ink-200 md:block" />
+          <span className="hidden text-xs font-medium tracking-wide text-ink-600 md:block">
+            Ruang kerja
           </span>
-          <span className="text-base font-semibold tracking-tight text-ink-900">WebDakwah</span>
-        </Link>
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
+          <DashboardMobileNav isAdmin={profile?.role === 'ADMIN'} />
+
           {profile ? (
             <Link
               href="/dashboard/notifikasi"
               aria-label={unread > 0 ? `Notifikasi, ${unread} belum dibaca` : 'Notifikasi'}
-              className="relative grid size-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+              className="btn-press relative grid size-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
             >
               <Bell aria-hidden className="size-4.5" />
               {unread > 0 ? (
@@ -57,7 +70,7 @@ export async function DashboardHeader() {
 
           <Link
             href="/"
-            className="hidden min-h-11 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700 sm:inline-flex"
+            className="hidden min-h-11 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700 md:inline-flex"
           >
             Lihat situs
             <ExternalLink aria-hidden className="size-3.5" />
@@ -66,7 +79,7 @@ export async function DashboardHeader() {
           {profile ? (
             <Link
               href="/akun"
-              className="hidden items-center gap-2 rounded-full border border-ink-200 bg-white py-1 pr-3 pl-1 sm:flex"
+              className="hidden items-center gap-2 rounded-full border border-ink-200 bg-white py-1 pr-3 pl-1 xl:flex"
             >
               <span className="grid size-8 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-800">
                 {initials(displayName) || 'WD'}
@@ -80,7 +93,7 @@ export async function DashboardHeader() {
           <form action={signOutAction}>
             <button
               type="submit"
-              className="min-h-11 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+              className="btn-press min-h-11 rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700 sm:px-4"
             >
               Keluar
             </button>

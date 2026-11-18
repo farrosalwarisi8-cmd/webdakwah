@@ -1,88 +1,89 @@
 'use client';
 
-import {
-  Archive,
-  BarChart3,
-  Bell,
-  FileText,
-  LayoutDashboard,
-  Plus,
-  Radio,
-  ShieldCheck,
-  UserRound,
-  Users,
-  type LucideIcon,
-} from 'lucide-react';
+import { Plus, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  adminOnly?: boolean;
-  exact?: boolean;
-}
+import {
+  ACCOUNT_ITEMS,
+  ADMIN_ITEMS,
+  WORKSPACE_ITEMS,
+  isDashboardNavActive,
+  type DashboardNavItem,
+} from '@/lib/dashboard-nav';
 
-const ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Ringkasan', icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/notifikasi', label: 'Notifikasi', icon: Bell },
-  { href: '/dashboard/konten', label: 'Konten saya', icon: FileText, exact: true },
-  { href: '/dashboard/konten/baru', label: 'Buat konten', icon: Plus },
-  { href: '/dashboard/moderasi', label: 'Review konten', icon: ShieldCheck, adminOnly: true },
-  { href: '/dashboard/terbitan', label: 'Semua konten', icon: Archive, adminOnly: true },
-  { href: '/dashboard/pengguna', label: 'Pengguna', icon: Users, adminOnly: true },
-  { href: '/dashboard/siaran', label: 'Siaran', icon: Radio, adminOnly: true },
-  { href: '/dashboard/statistik', label: 'Statistik', icon: BarChart3, adminOnly: true },
-  { href: '/akun', label: 'Akun', icon: UserRound },
-];
+function NavLink({ item, pathname }: { item: DashboardNavItem; pathname: string }) {
+  const active = isDashboardNavActive(pathname, item);
+  const Icon = item.icon;
 
-function isActive(pathname: string, item: NavItem): boolean {
-  if (item.href === '/dashboard/konten') {
-    const isContentDetail =
-      /^\/dashboard\/konten\/[^/]+$/.test(pathname) && pathname !== '/dashboard/konten/baru';
-
-    return pathname === item.href || isContentDetail;
-  }
-
-  if (item.exact) {
-    return pathname === item.href;
-  }
-
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? 'page' : undefined}
+      className={`inline-flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition ${
+        active
+          ? 'bg-brand-900 text-white shadow-soft'
+          : 'text-ink-600 hover:bg-brand-50 hover:text-brand-800'
+      }`}
+    >
+      <Icon aria-hidden className="size-4 shrink-0" />
+      {item.label}
+    </Link>
+  );
 }
 
 export function DashboardSidebar({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
-  const items = ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   return (
-    <div className="w-full lg:w-56 lg:shrink-0">
-      <nav
-        aria-label="Navigasi dashboard"
-        className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0"
-      >
-        {items.map((item) => {
-          const active = isActive(pathname, item);
-          const Icon = item.icon;
+    <aside className="hidden w-60 shrink-0 lg:block">
+      <div className="sticky top-20 space-y-3">
+        <Link
+          href="/dashboard/konten/baru"
+          className="btn-press flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 text-sm font-semibold text-ink-950 shadow-soft transition hover:bg-accent-400"
+        >
+          <Plus aria-hidden className="size-4" />
+          Buat konten baru
+        </Link>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition lg:w-full ${
-                active
-                  ? 'bg-brand-50 text-brand-800'
-                  : 'text-ink-600 hover:bg-white hover:text-brand-700'
-              }`}
-            >
-              <Icon aria-hidden className="size-4 shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+        <nav
+          aria-label="Navigasi dashboard"
+          className="flex flex-col gap-0.5 rounded-2xl border border-ink-200/80 bg-white p-2 shadow-soft"
+        >
+          <p className="px-3 pt-2 pb-1 text-[10px] font-semibold tracking-[0.16em] text-ink-400 uppercase">
+            Ruang kerja
+          </p>
+          {WORKSPACE_ITEMS.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} />
+          ))}
+
+          {isAdmin ? (
+            <>
+              <p className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-[0.16em] text-ink-400 uppercase">
+                Kelola
+              </p>
+              {ADMIN_ITEMS.map((item) => (
+                <NavLink key={item.href} item={item} pathname={pathname} />
+              ))}
+            </>
+          ) : null}
+
+          <span aria-hidden className="my-1 block border-t border-ink-100" />
+          {ACCOUNT_ITEMS.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} />
+          ))}
+        </nav>
+
+        <div className="rounded-2xl border border-ink-200/80 bg-surface-soft p-3.5">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-800">
+            <ShieldCheck aria-hidden className="size-3.5" />
+            Sebelum terbit
+          </p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-ink-600">
+            Setiap konten ditinjau admin. Simpan draf kapan saja tanpa kehilangan pekerjaan.
+          </p>
+        </div>
+      </div>
+    </aside>
   );
 }

@@ -16,8 +16,8 @@ export default function SimpananPage() {
     <div className="min-h-dvh bg-surface-soft">
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-        <nav aria-label="Remah roti" className="text-xs text-ink-500">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <nav aria-label="Remah roti" className="text-xs text-ink-600">
           <Link href="/" className="transition hover:text-brand-700">
             Beranda
           </Link>
@@ -25,12 +25,12 @@ export default function SimpananPage() {
           <span className="text-ink-700">Simpanan</span>
         </nav>
 
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
-          Simpanan
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-          Kajian yang Anda tandai tersimpan di perangkat ini, tanpa perlu akun.
-        </p>
+        <div className="mt-4 rounded-[2rem] border border-ink-200/70 bg-white p-6 sm:p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">Simpanan</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
+            Kajian yang Anda tandai tersimpan di perangkat ini, tanpa perlu akun.
+          </p>
+        </div>
 
         <SavedContentList />
       </main>

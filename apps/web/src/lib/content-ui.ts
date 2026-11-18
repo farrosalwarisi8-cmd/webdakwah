@@ -2,8 +2,8 @@ import type { ContentStatus } from '@webdakwah/shared';
 
 export const STATUS_BADGE_STYLES: Record<ContentStatus, string> = {
   DRAFT: 'bg-ink-100 text-ink-700',
-  PENDING_REVIEW: 'bg-warning/10 text-warning',
-  PUBLISHED: 'bg-success/10 text-success',
+  PENDING_REVIEW: 'bg-accent-100 text-accent-900',
+  PUBLISHED: 'bg-brand-50 text-brand-800',
   REJECTED: 'bg-danger/10 text-danger',
   ARCHIVED: 'bg-ink-200 text-ink-600',
 };
