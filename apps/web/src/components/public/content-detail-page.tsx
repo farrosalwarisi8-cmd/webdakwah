@@ -1,12 +1,12 @@
 import { type ContentType } from '@webdakwah/shared';
-import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Play, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { PublicApiError, getPublicContent } from '@/lib/api/public';
 import { renderBodyHtml } from '@/lib/body-html';
 import { CONTENT_SECTIONS, sectionPath } from '@/lib/content-routes';
-import { CONTENT_TYPE_VISUALS } from '@/lib/content-visuals';
+import { CONTENT_TYPE_VISUALS, domainFromUrl } from '@/lib/content-visuals';
 import { formatDate } from '@/lib/format';
 
 import { AudioDetailPlayer } from './audio-detail-player';
@@ -106,7 +106,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                     <li key={category.slug}>
                       <Link
                         href={`/kategori/${encodeURIComponent(category.slug)}`}
-                        className="inline-flex min-h-9 items-center rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                        className="inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-3.5 text-xs font-medium text-ink-700 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       >
                         {category.name}
                       </Link>
@@ -116,12 +116,52 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
               ) : null}
             </header>
 
-            <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
+            <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,46rem)_19rem] lg:items-start lg:justify-between">
               <div className="min-w-0">
+                {content.type === 'VIDEO' && content.mediaUrl ? (
+                  <a
+                    href={content.mediaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Tonton video di sumber asli: ${content.title}`}
+                    className="group relative mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-sea-900 text-white"
+                  >
+                    <span aria-hidden className="pattern-islamic absolute inset-0 opacity-50" />
+                    <span className="relative grid size-16 place-items-center rounded-full bg-white/95 text-sea-900 shadow-lg transition group-hover:scale-105 group-hover:bg-white">
+                      <Play aria-hidden className="ml-1 size-6 fill-current" />
+                    </span>
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-4 text-xs text-white/85">
+                      Tonton di sumber asli — akan membuka website lain
+                    </span>
+                  </a>
+                ) : null}
+
                 {content.excerpt ? (
                   <p className="rounded-r-2xl border-l-4 border-accent-400 bg-surface-soft py-3.5 pr-4 pl-5 text-base leading-relaxed text-ink-700">
                     {content.excerpt}
                   </p>
+                ) : null}
+
+                {!content.mediaUrl && content.type !== 'ARTICLE' ? (
+                  <div className="mt-4 flex items-start gap-3 rounded-2xl border border-ink-200 bg-surface-soft p-4">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white text-ink-500">
+                      <Icon aria-hidden className="size-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-ink-800">
+                        {content.type === 'AUDIO'
+                          ? 'Sumber audio belum tersedia'
+                          : content.type === 'VIDEO'
+                            ? 'Tautan video belum tersedia'
+                            : 'Tautan sumber belum tersedia'}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-ink-600">
+                        Tim WebDakwah belum menambahkan alamat media untuk kajian ini. Isi kajian
+                        tetap bisa dibaca, dan tombol sumber akan muncul otomatis saat tautan
+                        tersedia.
+                      </p>
+                    </div>
+                  </div>
                 ) : null}
 
                 {content.type === 'AUDIO' && content.mediaUrl ? (
@@ -157,7 +197,7 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                     className="content-body mt-7 text-base leading-relaxed text-ink-800"
                     dangerouslySetInnerHTML={{ __html: renderBodyHtml(content.body) }}
                   />
-                ) : content.type !== 'ARTICLE' ? (
+                ) : content.type !== 'ARTICLE' && content.mediaUrl ? (
                   <p className="mt-7 rounded-2xl bg-surface-soft px-4 py-3.5 text-sm leading-relaxed text-ink-600">
                     Konten ini berupa tautan media. Gunakan tombol sumber untuk membukanya.
                   </p>
@@ -169,7 +209,10 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                     <ul className="mt-3 space-y-2.5">
                       {content.links.map((link) => (
                         <li key={`${link.order}-${link.url}`} className="flex gap-2">
-                          <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-accent-500" />
+                          <span
+                            aria-hidden
+                            className="mt-2 size-1 shrink-0 rounded-full bg-accent-500"
+                          />
                           <a
                             href={link.url}
                             target="_blank"
@@ -207,7 +250,9 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
               <aside className="lg:sticky lg:top-24">
                 <div className="rounded-3xl border border-ink-200/80 bg-surface-soft p-5">
                   <div className="flex items-center gap-3">
-                    <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${visual.iconWrap}`}>
+                    <span
+                      className={`grid size-10 shrink-0 place-items-center rounded-xl ${visual.iconWrap}`}
+                    >
                       <Icon aria-hidden className="size-5" />
                     </span>
                     <div className="min-w-0">
@@ -250,7 +295,9 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                       </a>
                       {content.type !== 'ARTICLE' ? (
                         <p className="mt-2 text-center text-[11px] text-ink-600">
-                          Membuka website lain
+                          {content.type === 'LINK'
+                            ? `${domainFromUrl(content.mediaUrl) ?? 'Sumber eksternal'} · Membuka website lain`
+                            : 'Membuka website lain'}
                         </p>
                       ) : null}
                     </div>

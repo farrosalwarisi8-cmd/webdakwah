@@ -103,18 +103,18 @@ export default async function HomePage() {
             aria-hidden
             className="pointer-events-none absolute -top-24 right-0 size-[34rem] rounded-full bg-accent-100/60 blur-3xl"
           />
-          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-14 lg:px-8 lg:py-24">
+          <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-8 lg:py-20 xl:py-24">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-accent-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-brand-800">
                 <span className="size-1.5 rounded-full bg-accent-500" />
                 Dikurasi &amp; ditinjau sebelum terbit
               </span>
 
-              <h1 className="mt-6 max-w-3xl text-[2.15rem] leading-[1.12] font-bold tracking-tight text-ink-900 text-balance sm:text-5xl lg:text-[3.4rem]">
+              <h1 className="mt-5 max-w-3xl text-[2.1rem] leading-[1.12] font-bold tracking-tight text-ink-900 text-balance sm:text-[2.75rem] lg:text-5xl xl:text-[3.4rem]">
                 Temukan kajian yang <span className="block text-brand-700">menenangkan hati.</span>
               </h1>
 
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
+              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-600 sm:mt-5 sm:text-lg">
                 Artikel, audio kajian, video pendek, dan tautan rujukan dalam satu tempat yang
                 tenang — tanpa iklan, tanpa distraksi.
               </p>
@@ -122,7 +122,7 @@ export default async function HomePage() {
               <form
                 action="/cari"
                 role="search"
-                className="mt-8 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-soft transition focus-within:border-brand-300"
+                className="mt-6 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-soft transition focus-within:border-brand-300 sm:mt-8"
               >
                 <Search aria-hidden className="ml-2 size-4 shrink-0 text-ink-400" />
                 <label htmlFor="beranda-cari" className="sr-only">
@@ -143,7 +143,7 @@ export default async function HomePage() {
                 </button>
               </form>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
                   href="#terbaru"
                   className="btn-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-soft transition hover:bg-accent-400"
@@ -153,14 +153,14 @@ export default async function HomePage() {
                 </a>
                 <a
                   href="#tentang"
-                  className="btn-press inline-flex min-h-12 items-center justify-center rounded-full border border-ink-200 bg-white px-6 py-3 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-700"
+                  className="inline-flex min-h-11 items-center justify-center gap-1 px-2 text-sm font-medium text-ink-600 underline decoration-ink-300 decoration-1 underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-400"
                 >
                   Kenapa WebDakwah?
                 </a>
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2rem] bg-brand-950 p-7 text-white shadow-panel sm:p-9 lg:p-10">
+            <div className="relative hidden overflow-hidden rounded-[2rem] bg-brand-950 p-7 text-white shadow-panel sm:p-9 lg:block lg:p-10">
               <div aria-hidden className="pattern-islamic absolute inset-0 opacity-70" />
               <div
                 aria-hidden
@@ -244,11 +244,21 @@ export default async function HomePage() {
             {featured ? (
               <FeaturedContentCard item={featured} />
             ) : (
-              <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10">
-                <p className="text-sm font-medium text-white">Belum ada kajian terbit.</p>
-                <p className="mt-1 text-sm text-white/55">
-                  Kajian yang sudah ditinjau admin akan tampil di sini.
+              <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center sm:p-12">
+                <span className="mx-auto grid size-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-accent-300">
+                  <BookOpen aria-hidden className="size-5" />
+                </span>
+                <p className="mt-4 text-sm font-medium text-white">Belum ada kajian terbit.</p>
+                <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-white/55">
+                  Kajian yang sudah ditinjau admin akan tampil di sini sebagai sorotan utama.
                 </p>
+                <Link
+                  href="/cari"
+                  className="mt-5 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Telusuri empat format
+                  <ArrowRight aria-hidden className="size-4" />
+                </Link>
               </div>
             )}
           </div>

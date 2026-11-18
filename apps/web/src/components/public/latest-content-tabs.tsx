@@ -1,6 +1,8 @@
 'use client';
 
 import type { ContentType, PublicContentSummary } from '@webdakwah/shared';
+import { Compass } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { PublicContentCard } from './content-card';
@@ -47,11 +49,24 @@ export function LatestContentTabs({ items }: { items: PublicContentSummary[] }) 
       </div>
 
       {visible.length === 0 ? (
-        <div className="mt-5 rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
-          <p className="text-sm font-medium text-ink-800">Belum ada kajian di bagian ini.</p>
-          <p className="mt-1 text-sm text-ink-600">
-            Konten yang sudah ditinjau akan tampil di sini.
+        <div className="mt-5 rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center sm:p-10">
+          <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-surface-soft text-ink-500">
+            <Compass aria-hidden className="size-5" />
+          </span>
+          <p className="mt-3 text-sm font-semibold text-ink-800">
+            {active === 'ALL' ? 'Belum ada kajian terbit.' : 'Belum ada kajian berjenis ini.'}
           </p>
+          <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
+            {active === 'ALL'
+              ? 'Kajian yang sudah ditinjau admin akan tampil di sini.'
+              : 'Coba tab lain, atau telusuri seluruh koleksi kami.'}
+          </p>
+          <Link
+            href="/cari"
+            className="btn-press mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-900 px-4 text-xs font-semibold text-white transition hover:bg-brand-800"
+          >
+            Telusuri koleksi
+          </Link>
         </div>
       ) : (
         <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

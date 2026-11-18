@@ -9,7 +9,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 border-b border-white/10 pb-8 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-2.5">
+            <Link href="/" className="inline-flex min-h-11 items-center gap-2.5">
               <span className="grid size-10 place-items-center rounded-2xl bg-white/10 text-accent-400">
                 <BookOpen aria-hidden className="size-5" />
               </span>
@@ -21,20 +21,26 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-3 text-sm">
-            <Link href="/" className="text-white/65 transition hover:text-accent-300">
+          <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-0 text-sm">
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+            >
               Beranda
             </Link>
             {CONTENT_TYPE_ORDER.map((type) => (
               <Link
                 key={type}
                 href={sectionPath(type)}
-                className="text-white/65 transition hover:text-accent-300"
+                className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
               >
                 {CONTENT_SECTIONS[type].title}
               </Link>
             ))}
-            <Link href="/siaran" className="text-white/65 transition hover:text-accent-300">
+            <Link
+              href="/siaran"
+              className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+            >
               Siaran
             </Link>
           </nav>

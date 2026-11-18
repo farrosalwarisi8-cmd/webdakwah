@@ -1,5 +1,5 @@
 import type { ContentType } from '@webdakwah/shared';
-import { Search } from 'lucide-react';
+import { AlertTriangle, Compass, RefreshCw, Search, SearchX } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -62,7 +62,7 @@ function Pagination({
       {page > 1 ? (
         <Link
           href={searchHref(query, type, page - 1)}
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+          className="btn-press inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
         >
           ← Sebelumnya
         </Link>
@@ -77,7 +77,7 @@ function Pagination({
       {page < totalPages ? (
         <Link
           href={searchHref(query, type, page + 1)}
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+          className="btn-press inline-flex min-h-11 items-center rounded-full border border-ink-200 bg-white px-4 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
         >
           Berikutnya →
         </Link>
@@ -134,7 +134,10 @@ export default async function CariPage({
         </nav>
 
         <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-ink-200/70 bg-surface-soft p-6 sm:p-8">
-          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70" />
+          <div
+            aria-hidden
+            className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70"
+          />
           <div className="relative">
             <p className="text-[10px] font-semibold tracking-[0.2em] text-brand-600 uppercase">
               Pencarian
@@ -147,59 +150,62 @@ export default async function CariPage({
               karakter.
             </p>
 
-        <form action="/cari" method="get" className="mt-5 flex flex-col gap-2 sm:flex-row">
-          <label htmlFor="q" className="sr-only">
-            Kata kunci
-          </label>
-          <div className="relative flex-1">
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-400"
-            />
-            <input
-              id="q"
-              name="q"
-              type="search"
-              defaultValue={query}
-              maxLength={100}
-              placeholder="Misalnya: sabar, ilmu, kajian…"
-              className="min-h-12 w-full rounded-full border border-ink-200 bg-white py-2.5 pr-4 pl-11 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none"
-            />
-          </div>
-          {type ? <input type="hidden" name="type" value={type} /> : null}
-          <button
-            type="submit"
-            className="btn-press inline-flex min-h-12 items-center justify-center rounded-full bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
-          >
-            Cari
-          </button>
-        </form>
+            <form action="/cari" method="get" className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <label htmlFor="q" className="sr-only">
+                Kata kunci
+              </label>
+              <div className="relative flex-1">
+                <Search
+                  aria-hidden
+                  className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-400"
+                />
+                <input
+                  id="q"
+                  name="q"
+                  type="search"
+                  defaultValue={query}
+                  maxLength={100}
+                  placeholder="Misalnya: sabar, ilmu, kajian…"
+                  className="min-h-12 w-full rounded-full border border-ink-200 bg-white py-2.5 pr-4 pl-11 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none"
+                />
+              </div>
+              {type ? <input type="hidden" name="type" value={type} /> : null}
+              <button
+                type="submit"
+                className="btn-press inline-flex min-h-12 items-center justify-center rounded-full bg-brand-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+              >
+                Cari
+              </button>
+            </form>
 
-        <nav aria-label="Filter jenis konten" className="mt-4 flex flex-wrap gap-2">
-          <Link
-            href={searchHref(query, null)}
-            className={
-              type === null
-                ? 'inline-flex min-h-10 items-center rounded-full bg-brand-900 px-3.5 py-1.5 text-sm font-medium text-white'
-                : 'inline-flex min-h-10 items-center rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
-            }
-          >
-            Semua
-          </Link>
-          {CONTENT_TYPE_ORDER.map((item) => (
-            <Link
-              key={item}
-              href={searchHref(query, item)}
-              className={
-                type === item
-                  ? 'inline-flex min-h-10 items-center rounded-full bg-brand-900 px-3.5 py-1.5 text-sm font-medium text-white'
-                  : 'inline-flex min-h-10 items-center rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
-              }
+            <nav
+              aria-label="Filter jenis konten"
+              className="hide-scrollbar -mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible"
             >
-              {CONTENT_SECTIONS[item].title}
-            </Link>
-          ))}
-        </nav>
+              <Link
+                href={searchHref(query, null)}
+                className={
+                  type === null
+                    ? 'inline-flex min-h-11 shrink-0 items-center rounded-full bg-brand-900 px-3.5 text-sm font-medium text-white'
+                    : 'inline-flex min-h-11 shrink-0 items-center rounded-full border border-ink-200 bg-white px-3.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
+                }
+              >
+                Semua
+              </Link>
+              {CONTENT_TYPE_ORDER.map((item) => (
+                <Link
+                  key={item}
+                  href={searchHref(query, item)}
+                  className={
+                    type === item
+                      ? 'inline-flex min-h-11 shrink-0 items-center rounded-full bg-brand-900 px-3.5 text-sm font-medium text-white'
+                      : 'inline-flex min-h-11 shrink-0 items-center rounded-full border border-ink-200 bg-white px-3.5 text-sm text-ink-600 transition hover:border-brand-300 hover:text-brand-700'
+                  }
+                >
+                  {CONTENT_SECTIONS[item].title}
+                </Link>
+              ))}
+            </nav>
           </div>
         </section>
 
@@ -214,24 +220,61 @@ export default async function CariPage({
         ) : null}
 
         {error ? (
-          <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-red-800">
-            {error}
+          <div
+            role="alert"
+            className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="flex items-start gap-2.5 text-sm leading-relaxed text-red-800">
+              <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
+              {error}
+            </p>
+            <Link
+              href={searchHref(query, type, page)}
+              className="btn-press inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-red-300 bg-white px-4 text-xs font-semibold text-red-800 transition hover:border-red-400"
+            >
+              <RefreshCw aria-hidden className="size-3.5" />
+              Coba lagi
+            </Link>
           </div>
         ) : !query ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">
-            <p className="text-sm font-medium text-ink-800">Mulai dengan kata kunci.</p>
-            <p className="mt-1 text-sm text-ink-600">
-              Hasil hanya menampilkan konten yang sudah diterbitkan.
+          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center sm:p-12">
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-700">
+              <Search aria-hidden className="size-5" />
+            </span>
+            <p className="mt-4 text-sm font-semibold text-ink-800">Mulai dengan kata kunci.</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
+              Hasil hanya menampilkan konten yang sudah diterbitkan. Coba “sabar”, “ilmu”, atau nama
+              pengisi kajian.
             </p>
           </div>
         ) : list && list.items.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center">
-            <p className="text-sm font-medium text-ink-800">
+          <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-white p-8 text-center sm:p-12">
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-surface-soft text-ink-500">
+              <SearchX aria-hidden className="size-5" />
+            </span>
+            <p className="mt-4 text-sm font-semibold text-ink-800">
               Tidak ada konten yang cocok dengan “{query}”.
             </p>
-            <p className="mt-1 text-sm text-ink-600">
-              Coba kata kunci lain atau pilih jenis konten yang berbeda.
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
+              Coba kata kunci lain, atau longgarkan filter jenis konten.
             </p>
+            <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
+              {type ? (
+                <Link
+                  href={searchHref(query, null)}
+                  className="btn-press inline-flex min-h-11 w-full items-center justify-center rounded-full bg-brand-900 px-5 text-sm font-semibold text-white transition hover:bg-brand-800 sm:w-auto"
+                >
+                  Tampilkan semua jenis
+                </Link>
+              ) : null}
+              <Link
+                href="/cari"
+                className="btn-press inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full border border-ink-200 bg-white px-5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-800 sm:w-auto"
+              >
+                <Compass aria-hidden className="size-4" />
+                Mulai pencarian baru
+              </Link>
+            </div>
           </div>
         ) : list ? (
           <>

@@ -31,7 +31,8 @@ export function AudioMiniPlayer() {
 
   const isDashboard = pathname.startsWith('/dashboard');
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
-  const PlayIcon = isBuffering && isPlaying ? Loader2 : ended ? RotateCcw : isPlaying ? Pause : Play;
+  const PlayIcon =
+    isBuffering && isPlaying ? Loader2 : ended ? RotateCcw : isPlaying ? Pause : Play;
 
   function handleToggle() {
     if (ended) {
@@ -44,9 +45,7 @@ export function AudioMiniPlayer() {
   return (
     <div
       className={`fixed inset-x-3 z-50 mx-auto max-w-2xl sm:inset-x-6 ${
-        isDashboard
-          ? 'bottom-4'
-          : 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-6'
+        isDashboard ? 'bottom-4' : 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-6'
       }`}
     >
       <div className="overflow-hidden rounded-2xl border border-ink-200/80 bg-white/95 shadow-lift backdrop-blur-md">
@@ -104,7 +103,7 @@ export function AudioMiniPlayer() {
           <Link
             href={contentPath('AUDIO', track.slug)}
             aria-label="Buka halaman audio"
-            className="btn-press grid size-11 shrink-0 place-items-center rounded-full text-ink-600 transition hover:bg-ink-100 hover:text-ink-800"
+            className="btn-press hidden size-11 shrink-0 place-items-center rounded-full text-ink-600 transition hover:bg-ink-100 hover:text-ink-800 sm:grid"
           >
             <Maximize2 aria-hidden className="size-4" />
           </Link>

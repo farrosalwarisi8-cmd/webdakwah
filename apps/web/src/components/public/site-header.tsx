@@ -23,7 +23,11 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-200/70 bg-surface-soft/85 backdrop-blur-md supports-[backdrop-filter]:bg-surface-soft/70">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="WebDakwah, beranda">
+        <Link
+          href="/"
+          className="group flex min-h-11 shrink-0 items-center gap-2.5"
+          aria-label="WebDakwah, beranda"
+        >
           <span className="relative grid size-10 place-items-center rounded-2xl bg-brand-900 text-accent-400 shadow-soft transition group-hover:bg-brand-800">
             <BookOpen aria-hidden className="size-5" />
             <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-surface-soft bg-accent-500" />

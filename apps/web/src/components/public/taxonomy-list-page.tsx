@@ -1,5 +1,5 @@
 import type { PublicContentList } from '@webdakwah/shared';
-import { ArrowLeft, ArrowRight, Tags } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Compass, Tags } from 'lucide-react';
 import Link from 'next/link';
 
 import { PublicContentCard } from './content-card';
@@ -24,7 +24,10 @@ export function TaxonomyListPage({
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <section className="relative overflow-hidden rounded-[2rem] border border-ink-200/70 bg-surface-soft p-6 sm:p-8">
-          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70" />
+          <div
+            aria-hidden
+            className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70"
+          />
           <div className="relative">
             <span className="grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-700">
               <Tags aria-hidden className="size-6" />
@@ -48,10 +51,22 @@ export function TaxonomyListPage({
 
         {list.items.length === 0 ? (
           <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-surface-soft p-8 text-center sm:p-12">
-            <p className="text-sm font-semibold text-ink-800">Belum ada konten terbit.</p>
-            <p className="mt-1 text-sm text-ink-600">
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-700">
+              <Compass aria-hidden className="size-5" />
+            </span>
+            <p className="mt-4 text-sm font-semibold text-ink-800">
+              Belum ada konten untuk topik ini.
+            </p>
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
               Konten yang sudah ditinjau admin akan tampil di sini.
             </p>
+            <Link
+              href="/cari"
+              className="btn-press mt-5 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-900 px-5 text-sm font-semibold text-white transition hover:bg-brand-800"
+            >
+              <Compass aria-hidden className="size-4" />
+              Telusuri topik lain
+            </Link>
           </div>
         ) : (
           <>

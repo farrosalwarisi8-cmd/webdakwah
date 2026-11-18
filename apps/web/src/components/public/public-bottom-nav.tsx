@@ -44,7 +44,7 @@ export function PublicBottomNav() {
   return (
     <>
       <nav
-        aria-label="Navigasi utama"
+        aria-label="Navigasi bawah"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
       >
         {track ? (
@@ -79,10 +79,7 @@ export function PublicBottomNav() {
           })}
         </div>
       </nav>
-      <div
-        aria-hidden="true"
-        className="h-[calc(4rem+env(safe-area-inset-bottom))] sm:hidden"
-      />
+      <div aria-hidden="true" className="h-[calc(4rem+env(safe-area-inset-bottom))] sm:hidden" />
     </>
   );
 }

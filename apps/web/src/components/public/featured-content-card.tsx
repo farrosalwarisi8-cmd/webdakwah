@@ -24,7 +24,7 @@ export function FeaturedContentCard({ item }: { item: PublicContentSummary }) {
   const byline = item.speaker?.name ?? item.author.fullName;
 
   return (
-    <article className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-panel">
+    <article className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-brand-900 shadow-panel">
       <div className="pattern-islamic pointer-events-none absolute inset-0 opacity-40" />
 
       <div className="relative grid lg:grid-cols-[1.02fr_1fr]">
@@ -96,9 +96,7 @@ export function FeaturedContentCard({ item }: { item: PublicContentSummary }) {
                 <Icon aria-hidden className="size-5 text-white/65" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold tracking-[0.2em] text-white/60">
-                  SUMBER
-                </p>
+                <p className="text-[10px] font-semibold tracking-[0.2em] text-white/60">SUMBER</p>
                 <p className="mt-2 flex items-center gap-2 break-all text-2xl font-semibold text-white sm:text-3xl">
                   <Link2 aria-hidden className="size-6 shrink-0 text-accent-400" />
                   {domain ?? 'Tautan eksternal'}
@@ -109,43 +107,45 @@ export function FeaturedContentCard({ item }: { item: PublicContentSummary }) {
           ) : null}
         </div>
 
-        <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+        <div className="flex flex-col justify-center bg-surface-soft p-6 text-ink-900 sm:p-8 lg:p-10">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] ${visual.badge}`}>
+            <span
+              className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] ${visual.badge}`}
+            >
               {visual.label}
             </span>
-            <span className="text-[11px] font-medium tracking-[0.16em] text-white/60 uppercase">
+            <span className="text-[11px] font-medium tracking-[0.16em] text-ink-500 uppercase">
               Pilihan WebDakwah
             </span>
           </div>
 
-          <h2 className="mt-4 text-2xl leading-tight font-semibold tracking-tight text-white sm:text-3xl lg:text-[2.1rem]">
-            <Link href={href} className="transition hover:text-accent-200">
+          <h2 className="mt-4 text-2xl leading-tight font-semibold tracking-tight text-ink-900 sm:text-3xl lg:text-[2.1rem]">
+            <Link href={href} className="transition hover:text-brand-700">
               {item.title}
             </Link>
           </h2>
 
           {item.excerpt ? (
-            <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-white/65 sm:text-base">
+            <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-ink-600 sm:text-base">
               {item.excerpt}
             </p>
           ) : null}
 
-          <dl className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-4 text-xs text-white/70">
+          <dl className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-ink-200/80 pt-4 text-xs text-ink-600">
             <div className="flex min-w-0 items-center gap-1.5">
               <dt className="sr-only">Penulis atau penceramah</dt>
-              <UserRound aria-hidden className="size-3.5 shrink-0 text-accent-400" />
+              <UserRound aria-hidden className="size-3.5 shrink-0 text-brand-600" />
               <dd className="truncate">{byline}</dd>
             </div>
             <div className="flex items-center gap-1.5">
               <dt className="sr-only">Tanggal terbit</dt>
-              <CalendarDays aria-hidden className="size-3.5 shrink-0 text-accent-400" />
+              <CalendarDays aria-hidden className="size-3.5 shrink-0 text-brand-600" />
               <dd>{item.publishedAt ? formatDate(item.publishedAt) : 'Baru terbit'}</dd>
             </div>
             {item.categories[0] ? (
               <div className="flex min-w-0 items-center gap-1.5">
                 <dt className="sr-only">Kategori</dt>
-                <Tag aria-hidden className="size-3.5 shrink-0 text-accent-400" />
+                <Tag aria-hidden className="size-3.5 shrink-0 text-brand-600" />
                 <dd className="truncate">{item.categories[0].name}</dd>
               </div>
             ) : null}
@@ -155,7 +155,7 @@ export function FeaturedContentCard({ item }: { item: PublicContentSummary }) {
             {item.type === 'AUDIO' ? (
               <Link
                 href={href}
-                className="btn-press inline-flex min-h-12 items-center gap-2 rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="btn-press inline-flex min-h-12 items-center gap-2 rounded-full border border-ink-300 bg-white px-5 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-800"
               >
                 Buka halaman audio
                 <ArrowRight aria-hidden className="size-4" />

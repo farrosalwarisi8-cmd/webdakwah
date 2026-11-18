@@ -13,6 +13,7 @@ import {
   Plus,
   Radio,
   ShieldCheck,
+  SlidersHorizontal,
   Users,
 } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -30,6 +31,45 @@ export const metadata: Metadata = {
   title: 'Dashboard',
   robots: { index: false, follow: false },
 };
+
+function SetupPanel({
+  title,
+  description,
+  steps,
+}: {
+  title: string;
+  description: string;
+  steps: string[];
+}) {
+  return (
+    <div className="mt-6 rounded-3xl border border-amber-200/80 bg-amber-50/70 p-6 sm:p-8">
+      <span className="grid size-11 place-items-center rounded-2xl bg-white text-amber-700 shadow-sm">
+        <SlidersHorizontal aria-hidden className="size-5" />
+      </span>
+      <h2 className="mt-4 text-lg font-semibold text-ink-900">{title}</h2>
+      <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-700">{description}</p>
+      <ol className="mt-5 grid gap-2 sm:grid-cols-3">
+        {steps.map((step, index) => (
+          <li
+            key={step}
+            className="rounded-2xl border border-amber-200/60 bg-white/70 p-3 text-xs leading-relaxed text-ink-700"
+          >
+            <span className="mb-1 block text-[10px] font-semibold tracking-[0.14em] text-amber-700">
+              LANGKAH {index + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+      <Link
+        href="/"
+        className="btn-press mt-5 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-amber-300 bg-white px-4 text-xs font-semibold text-amber-900 transition hover:border-amber-400"
+      >
+        Buka situs publik
+      </Link>
+    </div>
+  );
+}
 
 type StatsSummary = {
   contentsByStatus: Record<string, number>;
@@ -111,7 +151,8 @@ export default async function DashboardPage() {
 
   const queueItems = queue?.items ?? [];
   const recentItems = isAdmin ? (managed?.items.slice(0, 4) ?? []) : mineItems.slice(0, 4);
-  const dataMissing = profile !== null && stats === null && queue === null && managed === null && mine === null;
+  const dataMissing =
+    profile !== null && stats === null && queue === null && managed === null && mine === null;
 
   return (
     <main className="py-1 sm:py-2">
@@ -153,14 +194,25 @@ export default async function DashboardPage() {
       />
 
       {viewer.status === 'unconfigured' ? (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
-          Supabase belum dikonfigurasi. Isi variabel environment lebih dulu untuk memakai dashboard.
-        </div>
+        <SetupPanel
+          title="Ruang kerja belum terhubung"
+          description="Dashboard membutuhkan koneksi Supabase. Situs publik tetap bisa dibuka pengunjung tanpa konfigurasi ini."
+          steps={[
+            'Isi kredensial Supabase pada environment aplikasi web.',
+            'Jalankan migrasi database agar tabel profil dan konten tersedia.',
+            'Muat ulang halaman ini lalu masuk dengan akun contributor atau admin.',
+          ]}
+        />
       ) : !profile ? (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
-          Profil Anda belum terbaca dari API. Pastikan API berjalan, migrasi database sudah
-          dijalankan, dan akun ini terdaftar.
-        </div>
+        <SetupPanel
+          title="Profil Anda belum terbaca"
+          description="Akun berhasil dikenali, tetapi profilnya belum tersedia di API. Dashboard akan menampilkan data setelah profil terdaftar."
+          steps={[
+            'Pastikan API berjalan dan dapat dihubungi dari aplikasi web.',
+            'Jalankan migrasi database bila tabel profil belum ada.',
+            'Pastikan akun ini terdaftar sebagai contributor atau admin.',
+          ]}
+        />
       ) : (
         <>
           {loadError ? (
@@ -173,7 +225,10 @@ export default async function DashboardPage() {
             </p>
           ) : null}
 
-          <section aria-label="Statistik singkat" className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <section
+            aria-label="Statistik singkat"
+            className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+          >
             {isAdmin ? (
               <>
                 <StatCard
@@ -270,9 +325,7 @@ export default async function DashboardPage() {
                     <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-brand-50 text-brand-700">
                       <CheckCircle2 aria-hidden className="size-5" />
                     </span>
-                    <p className="mt-3 text-sm font-semibold text-ink-800">
-                      Antrean sedang kosong
-                    </p>
+                    <p className="mt-3 text-sm font-semibold text-ink-800">Antrean sedang kosong</p>
                     <p className="mt-1 text-xs leading-relaxed text-ink-600">
                       Tidak ada kiriman yang menunggu peninjauan saat ini.
                     </p>
@@ -323,7 +376,9 @@ export default async function DashboardPage() {
                     {isAdmin ? 'Terbit terbaru' : 'Konten terbaru'}
                   </h2>
                   <p className="mt-1 text-xs text-ink-600">
-                    {isAdmin ? 'Konten publik yang baru diperbarui.' : 'Lanjutkan atau pantau statusnya.'}
+                    {isAdmin
+                      ? 'Konten publik yang baru diperbarui.'
+                      : 'Lanjutkan atau pantau statusnya.'}
                   </p>
                 </div>
                 <Link

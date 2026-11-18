@@ -31,9 +31,7 @@ export function AudioDetailPlayer({ track }: { track: AudioTrack }) {
   const shownTime = active ? currentTime : 0;
   const shownDuration = active ? duration : 0;
   const progress =
-    active && shownDuration > 0
-      ? Math.min(100, Math.max(0, (shownTime / shownDuration) * 100))
-      : 0;
+    active && shownDuration > 0 ? Math.min(100, Math.max(0, (shownTime / shownDuration) * 100)) : 0;
 
   function handleToggle() {
     if (!active) {
@@ -52,13 +50,16 @@ export function AudioDetailPlayer({ track }: { track: AudioTrack }) {
 
   return (
     <section className="relative mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-brand-950 p-5 text-white shadow-panel sm:p-6">
-      <div aria-hidden className="pattern-islamic pointer-events-none absolute inset-0 opacity-40" />
+      <div
+        aria-hidden
+        className="pattern-islamic pointer-events-none absolute inset-0 opacity-40"
+      />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-16 -right-12 size-56 rounded-full bg-accent-500/20 blur-3xl"
       />
 
-      <div className="relative grid gap-5 sm:grid-cols-[170px_minmax(0,1fr)] sm:gap-6">
+      <div className="relative grid gap-5 sm:grid-cols-[190px_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <AudioArtwork
           title={track.title}
           speaker={track.speaker}
@@ -125,9 +126,7 @@ export function AudioDetailPlayer({ track }: { track: AudioTrack }) {
                   value={volume}
                   onChange={(event) => setVolume(Number(event.target.value))}
                   className="audio-range-dark w-24"
-                  style={
-                    { '--audio-progress': `${Math.round(volume * 100)}%` } as CSSProperties
-                  }
+                  style={{ '--audio-progress': `${Math.round(volume * 100)}%` } as CSSProperties}
                 />
               </label>
 

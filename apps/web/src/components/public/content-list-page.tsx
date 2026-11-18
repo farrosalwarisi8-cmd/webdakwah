@@ -1,5 +1,5 @@
 import type { ContentType } from '@webdakwah/shared';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, Compass, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 import { PublicApiError, getPublicList } from '@/lib/api/public';
@@ -87,7 +87,10 @@ export async function ContentListPage({ type, page }: { type: ContentType; page:
         </nav>
 
         <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-ink-200/70 bg-surface-soft p-6 sm:p-8 lg:p-10">
-          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70" />
+          <div
+            aria-hidden
+            className="pattern-islamic-ink pointer-events-none absolute inset-0 opacity-70"
+          />
           <div className="relative">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-4">
@@ -127,7 +130,7 @@ export async function ContentListPage({ type, page }: { type: ContentType; page:
                     key={itemType}
                     href={sectionPath(itemType)}
                     aria-current={active ? 'page' : undefined}
-                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                    className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
                       active
                         ? 'border-brand-900 bg-brand-900 text-white'
                         : 'border-ink-200 bg-white text-ink-600 hover:border-brand-300 hover:text-brand-800'
@@ -145,9 +148,19 @@ export async function ContentListPage({ type, page }: { type: ContentType; page:
         {error ? (
           <div
             role="alert"
-            className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-red-800"
+            className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 sm:flex-row sm:items-center sm:justify-between"
           >
-            {error}
+            <p className="flex items-start gap-2.5 text-sm leading-relaxed text-red-800">
+              <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
+              {error}
+            </p>
+            <Link
+              href={sectionPath(type)}
+              className="btn-press inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-red-300 bg-white px-4 text-xs font-semibold text-red-800 transition hover:border-red-400"
+            >
+              <RefreshCw aria-hidden className="size-3.5" />
+              Coba lagi
+            </Link>
           </div>
         ) : !list || list.items.length === 0 ? (
           <div className="mt-8 rounded-3xl border border-dashed border-ink-200 bg-surface-soft p-8 text-center sm:p-12">
@@ -156,16 +169,28 @@ export async function ContentListPage({ type, page }: { type: ContentType; page:
             >
               <Icon aria-hidden className="size-6" />
             </span>
-            <p className="mt-4 text-sm font-semibold text-ink-800">Belum ada konten terbit.</p>
-            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
-              Konten yang sudah ditinjau admin akan tampil di sini.
+            <p className="mt-4 text-sm font-semibold text-ink-800">
+              {section.title} belum memiliki konten terbit.
             </p>
-            <Link
-              href={sectionPath(type)}
-              className="btn-press mt-5 inline-flex min-h-11 items-center rounded-full bg-brand-900 px-5 text-sm font-semibold text-white transition hover:bg-brand-800"
-            >
-              Muat ulang halaman
-            </Link>
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-ink-600">
+              Setiap kajian melewati peninjauan admin sebelum tayang. Sementara menunggu, telusuri
+              format lain atau kembali ke beranda.
+            </p>
+            <div className="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
+              <Link
+                href="/cari"
+                className="btn-press inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full bg-brand-900 px-5 text-sm font-semibold text-white transition hover:bg-brand-800 sm:w-auto"
+              >
+                <Compass aria-hidden className="size-4" />
+                Jelajah semua kajian
+              </Link>
+              <Link
+                href="/"
+                className="btn-press inline-flex min-h-11 w-full items-center justify-center rounded-full border border-ink-200 bg-white px-5 text-sm font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-800 sm:w-auto"
+              >
+                Kembali ke beranda
+              </Link>
+            </div>
           </div>
         ) : (
           <>
