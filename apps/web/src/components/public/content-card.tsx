@@ -31,8 +31,7 @@ export function PublicContentCard({ item }: { item: PublicContentSummary }) {
   const Icon = visual.icon;
   const { track, currentTime, duration } = useAudioPlayer();
   const activeAudio = item.type === 'AUDIO' && track?.slug === item.slug;
-  const progress =
-    activeAudio && duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const progress = activeAudio && duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
   const domain = domainFromUrl(item.mediaUrl);
 
   return (
@@ -139,7 +138,10 @@ export function PublicContentCard({ item }: { item: PublicContentSummary }) {
 
         {activeAudio ? (
           <div className="absolute inset-x-0 bottom-0 h-1 bg-white/15" aria-hidden="true">
-            <div className="h-full bg-accent-400 transition-[width]" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full bg-accent-400 transition-[width]"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         ) : null}
       </div>

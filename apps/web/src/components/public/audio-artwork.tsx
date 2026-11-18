@@ -12,7 +12,12 @@ interface AudioArtworkProps {
  * pola geometris dan tipografi, bukan gambar stok, supaya tetap konsisten
  * dengan identitas visual WebDakwah.
  */
-export function AudioArtwork({ title, speaker, compact = false, className = '' }: AudioArtworkProps) {
+export function AudioArtwork({
+  title,
+  speaker,
+  compact = false,
+  className = '',
+}: AudioArtworkProps) {
   return (
     <div
       aria-hidden="true"

@@ -50,5 +50,7 @@ export function StatCard({ label, value, hint, icon: Icon, tone = 'brand', href 
     );
   }
 
-  return <div className="rounded-2xl border border-ink-200/80 bg-white p-4 shadow-soft">{body}</div>;
+  return (
+    <div className="rounded-2xl border border-ink-200/80 bg-white p-4 shadow-soft">{body}</div>
+  );
 }

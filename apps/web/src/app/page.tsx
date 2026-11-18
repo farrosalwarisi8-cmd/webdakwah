@@ -97,117 +97,137 @@ export default async function HomePage() {
 
       <main id="atas">
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-ink-200/60">
-          <div aria-hidden className="pattern-islamic-ink pointer-events-none absolute inset-0" />
+        <section className="relative overflow-hidden border-b border-ink-200/70 bg-surface">
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-24 right-0 size-[34rem] rounded-full bg-accent-100/60 blur-3xl"
-          />
-          <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:px-8 lg:py-20 xl:py-24">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-brand-800">
-                <span className="size-1.5 rounded-full bg-accent-500" />
-                Dikurasi &amp; ditinjau sebelum terbit
-              </span>
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[38%] max-w-[520px] text-brand-900 lg:block"
+          >
+            <svg
+              viewBox="0 0 420 620"
+              preserveAspectRatio="xMidYMax slice"
+              fill="none"
+              stroke="currentColor"
+              className="h-full w-full opacity-[0.09]"
+            >
+              <path
+                strokeWidth="1.5"
+                d="M210 92C152 150 114 224 114 322v298M210 92c58 58 96 132 96 230v298"
+              />
+              <path
+                strokeWidth="1"
+                d="M210 148c-40 44-66 100-66 176v296M210 148c40 44 66 100 66 176v296"
+              />
+              <path strokeWidth="1" d="M86 590h248" />
+              <circle cx="210" cy="92" r="4.5" />
+            </svg>
+          </div>
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 pt-8 sm:gap-10 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-20 lg:pt-16 xl:pt-20">
+              <div className="max-w-[44rem]">
+                <div className="flex items-center gap-3">
+                  <span aria-hidden className="h-px w-10 bg-accent-500" />
+                  <p className="text-[11px] font-semibold tracking-[0.26em] text-ink-500 uppercase">
+                    Kajian Islam terkurasi
+                  </p>
+                </div>
 
-              <h1 className="mt-5 max-w-3xl text-[2.1rem] leading-[1.12] font-bold tracking-tight text-ink-900 text-balance sm:text-[2.75rem] lg:text-5xl xl:text-[3.4rem]">
-                Temukan kajian yang <span className="block text-brand-700">menenangkan hati.</span>
-              </h1>
+                <h1 className="mt-5 text-[2.05rem] leading-[1.1] font-semibold tracking-[-0.02em] text-balance text-ink-950 sm:mt-6 sm:text-[3rem] sm:leading-[1.08] lg:text-[3.5rem] xl:text-[3.9rem]">
+                  Temukan kajian yang menenangkan hati.
+                </h1>
 
-              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-600 sm:mt-5 sm:text-lg">
-                Artikel, audio kajian, video pendek, dan tautan rujukan dalam satu tempat yang
-                tenang — tanpa iklan, tanpa distraksi.
-              </p>
+                <p className="mt-5 max-w-lg text-[15px] leading-[1.75] text-ink-600 sm:text-base">
+                  Ruang tenang untuk membaca, menyimak, dan menonton kajian Islam. Ditinjau manusia
+                  sebelum terbit, tanpa iklan, tanpa distraksi.
+                </p>
 
-              <form
-                action="/cari"
-                role="search"
-                className="mt-6 flex max-w-xl items-center gap-1.5 rounded-2xl border border-ink-200 bg-white p-2 shadow-soft transition focus-within:border-brand-300 sm:mt-8"
-              >
-                <Search aria-hidden className="ml-2 size-4 shrink-0 text-ink-400" />
-                <label htmlFor="beranda-cari" className="sr-only">
-                  Cari kajian, ustadz, atau topik
-                </label>
-                <input
-                  id="beranda-cari"
-                  type="search"
-                  name="q"
-                  placeholder="Cari kajian, ustadz, atau topik"
-                  className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="btn-press min-h-11 rounded-xl bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
+                <form
+                  action="/cari"
+                  role="search"
+                  className="mt-7 flex max-w-lg items-center gap-2 border-b border-ink-300 pb-2 transition-colors focus-within:border-brand-700 sm:mt-9"
                 >
-                  Cari
-                </button>
-              </form>
+                  <Search aria-hidden className="size-4 shrink-0 text-ink-500" />
+                  <label htmlFor="beranda-cari" className="sr-only">
+                    Cari kajian, ustadz, atau topik
+                  </label>
+                  <input
+                    id="beranda-cari"
+                    type="search"
+                    name="q"
+                    placeholder="Cari kajian, ustadz, atau topik"
+                    className="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink-950 placeholder:text-ink-500 focus:outline-none sm:text-base"
+                  />
+                  <button
+                    type="submit"
+                    className="btn-press inline-flex min-h-11 items-center rounded-lg bg-ink-950 px-4 text-sm font-semibold text-white transition hover:bg-brand-900"
+                  >
+                    Cari
+                  </button>
+                </form>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a
-                  href="#terbaru"
-                  className="btn-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-ink-950 shadow-soft transition hover:bg-accent-400"
-                >
-                  Lihat kajian terbaru
-                  <ArrowRight aria-hidden className="size-4" />
-                </a>
-                <a
-                  href="#tentang"
-                  className="inline-flex min-h-11 items-center justify-center gap-1 px-2 text-sm font-medium text-ink-600 underline decoration-ink-300 decoration-1 underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-400"
-                >
-                  Kenapa WebDakwah?
-                </a>
+                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 sm:mt-5">
+                  <a
+                    href="#terbaru"
+                    className="group inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink-800 transition hover:text-brand-900"
+                  >
+                    <span className="border-b border-accent-400 pb-0.5 transition group-hover:border-ink-900">
+                      Lihat kajian terbaru
+                    </span>
+                    <ArrowRight
+                      aria-hidden
+                      className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none"
+                    />
+                  </a>
+                  <a
+                    href="#tentang"
+                    className="inline-flex min-h-11 items-center text-sm text-ink-500 transition hover:text-ink-800"
+                  >
+                    Kenapa WebDakwah?
+                  </a>
+                </div>
               </div>
+
+              <nav aria-label="Jelajah format" className="hidden lg:block">
+                <p className="text-[10px] font-semibold tracking-[0.26em] text-ink-500 uppercase">
+                  Jelajah format
+                </p>
+                <ul className="mt-3 border-t border-ink-200/80">
+                  {CONTENT_TYPE_ORDER.map((type, index) => (
+                    <li key={type}>
+                      <Link
+                        href={sectionPath(type)}
+                        className="group flex items-baseline justify-between gap-4 border-b border-ink-200/80 py-4"
+                      >
+                        <span className="flex items-baseline gap-3">
+                          <span className="text-[10px] tabular-nums tracking-[0.1em] text-ink-400">
+                            0{index + 1}
+                          </span>
+                          <span className="text-sm font-medium text-ink-800 transition-colors group-hover:text-brand-700">
+                            {CONTENT_SECTIONS[type].title}
+                          </span>
+                        </span>
+                        <ArrowRight
+                          aria-hidden
+                          className="size-3.5 -translate-x-1 text-brand-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             </div>
 
-            <div className="relative hidden overflow-hidden rounded-[2rem] bg-brand-950 p-7 text-white shadow-panel sm:p-9 lg:block lg:p-10">
-              <div aria-hidden className="pattern-islamic absolute inset-0 opacity-70" />
-              <div
-                aria-hidden
-                className="absolute -top-16 -right-10 size-56 rounded-full bg-accent-500/20 blur-3xl"
-              />
-
-              <div className="relative">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-semibold tracking-[0.16em] text-white/65 uppercase">
-                    <BookOpen aria-hidden className="size-3.5 text-accent-400" />
-                    Ruang belajar
-                  </span>
-                  <span className="text-[10px] tracking-[0.24em] text-white/35">01</span>
-                </div>
-
-                <p
-                  dir="rtl"
-                  lang="ar"
-                  className="mt-8 font-serif-arabic text-3xl leading-loose text-white sm:text-4xl"
-                >
-                  وَقُل رَّبِّ زِدْنِي عِلْمًا
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">
-                  “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”
-                  <span className="mt-1 block text-[11px] tracking-wide text-white/60">
-                    QS. Taha: 114
-                  </span>
-                </p>
-
-                <div className="mt-8 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-2">
-                  <div>
-                    <p className="text-sm font-semibold text-white">Empat format</p>
-                    <p className="mt-1 text-xs leading-relaxed text-white/65">
-                      Baca, simak, tonton, atau telusuri sumbernya.
-                    </p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1.5 text-sm font-semibold text-white">
-                      <ShieldCheck aria-hidden className="size-4 text-accent-400" />
-                      Ditinjau admin
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-white/65">
-                      Layak terbit sebelum sampai ke Anda.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="mt-8 flex flex-col gap-2 border-t border-ink-200/70 py-5 sm:mt-12 sm:gap-3 lg:flex-row lg:items-baseline lg:justify-between lg:gap-12 lg:py-6">
+              <p
+                dir="rtl"
+                lang="ar"
+                className="font-serif-arabic text-2xl leading-[1.9] text-ink-800 sm:text-3xl"
+              >
+                وَقُل رَّبِّ زِدْنِي عِلْمًا
+              </p>
+              <p className="text-xs leading-relaxed text-ink-500 lg:max-w-sm lg:text-right">
+                “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”{' '}
+                <span className="whitespace-nowrap text-ink-400">QS. Taha: 114</span>
+              </p>
             </div>
           </div>
         </section>
