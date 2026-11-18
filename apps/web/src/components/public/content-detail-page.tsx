@@ -13,6 +13,9 @@ import { AudioDetailPlayer } from './audio-detail-player';
 import { BookmarkButton } from './bookmark-button';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
+import { VideoEmbedPlayer } from './video-embed';
+import { getVideoEmbed, isDirectVideoFileUrl } from '@webdakwah/shared';
+import type { JSX } from 'react';
 
 const MEDIA_ACTION_LABELS: Record<ContentType, string> = {
   ARTICLE: 'Buka tautan',
@@ -118,23 +121,9 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
 
             <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,46rem)_19rem] lg:items-start lg:justify-between">
               <div className="min-w-0">
-                {content.type === 'VIDEO' && content.mediaUrl ? (
-                  <a
-                    href={content.mediaUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Tonton video di sumber asli: ${content.title}`}
-                    className="group relative mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-sea-900 text-white"
-                  >
-                    <span aria-hidden className="pattern-islamic absolute inset-0 opacity-50" />
-                    <span className="relative grid size-16 place-items-center rounded-full bg-white/95 text-sea-900 shadow-lg transition group-hover:scale-105 group-hover:bg-white">
-                      <Play aria-hidden className="ml-1 size-6 fill-current" />
-                    </span>
-                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-4 text-xs text-white/85">
-                      Tonton di sumber asli — akan membuka website lain
-                    </span>
-                  </a>
-                ) : null}
+                {content.type === 'VIDEO' && content.mediaUrl
+                  ? renderVideoMedia(content.mediaUrl, content.title)
+                  : null}
 
                 {content.excerpt ? (
                   <p className="rounded-r-2xl border-l-4 border-accent-400 bg-surface-soft py-3.5 pr-4 pl-5 text-base leading-relaxed text-ink-700">
@@ -316,5 +305,42 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
 
       <SiteFooter />
     </div>
+  );
+}
+
+function renderVideoMedia(mediaUrl: string, judul: string): JSX.Element | null {
+  const embed = getVideoEmbed(mediaUrl);
+  if (embed) {
+    return <VideoEmbedPlayer embed={embed} title={judul} />;
+  }
+
+  if (isDirectVideoFileUrl(mediaUrl)) {
+    return (
+      <video
+        controls
+        preload="none"
+        className="mt-4 aspect-video w-full rounded-2xl bg-black text-white"
+        src={mediaUrl}
+        aria-label={judul}
+      />
+    );
+  }
+
+  return (
+    <a
+      href={mediaUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Tonton video di sumber asli: ${judul}`}
+      className="group relative mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-sea-900 text-white"
+    >
+      <span aria-hidden className="pattern-islamic absolute inset-0 opacity-50" />
+      <span className="relative grid size-16 place-items-center rounded-full bg-white/95 text-sea-900 shadow-lg transition group-hover:scale-105 group-hover:bg-white">
+        <Play aria-hidden className="ml-1 size-6 fill-current" />
+      </span>
+      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent p-4 text-xs text-white/85">
+        Tonton di sumber asli — akan membuka website lain
+      </span>
+    </a>
   );
 }

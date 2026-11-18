@@ -10,6 +10,7 @@ import {
   MAX_CONTENT_LINKS_PER_CONTENT,
 } from '../constants/content.js';
 import { countContentHtmlElements } from '../html.js';
+import { isSupportedVideoSource, VIDEO_SOURCE_ERROR_MESSAGE } from '../video-embed.js';
 import { isSafeHttpUrl, paginationQuerySchema } from './common.js';
 import { categoryIdsSchema, speakerIdSchema, tagNamesSchema } from './taxonomy.js';
 
@@ -120,6 +121,20 @@ export const contentInputSchema = contentFields.superRefine((value, ctx) => {
       code: 'custom',
       path: ['mediaUrl'],
       message: 'Tautan media wajib diisi untuk jenis konten ini.',
+    });
+  }
+
+  // Video hanya boleh dari penyedia yang disematkan atau berkas video langsung,
+  // supaya halaman detail tidak pernah memuat iframe dari domain asing.
+  if (
+    value.type === 'VIDEO' &&
+    value.mediaUrl.length > 0 &&
+    !isSupportedVideoSource(value.mediaUrl)
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['mediaUrl'],
+      message: VIDEO_SOURCE_ERROR_MESSAGE,
     });
   }
 });
