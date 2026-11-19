@@ -13,20 +13,25 @@
 -- 1. Aktifkan extension jika belum ada.
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
--- 2. Hanya tambah index trigram bila masih belum ada.
---    Prisma client tidak memiliki salah satu index ini secara otomatis,
---    jadi kita buat dengan IF NOT EXISTS supaya migrasi dapat dijalankan
---    berkali-kali tanpa gagal (idempotent).
+-- 2. Hanya tambah index trigram bila tabel `contents` sudah ada dan index
+--    masih belum tercipta (idempoten).
+--    Catatan: `CREATE INDEX` biasa dibungkus DO $$ agar idempoten; tidak
+--    pakai CONCURRENTLY karena dijalankan di dalam transaksi migrasi.
+--    Index baru jadi berkualitas-benar saat `contents` terisi.
 DO $$
 BEGIN
-    IF NOT EXISTS (
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'contents'
+    ) AND NOT EXISTS (
         SELECT 1
         FROM pg_indexes
         WHERE schemaname = 'public'
           AND indexname = 'idx_contents_trgm'
     ) THEN
-        CREATE INDEX CONCURRENTLY IF NOT EXISTS
-            idx_contents_trgm
+        CREATE INDEX idx_contents_trgm
         ON public.contents
         USING GIN (
             (title) gin_trgm_ops,
