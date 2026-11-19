@@ -387,11 +387,105 @@
     @apply text-xs font-semibold tracking-wide text-accent-800 uppercase;
   }
 
-  .content-body .quote-arabic {
-    @apply font-serif-arabic mt-2 text-right text-2xl leading-loose text-ink-900;
-  }
-
   .content-body .quote-translation {
     @apply mt-2 text-sm leading-relaxed text-ink-700;
+  }
+
+  /* ===== Hero visual (Fase 25) — dukungan foto tanpa JS tambahan. */
+  .hero-art {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+  }
+
+  .hero-photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-photo__frame {
+    position: relative;
+    z-index: 0;
+    border-radius: 2rem;
+    overflow: hidden;
+    box-shadow: 0 24px 48px -24px rgba(8, 26, 28, 0.35);
+    border: 2px solid var(--color-brand-950);
+  }
+
+  .hero-photo__frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 2rem;
+    border: 1px solid var(--color-brand-950);
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 2rem;
+    background: linear-gradient(180deg, rgba(8, 26, 28, 0) 45%, rgba(8, 26, 28, 0.62) 100%);
+    pointer-events: none;
+  }
+
+  .hero-ayat {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+    display: grid;
+  }
+
+  .hero-ayat__mark {
+    place-self: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--color-brand-500);
+    color: var(--color-surface);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.5;
+    border: 1px solid var(--color-brand-950);
+  }
+
+  .hero-ayat__text arabic {
+    font: var(--font-serif-arabic) 2rem/1.55 var(--color-ink-900);
+    direction: rtl;
+    text-align: center;
+    margin: 0.35rem 0 0.2rem;
+  }
+
+  .hero-ayat__translation {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-ink-600);
+    margin: 0 0 0.4rem;
+  }
+
+  .hero-ayat__source {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+  }
+
+  .hero-title {
+    @apply max-w-[60ch] text-center text-balance;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-photo__frame::before,
+    .hero-overlay {
+      transition: none;
+    }
   }
 }

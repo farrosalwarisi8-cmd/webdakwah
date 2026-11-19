@@ -1,6 +1,9 @@
 import type { PublicContentSummary, PublicHighlights, PublicLatest } from '@webdakwah/shared';
 import { ArrowRight, BookOpen, Search, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 
 import { FeaturedContentCard } from '@/components/public/featured-content-card';
 import { LatestContentTabs } from '@/components/public/latest-content-tabs';
@@ -37,6 +40,80 @@ const pillars = [
 ];
 
 type TaxonomyItem = { name: string; slug: string };
+
+/**
+ * Hero visual (Fase 25): dukungan foto + ayat.
+ *
+ * - Mencari gambar hero dari `apps/web/public/hero/hero-1.svg`.
+ * - Bila berkas belum ada (belum disediakan pemilik situs), render yang
+ *   tipografi saja tanpa error.
+ * - `next/image` dipakai dengan `priority`, `sizes`, dan `alt=""` (gambar
+ *   adalah dekorasi pendukung, sedangkan teks ayat sudah punya konten
+ *   makna sendiri).
+ * - Overlay hijau tua (`--color-brand-950`) memberi kontras cukup agar
+ *   teks di atasnya (title/ayat) memenuhi WCAG AA.
+ */
+function HeroPhoto() {
+  if (typeof window !== 'undefined') {
+    // Client-side guard (pengecekan `fs` hanya di server).
+    return null;
+  }
+
+  const heroPath = path.join(process.cwd(), 'apps/web/public/hero/hero-1.svg');
+  const heroExists = existsSync(heroPath);
+
+  if (!heroExists) {
+    return null;
+  }
+
+  return (
+    <div className="hero-art">
+      <div className="hero-photo__frame">
+        {' '}
+        <Image
+          src="/hero/hero-1.svg"
+          alt=""
+          aria-hidden
+          className="hero-photo"
+          width={1280}
+          height={960}
+          sizes="(max-width: 768px) 100vw, 500px"
+          priority
+          style={{ objectFit: 'cover' }}
+        />
+        <div className="hero-overlay" />
+        <div className="hero-ayat">
+          <span aria-hidden className="hero-ayat__mark">
+            A
+          </span>
+          <blockquote
+            aria-label="Ayat hafalan"
+            className="fabha-arch-top mb-3 flex items-center gap-3 rounded-2xl border border-ink-200/80 px-5 py-4 text-xs leading-relaxed text-ink-700 sm:flex-row sm:px-6 sm:py-5"
+          >
+            <span aria-hidden className="text-2xl font-display leading-none text-accent-500/70">
+              س
+            </span>
+            <p
+              dir="rtl"
+              lang="ar"
+              className="font-serif-arabic text-base leading-loose text-ink-900 sm:text-lg"
+            >
+              وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا
+            </p>
+            <span
+              aria-hidden
+              className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase"
+            >
+              QS. Al-Insan 7
+            </span>
+          </blockquote>
+          <p className="hero-ayat__translation">Setelah hal yang demikian, bumi menjadi kering.</p>
+          <p className="hero-ayat__source">QS. Al-Insan 7</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function HomePage() {
   let highlights: PublicHighlights | null = null;
@@ -129,37 +206,10 @@ export default async function HomePage() {
                 diperiksa admin sebelum terbit, tanpa iklan dan tanpa distraksi.
               </p>
 
-              {/* Ayat dekat heading, sebagai detail editorial yang tenang. */}
-              <div className="mt-8 flex flex-col items-center text-center">
-                <blockquote
-                  aria-label="Ayat hafalan"
-                  className="fabha-arch-top mb-3 flex items-center gap-3 rounded-2xl border border-ink-200/80 bg-white/70 px-5 py-4 text-xs leading-relaxed text-ink-700 sm:flex-row sm:px-6 sm:py-5"
-                >
-                  <span
-                    aria-hidden
-                    className="text-2xl font-display leading-none text-accent-500/70"
-                  >
-                    س
-                  </span>
-                  <p
-                    dir="rtl"
-                    lang="ar"
-                    className="font-serif-arabic text-base leading-loose text-ink-900 sm:text-lg"
-                  >
-                    وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا
-                  </p>
-                  <span
-                    aria-hidden
-                    className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase"
-                  >
-                    QS. Al-Insan 7
-                  </span>
-                </blockquote>
+              {/* ===== Hero visual (Fase 25) — dukungan foto + ayat. ===== */}
+              <HeroPhoto />
 
-                <p className="max-w-md text-[12px] leading-relaxed text-ink-500">
-                  Ayat pilihan yang dekat dengan judul, bukan dekorasi besar.
-                </p>
-              </div>
+              {/* Search bar utama rata tengah. */}
 
               {/* Search bar utama rata tengah. */}
               <form
