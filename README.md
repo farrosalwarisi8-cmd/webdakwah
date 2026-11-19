@@ -416,6 +416,34 @@ membuat Web Service (Root Directory tetap `apps/api`):
    Set `FRONTEND_ORIGINS` ke domain Vercel dan lengkapi `R2_*` (termasuk CORS bucket ke
    domain web).
 
+## Visual Hero (Fase 25)
+
+### Dukungan foto hero
+
+- Satu gambar hero dari `apps/web/public/hero/hero-1.svg` (saja, bukan carousel).
+- `next/image` dipakai dengan `priority`, `sizes`, `alt=""` (gambar adalah dekorasi,
+  sedangkan teks ayat sudah punya konten makna). File berbasis piksel
+  (`hero-1.jpg/.webp/.avif`) dibuat otomatis Next.js.
+- Overlay hijau tua (`--color-brand-950`) di atas foto memberi kontras cukup agar
+  judul dan ayat memenuhi WCAG AA.
+- Bila berkas hero belum ada, halaman hero tetap memakai tampilan tipografi yang
+  sekarang, tanpa error.
+
+### Komponen dan kelas CSS
+
+- `HeroPhoto` (server component) di `apps/web/src/app/page.tsx`.
+- Kelas CSS: `.hero-art`, `.hero-photo`, `.hero-photo__frame`,
+  `.hero-overlay`, `.hero-ayat`, `.hero-ayat__mark`,
+  `.hero-ayat__translation`, `.hero-ayat__source`, `.hero-title`.
+
+### Teks ayat di hero
+
+- Teks Arab ditampilkan sesuai rujukan tepercaya. Ayat yang digunakan saat ini:
+  **QS. Al-Insan 7** — `وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا`.
+- **HARUS diverifikasi pemilik situs** terhadap rujukan tepercaya (mis. mushaf /
+  taqrir) sebelum rilis. Ayat di atas adalah placeholder sementara.
+- Tampilkan teks Arab, terjemahan, dan sumber (surat:ayat).
+
 ## Release Preparation (Fase 24)
 
 ### Uji asap
