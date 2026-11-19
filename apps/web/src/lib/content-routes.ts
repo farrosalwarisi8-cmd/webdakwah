@@ -4,6 +4,8 @@ interface ContentSection {
   segment: string;
   title: string;
   description: string;
+  /** Gambar penutup untuk metadata OG / JSON-LD kalau konten tidak punya media. */
+  imageUrl: string;
 }
 
 export const CONTENT_SECTIONS: Record<ContentType, ContentSection> = {
@@ -12,21 +14,25 @@ export const CONTENT_SECTIONS: Record<ContentType, ContentSection> = {
     title: 'Artikel',
     description:
       'Tulisan ringkas dengan dalil yang jelas, disusun untuk dibaca dalam hitungan menit.',
+    imageUrl: '/images/og-article.jpg',
   },
   AUDIO: {
     segment: 'audio',
     title: 'Audio Kajian',
     description: 'Rekaman kajian pilihan yang bisa disimak saat perjalanan atau di sela pekerjaan.',
+    imageUrl: '/images/og-audio.jpg',
   },
   VIDEO: {
     segment: 'video',
     title: 'Video Dakwah',
     description: 'Video pendek yang padat, cocok dibagikan ke keluarga dan kerabat.',
+    imageUrl: '/images/og-video.jpg',
   },
   LINK: {
     segment: 'rujukan',
     title: 'Tautan Rujukan',
     description: 'Tautan ke sumber terpercaya, dikurasi agar tidak tersesat di lautan informasi.',
+    imageUrl: '/images/og-link.jpg',
   },
 };
 
