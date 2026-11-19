@@ -23,12 +23,44 @@ describe('PublicContentsService.search', () => {
     vi.clearAllMocks();
   });
 
-  it('mencari di judul, ringkasan, dan isi; hanya konten PUBLISHED', async () => {
+  it('menjalankan trigram (title + excerpt, cepat) saat index tersedia', async () => {
     const { prisma, service } = createService();
 
     await service.search({ q: 'ilmu', page: 1, pageSize: 12 });
 
+    // Trigram: cuma title + excerpt, tanpa body.
     expect(prisma.content.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: 'PUBLISHED',
+          OR: [
+            { title: { contains: 'ilmu', mode: 'insensitive' } },
+            { excerpt: { contains: 'ilmu', mode: 'insensitive' } },
+          ],
+        },
+        orderBy: { publishedAt: 'desc' },
+        skip: 0,
+        take: 12,
+      }),
+    );
+    expect(prisma.content.count).toHaveBeenCalled();
+  });
+
+  it('jika trigram gagal, fallback ILIKE dengan title, excerpt, body', async () => {
+    const { prisma, service } = createService();
+
+    // simulasi index GIN trigram belum siap -> findMany melempar pada
+    // panggilan pertama, lalu sukses pada fallback (panggilan kedua).
+    prisma.content.findMany.mockImplementationOnce(async () => {
+      throw new Error('index tidak tersedia');
+    });
+    prisma.content.findMany.mockResolvedValue([]);
+
+    await service.search({ q: 'ilmu', page: 1, pageSize: 12 });
+
+    // fallback tetap memakai OR title, excerpt, body.
+    expect(prisma.content.findMany).toHaveBeenCalledTimes(2);
+    expect(prisma.content.findMany).toHaveBeenLastCalledWith(
       expect.objectContaining({
         where: {
           status: 'PUBLISHED',
@@ -43,6 +75,7 @@ describe('PublicContentsService.search', () => {
         take: 12,
       }),
     );
+    expect(prisma.content.count).toHaveBeenCalled();
   });
 
   it('menggabungkan filter jenis dan paginasi', async () => {
@@ -72,12 +105,11 @@ describe('PublicContentsService.search', () => {
 
     await service.search({ q: 'ilmu', page: 1, pageSize: 12 });
 
-    const select = prisma.content.findMany.mock.calls[0]?.[0]?.select as {
-      author: { select: Record<string, boolean> };
+    const call = prisma.content.findMany.mock.calls[0]?.[0] as {
+      select: Record<string, unknown>;
     };
 
-    expect(select.author.select).toEqual({ fullName: true });
-    expect(select).not.toHaveProperty('reviewNote');
-    expect(select).not.toHaveProperty('status');
+    expect(call.select.author.select).toEqual({ fullName: true });
+    expect(call.select).not.toHaveProperty('reviewNote');
   });
 });

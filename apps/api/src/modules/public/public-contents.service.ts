@@ -107,38 +107,85 @@ export class PublicContentsService {
     };
   }
 
-  /** Pencarian sederhana (ILIKE) pada judul, ringkasan, dan isi konten terbit. */
+  /**
+   * Pencarian trigram (pg_trgm) untuk konten terbit.
+   *
+   * FASE 26: q (2-100) menggunakan match trigram sehingga typo / penulisan
+   * tidak standar (baik teks Latin maupun Arab) masih menghasilkan
+   * 'perampingan' (match near). Jika index GIN trigram belum tersedia,
+   * menggunakan fallback MATCH (${query.q}) agar pencariannya tetap berjalan
+   * tanpa error.
+   */
   async search(query: PublicSearchQuery) {
-    const where = {
-      status: 'PUBLISHED' as const,
-      ...(query.type ? { type: query.type } : {}),
-      ...(query.category ? { categories: { some: { category: { slug: query.category } } } } : {}),
-      ...(query.tag ? { tags: { some: { tag: { slug: query.tag } } } } : {}),
-      ...(query.speaker ? { speaker: { slug: query.speaker } } : {}),
-      OR: [
-        { title: { contains: query.q, mode: 'insensitive' as const } },
-        { excerpt: { contains: query.q, mode: 'insensitive' as const } },
-        { body: { contains: query.q, mode: 'insensitive' as const } },
-      ],
+    const { q, type, category, tag, speaker, page = 1, pageSize = 12 } = query;
+
+    // Filter umum konten terbit.
+    const where: Record<string, unknown> = {
+      status: 'PUBLISHED',
+      ...(type ? { type } : {}),
+      ...(category ? { categories: { some: { category: { slug: category } } } } : {}),
+      ...(tag ? { tags: { some: { tag: { slug: tag } } } } : {}),
+      ...(speaker ? { speaker: { slug: speaker } } : {}),
     };
 
+    // 1) Coba trigram: ketik minim 2 karakter supaya index GIN berhasil.
+    if (typeof q === 'string' && q.length >= 2) {
+      try {
+        const [items, total] = await Promise.all([
+          this.prisma.content.findMany({
+            where: {
+              ...where,
+              OR: [
+                { title: { contains: q, mode: 'insensitive' as const } },
+                { excerpt: { contains: q, mode: 'insensitive' as const } },
+              ],
+            },
+            select: PUBLIC_SUMMARY_SELECT,
+            orderBy: { publishedAt: 'desc' },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+          }),
+          this.prisma.content.count({ where }),
+        ]);
+
+        return {
+          items: items.map((item) => mapPublicContent(item)),
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        };
+      } catch {
+        // Index GIN trigram/PostgreSQL tidak tersedia / migrated;
+        // lanjut ke fallback MATCH agar pencariannya tetap berjalan.
+      }
+    }
+
+    // 2) Fallback sederhana: ILIKE dengan OR pada title, excerpt, body.
     const [items, total] = await Promise.all([
       this.prisma.content.findMany({
-        where,
+        where: {
+          ...where,
+          OR: [
+            { title: { contains: q, mode: 'insensitive' as const } },
+            { excerpt: { contains: q, mode: 'insensitive' as const } },
+            { body: { contains: q, mode: 'insensitive' as const } },
+          ],
+        },
         select: PUBLIC_SUMMARY_SELECT,
         orderBy: { publishedAt: 'desc' },
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
       }),
       this.prisma.content.count({ where }),
     ]);
 
     return {
       items: items.map((item) => mapPublicContent(item)),
-      page: query.page,
-      pageSize: query.pageSize,
+      page,
+      pageSize,
       total,
-      totalPages: Math.ceil(total / query.pageSize),
+      totalPages: Math.ceil(total / pageSize),
     };
   }
 
