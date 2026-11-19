@@ -88,13 +88,13 @@ export function SiteHeader() {
           <Link
             href="/cari"
             aria-label="Cari konten"
-            className="btn-press grid size-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-accent-300 hover:text-accent-700"
+            className="btn-press grid size-11 place-items-center rounded-full border border-ink-200 bg-white text-ink-600 transition hover:border-brand-300 hover:text-brand-800"
           >
             <Search aria-hidden className="size-4" />
           </Link>
           <Link
             href="/masuk"
-            className="btn-press inline-flex min-h-11 items-center rounded-full bg-brand-900 px-4 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-800 sm:px-5"
+            className="btn-press inline-flex min-h-11 items-center rounded-full border border-ink-300 bg-white px-4 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-800 sm:px-5"
           >
             Masuk
           </Link>

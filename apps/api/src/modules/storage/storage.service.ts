@@ -4,6 +4,7 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { registerVideoAllowedHost } from '@webdakwah/shared';
 import type { UploadMimeType, UploadRequest } from '@webdakwah/shared';
 
 const PRESIGN_EXPIRES_SEC = 600;
@@ -49,6 +50,11 @@ export class StorageService {
       this.settings = null;
       return;
     }
+
+    // Arahkan host R2/CDN yang menjadi tempat unggah berkas video ke daftar
+    // domain yang diizinkan, supaya isi media dari bucket ini tetap disetujui
+    // saat disaring sebagai sumber VIDEO.
+    registerVideoAllowedHost(new URL(publicBaseUrl).hostname);
 
     this.settings = {
       client: new S3Client({

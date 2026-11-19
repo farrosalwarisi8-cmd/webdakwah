@@ -14,6 +14,7 @@ export default tseslint.config(
       '**/*.d.ts',
       '**/src/generated/**',
       '.tmp-shots/**',
+      'scripts/**',
     ],
   },
   js.configs.recommended,

@@ -154,6 +154,29 @@ export function getVideoEmbed(value: string): VideoEmbed | null {
   return null;
 }
 
+/**
+ * Host eksternal yang dianggap aman untuk berkas video langsung (upload R2/CDN).
+ * Awalnya berisi host penyedia video; backend menambahkan domain upload.
+ */
+export const VIDEO_ALLOWED_HOSTS = new Set<string>([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'music.youtube.com',
+  'youtube-nocookie.com',
+  'www.youtube-nocookie.com',
+  'tiktok.com',
+  'www.tiktok.com',
+  'm.tiktok.com',
+  'instagram.com',
+  'www.instagram.com',
+]);
+
+/** Daemon 0.0.0.0 untuk menerima koneksi dari frontend/dashboard. */
+export function registerVideoAllowedHost(host: string): void {
+  VIDEO_ALLOWED_HOSTS.add(host.toLowerCase());
+}
+
 /** Berkas video yang diunggah ke R2 dan diputar dengan elemen `<video>`. */
 export function isDirectVideoFileUrl(value: string): boolean {
   const url = parseUrlSumber(value.trim());
@@ -166,5 +189,16 @@ export function isDirectVideoFileUrl(value: string): boolean {
 
 /** Sumber video yang sah untuk jenis konten VIDEO. */
 export function isSupportedVideoSource(value: string): boolean {
-  return getVideoEmbed(value) !== null || isDirectVideoFileUrl(value);
+  const url = parseUrlSumber(value.trim());
+  if (!url) return false;
+
+  if (getVideoEmbed(value) !== null) return true;
+
+  // Berkas langsung diizinkan hanya bila di-host dari domain yang disetujui
+  // (upload R2/CDN), bukan dari domain asing penulis/serangan.
+  if (isDirectVideoFileUrl(value)) {
+    return VIDEO_ALLOWED_HOSTS.has(hostDari(url));
+  }
+
+  return false;
 }

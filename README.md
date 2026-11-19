@@ -319,6 +319,7 @@ pnpm lint          # ESLint untuk seluruh repo
 pnpm test          # tes unit aturan akses (Vitest)
 pnpm format        # Prettier --write
 pnpm format:check  # cek format
+pnpm smoke         # uji asap penerbitan (API + web, konten publik, taksonomi, siaran, sitemap, admin 401)
 ```
 
 Prisma (dijalankan dari root):
@@ -415,9 +416,69 @@ membuat Web Service (Root Directory tetap `apps/api`):
    Set `FRONTEND_ORIGINS` ke domain Vercel dan lengkapi `R2_*` (termasuk CORS bucket ke
    domain web).
 
-## Aturan Kontribusi
+## Release Preparation (Fase 24)
 
-- TypeScript strict; hindari `any`. Gunakan tipe dari `@webdakwah/shared`.
-- UI berbahasa Indonesia, mobile-first, dan ringan (hindari JS klien yang tidak perlu).
-- Jangan menaruh kunci/rahasia di repo — hanya `.env.example`.
-- Sebelum commit: `pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+### Uji asap
+
+Jalankan uji asap penerbitan:
+
+```bash
+pnpm smoke
+```
+
+Secara default membaca `API_URL` dan `WEB_URL` dari lingkungan. Opsional:
+
+```bash
+pnpm smoke --api=http://localhost:3001 --web=http://localhost:3000
+```
+
+Uji mencakup `/health`, daftar konten publik, kategori/tag/penceramah publik, `/api/public/live`,
+sitemap.xml, robots.txt, dan verifikasi bahwa endpoint admin menolak permintaan tanpa token (401/403).
+
+### Deployment referensi
+
+**Supabase**
+
+- Matikan sign-up publik (`Auth → Settings → Enable email signos`). Seed admin melalui `db:seed`
+  dengan `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` di `.env`.
+- Terapkan migrasi dari database kosong: `pnpm --filter api db:migrate` (butuh `DATABASE_URL` dan
+  `DIRECT_URL`). Gunakan URL koneksi langsung, bukan pooler, untuk migrasi Prisma.
+- Verifikasi seeding berjalan bersih (`pnpm --filter api db:seed` → admin tercipta, konten kosong).
+
+**R2 (Cloudflare)**
+
+- Isi `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_BASE_URL`.
+- Bucket perlu CORS `PUT` dari origin web dengan header `Content-Type`. `R2_PUBLIC_BASE_URL` menjadi
+  domain baca publik (isi `r2.dev` untuk akses publik tanpa domain kustom).
+- Setelah R2 siap, `registerVideoAllowedHost(new URL(R2_PUBLIC_BASE_URL).hostname)` berlaku di
+  `StorageService`, sehingga isi media dari bucket ini tetap disetujui saat disaring sebagai VIDEO.
+
+**Render**
+
+- Root directory tetap `apps/api`. Blueprint `render.yaml` di root.
+- Build: `pnpm install --frozen-lockfile && pnpm --filter @webdakwah/shared build && pnpm --filter api build`.
+- Start: `pnpm --filter api db:migrate && node apps/api/dist/main.js` (migrasi otomatis; butuh `DIRECT_URL`).
+- Health check path: `/health`.
+- Isi env non-sinkron (di `render.yaml`) `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`,
+  `FRONTEND_ORIGINS`, `R2_*`, `REVALIDATE_SECRET`, `THROTTLE_*`, `UPLOAD_QUOTA_*`.
+
+**Vercel**
+
+- Root directory: `apps/web` (Next.js 16). Build: `pnpm --filter web build`.
+- API **tidak diimpor** ke Vercel. Web menghubungi API melalui `NEXT_PUBLIC_API_URL` (URL Render).
+- Isi `NEXT_PUBLIC_SITE_URL` (domain produksi), `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `REVALIDATE_SECRET` (sama dengan API).
+- Webhook revalidasi: `POST /api/revalidate` dengan `x-revalidate-secret`; dua sisi (API + web)
+  mengisi `FRONTEND_REVALIDATE_URL` ke `https://<vercel-domain>/api/revalidate`.
+
+### Masalah umum
+
+- **CORS R2**: bucket harus mengizinkan `PUT` dari origin web (`https://<domain>`) dengan
+  `Content-Type`. Cek `Access-Control-Allow-Origin` di response presign/PUT.
+- **Mixed content stream `http`**: alamat siaran `http` dipaksa `EXTERNAL` (browser memblokir
+  audio http di halaman https). Ganti ke `https` atau `EMBED`.
+- **Render tertidur**: Render sleep (free tier) merender halaman jeda 30–60 detik saat pertama kali
+  akses. Gunakan plan aktif atau cooldown.
+- **Proyek Supabase dijeda**: supabase proyek gratis yang dijalankan lama kadang sleep.
+  Manually wake melalui `https://<project>.supabase.co/project-services` atau gunakan instance
+  aktif. `DATABASE_URL` tetap aktif, tetapi kolam koneksi kosong mengakibatkan timeout.

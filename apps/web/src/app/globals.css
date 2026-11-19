@@ -106,7 +106,7 @@
 }
 
 @layer components {
-  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terang. */  /* Framing motif: satu mihrab/arch abstrak di atas headline, dan delapan
+  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terang. */ /* Framing motif: satu mihrab/arch abstrak di atas headline, dan delapan
    sudut geometris rendah di tengah panel detail. Fungsional sebagai framing,
    bukan sebagai gambar utama. */
   .fabha-arch {

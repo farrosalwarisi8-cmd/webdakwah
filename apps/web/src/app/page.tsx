@@ -105,7 +105,7 @@ export default async function HomePage() {
                 Kajian Islam terkurasi
               </p>
 
-              <h1 className="mt-4 max-w-[60ch] text-[2.1rem] leading-[1.08] font-semibold tracking-[-0.03em] text-ink-950 text-balance text-justify sm:text-[2.75rem] lg:text-[3.4rem]">
+              <h1 className="mt-4 max-w-[60ch] text-[2.1rem] leading-[1.08] font-semibold tracking-[-0.03em] text-ink-950 text-center text-balance sm:text-[2.75rem] lg:text-[3.4rem]">
                 Temukan kajian yang menenangkan hati.
               </h1>
 
@@ -113,20 +113,14 @@ export default async function HomePage() {
                 yang setara, membentuk satu baris yang tenang. */}
               <div className="mt-4 mb-5 flex justify-center">
                 <div className="relative flex items-center gap-2">
-                  <span
-                    aria-hidden
-                    className="h-px w-10 bg-accent-500/80"
-                  />
+                  <span aria-hidden className="h-px w-10 bg-accent-500/80" />
                   <span
                     aria-hidden
                     className="relative flex size-4 items-center justify-center rounded-full bg-accent-500"
                   >
                     <span aria-hidden className="h-px w-px" />
                   </span>
-                  <span
-                    aria-hidden
-                    className="h-px w-10 bg-accent-500/80"
-                  />
+                  <span aria-hidden className="h-px w-10 bg-accent-500/80" />
                 </div>
               </div>
 
@@ -141,13 +135,23 @@ export default async function HomePage() {
                   aria-label="Ayat hafalan"
                   className="fabha-arch-top mb-3 flex items-center gap-3 rounded-2xl border border-ink-200/80 bg-white/70 px-5 py-4 text-xs leading-relaxed text-ink-700 sm:flex-row sm:px-6 sm:py-5"
                 >
-                  <span aria-hidden className="text-2xl font-display leading-none text-accent-500/70">
+                  <span
+                    aria-hidden
+                    className="text-2xl font-display leading-none text-accent-500/70"
+                  >
                     س
                   </span>
-                  <p dir="rtl" lang="ar" className="font-serif-arabic text-base leading-loose text-ink-900 sm:text-lg">
+                  <p
+                    dir="rtl"
+                    lang="ar"
+                    className="font-serif-arabic text-base leading-loose text-ink-900 sm:text-lg"
+                  >
                     وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا
                   </p>
-                  <span aria-hidden className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase">
+                  <span
+                    aria-hidden
+                    className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase"
+                  >
                     QS. Al-Insan 7
                   </span>
                 </blockquote>
@@ -213,10 +217,7 @@ export default async function HomePage() {
           </div>
 
           {/* Compact navigation strip empat format di bawah hero. */}
-          <nav
-            aria-label="Empat format kajian"
-            className="border-t border-ink-200/80 bg-surface"
-          >
+          <nav aria-label="Empat format kajian" className="border-t border-ink-200/80 bg-surface">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex flex-wrap items-center justify-center gap-3 border-b border-ink-200/70 pb-4 sm:pb-5">
                 {CONTENT_TYPE_ORDER.map((type, index) => {
@@ -229,9 +230,7 @@ export default async function HomePage() {
                       href={sectionPath(type)}
                       className="group flex flex-col items-center gap-1.5 rounded-xl px-4 py-3 transition hover:bg-white hover:shadow-soft sm:px-5"
                     >
-                      <span className="font-display text-xs text-ink-400">
-                        0{index + 1}
-                      </span>
+                      <span className="font-display text-xs text-ink-400">0{index + 1}</span>
                       <Icon
                         aria-hidden
                         className="size-4 text-ink-600 transition group-hover:text-brand-700"
