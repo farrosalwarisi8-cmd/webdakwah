@@ -106,7 +106,161 @@
 }
 
 @layer components {
-  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terang. */
+  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terang. */  /* Framing motif: satu mihrab/arch abstrak di atas headline, dan delapan
+   sudut geometris rendah di tengah panel detail. Fungsional sebagai framing,
+   bukan sebagai gambar utama. */
+  .fabha-arch {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .fabha-arch::before {
+    content: '';
+    position: absolute;
+    inset: -0.75rem;
+    border: 0.28rem solid var(--color-accent-500);
+    border-color: transparent transparent var(--color-accent-500) transparent;
+    border-radius: 50%;
+    opacity: 0.09;
+    transform: translateZ(0);
+  }
+
+  .fabha-arch::after {
+    content: '';
+    position: absolute;
+    inset: -1.5rem;
+    background-image: repeating-conic-gradient(
+      var(--color-accent-500) 0 3deg,
+      transparent 3deg 6deg
+    );
+    background-size: 12px 12px;
+    mask-image: radial-gradient(circle, black 42%, transparent 78%);
+    -webkit-mask-image: radial-gradient(circle, black 42%, transparent 78%);
+    opacity: 0.07;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  .fabha-arch-top::before,
+  .fabha-arch-top::after {
+    display: none;
+  }
+
+  .fabha-arch-top::after {
+    content: '';
+    position: absolute;
+    inset: -1.1rem;
+    background-image: repeating-conic-gradient(
+      var(--color-accent-500) 0 2deg,
+      transparent 2deg 4.5deg
+    );
+    background-size: 10px 10px;
+    mask-image: radial-gradient(circle, black 34%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle, black 34%, transparent 80%);
+    opacity: 0.09;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  /* Delapan sudut geometris yang menjaga centering. */
+  .eight-point-frame {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .eight-point-frame::before,
+  .eight-point-frame::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-color: var(--color-accent-500);
+    border-style: solid;
+    border-width: 1px;
+    opacity: 0.08;
+    transform: translateZ(0);
+  }
+
+  .eight-point-frame::before {
+    top: -0.5rem;
+    left: -0.5rem;
+    right: -0.5rem;
+    bottom: -0.5rem;
+    border-radius: 50%;
+  }
+
+  .eight-point-frame::after {
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    border-radius: 50%;
+  }
+
+  .four-direction-dividers {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .four-direction-dividers::before,
+  .four-direction-dividers::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-color: var(--color-accent-500);
+    border-style: solid;
+    border-width: 1px;
+    opacity: 0.12;
+    transform: translateZ(0);
+  }
+
+  .four-direction-dividers::before {
+    top: 50%;
+    left: 1.25rem;
+    right: 1.25rem;
+    height: 1px;
+  }
+
+  .four-direction-dividers::after {
+    top: 1.25rem;
+    bottom: 1.25rem;
+    left: 50%;
+    width: 1px;
+  }
+
+  /* Dotted sujud selaras dengan batas empat arah. */
+  .sujud-glow {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .sujud-glow::before {
+    content: '';
+    position: absolute;
+    inset: -2rem;
+    border: 1.5px dotted var(--color-accent-500);
+    border-radius: 50%;
+    opacity: 0.04;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  .arabic-glyph-border {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .arabic-glyph-border::before {
+    content: '';
+    position: absolute;
+    inset: -0.35rem;
+    border: 1px solid var(--color-accent-500);
+    border-radius: 4px;
+    opacity: 0.12;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  /* Tekstur geometris halus, dipakai sebagai latar panel gelap/terangan. */
   .pattern-islamic {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M60 6 71 34 99 23 88 51 116 60 88 69 99 97 71 86 60 114 49 86 21 97 32 69 4 60 32 51 21 23 49 34Z'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 120px 120px;

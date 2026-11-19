@@ -24,8 +24,6 @@ export function AudioArtwork({
       className={`relative isolate overflow-hidden rounded-2xl bg-ink-950 ${className}`}
     >
       <div className="pattern-islamic absolute inset-0 opacity-70" />
-      <div className="absolute -top-10 -right-8 size-36 rounded-full bg-accent-500/25 blur-2xl" />
-      <div className="absolute -bottom-12 -left-10 size-40 rounded-full bg-brand-500/30 blur-2xl" />
 
       {compact ? (
         <div className="relative grid h-full w-full place-items-center">

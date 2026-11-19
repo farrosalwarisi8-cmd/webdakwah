@@ -96,145 +96,157 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main id="atas">
-        {/* Hero */}
-        <section className="relative overflow-hidden border-b border-ink-200/80 bg-surface">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-14/15 max-w-[560px] text-ink-900 lg:block"
-          >
-            <svg
-              viewBox="0 0 420 620"
-              preserveAspectRatio="xMidYMax slice"
-              fill="none"
-              stroke="currentColor"
-              className="h-full w-full opacity-[0.10]"
-            >
-              <path
-                strokeWidth="1.5"
-                d="M210 92C152 150 114 224 114 322v298M210 92c58 58 96 132 96 230v298"
-              />
-              <path
-                strokeWidth="1"
-                d="M210 148c-40 44-66 100-66 176v296M210 148c40 44 66 100 66 176v296"
-              />
-              <path strokeWidth="1" d="M86 590h248" />
-              <circle cx="210" cy="92" r="4.5" />
-            </svg>
-          </div>
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 pt-8 sm:gap-10 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-20 lg:pt-16 xl:pt-20">
-              <div className="max-w-[44rem]">
-                <div className="flex items-center gap-3">
-                  <span aria-hidden className="h-px w-12 bg-ink-900/70" />
-                  <p className="text-[11px] font-semibold tracking-[0.28em] text-ink-500 uppercase">
-                    Kajian Islam terkurasi
-                  </p>
-                </div>
+        {/* Hero: satu bidang editorial terpusat. */}
+        <section className="border-b border-ink-200/80 bg-surface-soft">
+          <div className="mx-auto px-4 pb-12 sm:px-6 sm:pb-14">
+            <div className="mx-auto max-w-3xl px-4 text-center sm:px-0 sm:py-10 sm:pb-14">
+              <p className="flex items-center justify-center gap-2.5 text-[11px] font-semibold tracking-[0.18em] text-brand-700 uppercase">
+                <span className="h-px w-6 bg-accent-500" />
+                Kajian Islam terkurasi
+              </p>
 
-                <h1 className="mt-5 text-[2.1rem] leading-[1.1] font-semibold tracking-[-0.025em] text-balance text-ink-950 sm:mt-6 sm:text-[3rem] sm:leading-[1.08] lg:text-[3.55rem] xl:text-[3.95rem]">
-                  Temukan kajian yang menenangkan hati.
-                </h1>
+              <h1 className="mt-4 max-w-[60ch] text-[2.1rem] leading-[1.08] font-semibold tracking-[-0.03em] text-ink-950 text-balance text-justify sm:text-[2.75rem] lg:text-[3.4rem]">
+                Temukan kajian yang menenangkan hati.
+              </h1>
 
-                <p className="mt-5 max-w-lg text-[15px] leading-[1.75] text-ink-600 sm:text-base">
-                  Ruang tenang untuk membaca, menyimak, dan menonton kajian Islam. Ditinjau manusia
-                  sebelum terbit, tanpa iklan, tanpa distraksi.
-                </p>
-
-                <form
-                  action="/cari"
-                  role="search"
-                  className="mt-8 flex max-w-md items-center gap-2 border-b border-ink-300 pb-2.5 transition-colors focus-within:border-ink-950 sm:mt-9"
-                >
-                  <Search aria-hidden className="size-4 shrink-0 text-ink-500" />
-                  <label htmlFor="beranda-cari" className="sr-only">
-                    Cari kajian, ustadz, atau topik
-                  </label>
-                  <input
-                    id="beranda-cari"
-                    type="search"
-                    name="q"
-                    placeholder="Cari kajian, ustadz, atau topik"
-                    className="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink-950 placeholder:text-ink-500 focus:outline-none sm:text-base"
+              {/* Aksen garis lurus di atas heading: dua titik serong di ujung
+                yang setara, membentuk satu baris yang tenang. */}
+              <div className="mt-4 mb-5 flex justify-center">
+                <div className="relative flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="h-px w-10 bg-accent-500/80"
                   />
-                  <button
-                    type="submit"
-                    className="btn-press inline-flex min-h-11 items-center rounded-lg bg-ink-950 px-4 text-sm font-semibold text-white transition hover:bg-ink-800"
+                  <span
+                    aria-hidden
+                    className="relative flex size-4 items-center justify-center rounded-full bg-accent-500"
                   >
-                    Cari
-                  </button>
-                </form>
-
-                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 sm:mt-5">
-                  <a
-                    href="#terbaru"
-                    className="group inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink-800 transition hover:text-brand-900"
-                  >
-                    <span className="border-b border-accent-400 pb-0.5 transition group-hover:border-ink-900">
-                      Lihat kajian terbaru
-                    </span>
-                    <ArrowRight
-                      aria-hidden
-                      className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none"
-                    />
-                  </a>
-                  <a
-                    href="#tentang"
-                    className="inline-flex min-h-11 items-center text-sm text-ink-500 transition hover:text-ink-800"
-                  >
-                    Kenapa WebDakwah?
-                  </a>
+                    <span aria-hidden className="h-px w-px" />
+                  </span>
+                  <span
+                    aria-hidden
+                    className="h-px w-10 bg-accent-500/80"
+                  />
                 </div>
               </div>
 
-              <nav aria-label="Jelajah format" className="hidden lg:block">
-                <p className="text-[10px] font-semibold tracking-[0.28em] text-ink-500 uppercase">
-                  Jelajah format
-                </p>
-                <ul className="mt-1 border-t border-ink-200/80">
-                  {CONTENT_TYPE_ORDER.map((type, index) => (
-                    <li key={type}>
-                      <Link
-                        href={sectionPath(type)}
-                        className="group flex items-baseline justify-between gap-4 border-b border-ink-200/80 py-4"
-                      >
-                        <span className="flex items-baseline gap-3">
-                          <span className="text-[10px] tabular-nums tracking-[0.12em] text-ink-400">
-                            0{index + 1}
-                          </span>
-                          <span className="text-sm font-medium text-ink-800 transition-colors group-hover:text-brand-700">
-                            {CONTENT_SECTIONS[type].title}
-                          </span>
-                        </span>
-                        <ArrowRight
-                          aria-hidden
-                          className="size-3.5 -translate-x-1 text-ink-400 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-                        />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            </div>
+              <p className="mt-4 max-w-xl text-center text-[15px] leading-relaxed text-ink-600 sm:text-base">
+                Ruang tenang untuk membaca, menyimak, dan menonton kajian Islam. Setiap materi
+                diperiksa admin sebelum terbit, tanpa iklan dan tanpa distraksi.
+              </p>
 
-            <div className="mt-6 flex flex-col gap-3 border-t border-ink-200/70 pt-5 sm:mt-8 sm:gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-14 lg:pt-6">
-              <div className="max-w-sm lg:max-w-none">
-                <p
-                  dir="rtl"
-                  lang="ar"
-                  className="font-serif-arabic text-2xl leading-[1.9] text-ink-900 sm:text-3xl"
+              {/* Ayat dekat heading, sebagai detail editorial yang tenang. */}
+              <div className="mt-8 flex flex-col items-center text-center">
+                <blockquote
+                  aria-label="Ayat hafalan"
+                  className="fabha-arch-top mb-3 flex items-center gap-3 rounded-2xl border border-ink-200/80 bg-white/70 px-5 py-4 text-xs leading-relaxed text-ink-700 sm:flex-row sm:px-6 sm:py-5"
                 >
-                  وَقُل رَّبِّ زِدْنِي عِلْمًا
-                </p>
-                <p className="mt-2.5 text-xs leading-relaxed text-ink-500 lg:text-right">
-                  “Dan katakanlah, ‘Tuhanku, tambahkanlah ilmu kepadaku.’”{' '}
-                  <span className="whitespace-nowrap text-ink-400">QS. Taha: 114</span>
+                  <span aria-hidden className="text-2xl font-display leading-none text-accent-500/70">
+                    س
+                  </span>
+                  <p dir="rtl" lang="ar" className="font-serif-arabic text-base leading-loose text-ink-900 sm:text-lg">
+                    وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا
+                  </p>
+                  <span aria-hidden className="text-[10px] font-semibold tracking-[0.14em] text-ink-400 uppercase">
+                    QS. Al-Insan 7
+                  </span>
+                </blockquote>
+
+                <p className="max-w-md text-[12px] leading-relaxed text-ink-500">
+                  Ayat pilihan yang dekat dengan judul, bukan dekorasi besar.
                 </p>
               </div>
+
+              {/* Search bar utama rata tengah. */}
+              <form
+                action="/cari"
+                role="search"
+                className="mx-auto mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-ink-200 bg-white p-1.5 shadow-soft transition focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100"
+              >
+                <Search aria-hidden className="ml-2 size-4 shrink-0 text-ink-400" />
+                <label htmlFor="beranda-cari" className="sr-only">
+                  Cari kajian, ustadz, atau topik
+                </label>
+                <input
+                  id="beranda-cari"
+                  type="search"
+                  name="q"
+                  placeholder="Cari judul, ustadz, atau topik"
+                  className="min-h-11 min-w-0 flex-1 bg-transparent px-1 text-sm text-ink-900 placeholder:text-ink-500 focus:outline-none sm:text-base"
+                />
+                <button
+                  type="submit"
+                  className="btn-press inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-brand-900 px-4 text-sm font-semibold text-white transition hover:bg-brand-800"
+                >
+                  Cari
+                  <ArrowRight aria-hidden className="size-4" />
+                </button>
+              </form>
+
+              {/* CTA sekunder rata tengah. */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm">
+                <a
+                  href="#terbaru"
+                  className="group inline-flex min-h-11 items-center gap-1.5 font-medium text-ink-700 transition hover:text-brand-800"
+                >
+                  Lihat kajian terbaru
+                  <ArrowRight
+                    aria-hidden
+                    className="size-3.5 transition-transform duration-200 group-hover:translate-x-1"
+                  />
+                </a>
+                <Link
+                  href="/cari"
+                  className="inline-flex min-h-11 items-center font-medium text-ink-500 transition hover:text-brand-800"
+                >
+                  Telusuri seluruh arsip
+                </Link>
+              </div>
+
+              {/* Penutup editorial ringkas. */}
+              <p className="mt-6 max-w-md text-center text-[11px] font-semibold tracking-[0.16em] text-ink-400 uppercase">
+                <span className="h-px w-6 bg-accent-500/70 inline-block" />
+                Empat format · diterbitkan setelah ditinjau admin
+                <span className="h-px w-6 bg-accent-500/70 inline-block" />
+              </p>
             </div>
           </div>
+
+          {/* Compact navigation strip empat format di bawah hero. */}
+          <nav
+            aria-label="Empat format kajian"
+            className="border-t border-ink-200/80 bg-surface"
+          >
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-wrap items-center justify-center gap-3 border-b border-ink-200/70 pb-4 sm:pb-5">
+                {CONTENT_TYPE_ORDER.map((type, index) => {
+                  const section = CONTENT_SECTIONS[type];
+                  const Icon = CONTENT_TYPE_VISUALS[type].icon;
+
+                  return (
+                    <Link
+                      key={type}
+                      href={sectionPath(type)}
+                      className="group flex flex-col items-center gap-1.5 rounded-xl px-4 py-3 transition hover:bg-white hover:shadow-soft sm:px-5"
+                    >
+                      <span className="font-display text-xs text-ink-400">
+                        0{index + 1}
+                      </span>
+                      <Icon
+                        aria-hidden
+                        className="size-4 text-ink-600 transition group-hover:text-brand-700"
+                      />
+                      <span className="max-w-[8rem] text-[13px] font-medium text-ink-700 transition group-hover:text-brand-800">
+                        {section.title}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </nav>
         </section>
 
-        {/* Sorotan */}
         <section className="relative overflow-hidden bg-brand-950 py-14 sm:py-16 lg:py-20">
           <div
             aria-hidden
