@@ -426,33 +426,24 @@ membuat Web Service (Root Directory tetap `apps/api`):
    Set `FRONTEND_ORIGINS` ke domain Vercel dan lengkapi `R2_*` (termasuk CORS bucket ke
    domain web).
 
-## Visual Hero (Fase 25)
+## Visual Hero
 
-### Dukungan foto hero
+Hero beranda adalah Server Component dua kolom pada desktop: teks dan pencarian di
+kiri, panel visual di kanan. Di layar kecil urutannya teks, pencarian, lalu panel.
 
-- Satu gambar hero dari `apps/web/public/hero/hero-1.svg` (saja, bukan carousel).
-- `next/image` dipakai dengan `priority`, `sizes`, `alt=""` (gambar adalah dekorasi,
-  sedangkan teks ayat sudah punya konten makna). File berbasis piksel
-  (`hero-1.jpg/.webp/.avif`) dibuat otomatis Next.js.
-- Overlay hijau tua (`--color-brand-950`) di atas foto memberi kontras cukup agar
-  judul dan ayat memenuhi WCAG AA.
-- Bila berkas hero belum ada, halaman hero tetap memakai tampilan tipografi yang
-  sekarang, tanpa error.
-
-### Komponen dan kelas CSS
-
-- `HeroPhoto` (server component) di `apps/web/src/app/page.tsx`.
-- Kelas CSS: `.hero-art`, `.hero-photo`, `.hero-photo__frame`,
-  `.hero-overlay`, `.hero-ayat`, `.hero-ayat__mark`,
-  `.hero-ayat__translation`, `.hero-ayat__source`, `.hero-title`.
-
-### Teks ayat di hero
-
-- Teks Arab ditampilkan sesuai rujukan tepercaya. Ayat yang digunakan saat ini:
-  **QS. Al-Insan 7** — `وَٱلْأَرْضَ بَعْدَ ذَٰلِكَ قَرْعًا`.
-- **HARUS diverifikasi pemilik situs** terhadap rujukan tepercaya (mis. mushaf /
-  taqrir) sebelum rilis. Ayat di atas adalah placeholder sementara.
-- Tampilkan teks Arab, terjemahan, dan sumber (surat:ayat).
+- Konfigurasi statis di `apps/web/src/lib/hero.ts`; tidak ada pembacaan folder,
+  `process.cwd()`, atau pengecekan `window`.
+- `HERO_IMAGE` (`null` secara default) menampilkan foto 4/5 dengan `next/image`,
+  `priority`, `sizes="(min-width: 1024px) 45vw, 100vw"`, dan gradien hanya di area
+  gambar. Bila `HERO_AYAT` juga diisi, kartu ayat tampil di tepi bawah foto.
+- `HERO_AYAT` (`null` secara default) hanya tampil setelah semua kolom terisi,
+  termasuk `verifiedBy` dan `verifiedAt`. Tidak ada teks ayat di kode sumber.
+- Tanpa foto, panel berpola menampilkan konten terbaru; bila belum ada konten,
+  tampil pesan ringkas.
+- Spesifikasi foto, cara mengisi konstanta, dan arahan artistik ada di
+  [`docs/hero-image.md`](docs/hero-image.md).
+- Tes `apps/web/src/lib/hero.test.ts` menjaga agar ayat tidak tampil tanpa
+  pemeriksa dan tanggal pemeriksaan.
 
 ## Release Preparation (Fase 24)
 
