@@ -11,6 +11,7 @@ export * from './schemas/notification.js';
 export * from './schemas/taxonomy.js';
 export * from './schemas/public-content.js';
 export * from './schemas/profile.js';
+export * from './schemas/watch.js';
 export * from './video-embed.js';
 export * from './video-embed.js';
 export * from './schemas/upload.js';

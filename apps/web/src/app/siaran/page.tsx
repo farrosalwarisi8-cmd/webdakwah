@@ -9,6 +9,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { LiveAudioPlayer } from '@/components/public/live-audio-player';
+import { LiveWatchToggle } from '@/components/public/live-watch-toggle';
 import { SiteFooter } from '@/components/public/site-footer';
 import { SiteHeader } from '@/components/public/site-header';
 import { PublicApiError, getPublicLive } from '@/lib/api/public';
@@ -176,6 +177,23 @@ export default async function SiaranPage() {
                 Dengarkan di Telegram
                 <ExternalLink aria-hidden className="size-3.5" />
               </a>
+            ) : null}
+
+            {live?.isEnabled && live.streamUrl && live.channelId ? (
+              <section
+                aria-labelledby="ikuti-siaran"
+                className="mt-4 rounded-2xl border border-ink-200 bg-surface-soft p-5"
+              >
+                <h2 id="ikuti-siaran" className="text-sm font-semibold text-ink-900">
+                  Ikuti siaran ini
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                  Tandai bahwa Anda mengikuti siaran ini. Jumlah pengikut tampil di halaman ini.
+                </p>
+                <div className="mt-3">
+                  <LiveWatchToggle channelId={live.channelId} />
+                </div>
+              </section>
             ) : null}
           </div>
         </section>

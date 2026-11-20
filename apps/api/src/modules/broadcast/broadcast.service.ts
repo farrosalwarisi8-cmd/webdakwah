@@ -23,6 +23,7 @@ import { nextDatedOccurrence, nextWeeklyOccurrence } from './broadcast-time.js';
 const DEFAULT_TITLE = 'Siaran Langsung';
 
 const DEFAULT_SETTINGS: AdminLiveStream = {
+  id: null,
   title: DEFAULT_TITLE,
   description: null,
   streamUrl: null,
@@ -88,6 +89,7 @@ export class BroadcastService {
     if (!row) return DEFAULT_SETTINGS;
 
     return {
+      id: row.id,
       title: row.title,
       description: row.description,
       streamUrl: row.streamUrl,
@@ -117,6 +119,7 @@ export class BroadcastService {
       : await this.prisma.liveStream.create({ data });
 
     return {
+      id: row.id,
       title: row.title,
       description: row.description,
       streamUrl: row.streamUrl,
@@ -257,6 +260,7 @@ export class BroadcastService {
 
     return {
       isEnabled,
+      channelId: settings?.id ?? null,
       title: settings?.title ?? DEFAULT_TITLE,
       description: settings?.description ?? null,
       streamUrl,

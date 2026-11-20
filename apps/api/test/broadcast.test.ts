@@ -98,6 +98,14 @@ describe('izin broadcast:manage', () => {
     await expect(controller.getSettings(admin)).resolves.toMatchObject({ isEnabled: false });
   });
 
+  it('menyertakan id channel pada pengaturan admin', async () => {
+    const { prisma, service } = createService();
+    prisma.liveStream.findFirst.mockResolvedValue(SETTINGS_ROW);
+    const controller = new BroadcastController(service);
+
+    await expect(controller.getSettings(admin)).resolves.toMatchObject({ id: SETTINGS_ROW.id });
+  });
+
   it('menolak kontributor pada endpoint admin siaran (403)', () => {
     const { service } = createService();
     const controller = new BroadcastController(service);
@@ -278,6 +286,7 @@ describe('BroadcastService.getPublicLive', () => {
     expect(status.getStatus).toHaveBeenCalledWith(SETTINGS_ROW.statusUrl);
     expect(Object.keys(result).sort()).toEqual(
       [
+        'channelId',
         'description',
         'isEnabled',
         'liveStatus',
@@ -288,6 +297,7 @@ describe('BroadcastService.getPublicLive', () => {
         'title',
       ].sort(),
     );
+    expect(result.channelId).toBe(SETTINGS_ROW.id);
     expect(JSON.stringify(result)).not.toContain('status.example');
     expect(JSON.stringify(result)).not.toContain(SETTINGS_ROW.statusUrl);
     expect(result.schedules[0]).not.toHaveProperty('id');

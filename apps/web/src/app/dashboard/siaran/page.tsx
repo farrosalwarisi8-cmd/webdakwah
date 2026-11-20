@@ -3,10 +3,13 @@ import {
   PLAY_MODE_LABELS,
   adminBroadcastScheduleListSchema,
   adminLiveStreamSchema,
+  broadcastWatchingListSchema,
   type AdminBroadcastSchedule,
   type AdminLiveStream,
+  type BroadcastWatchingList,
 } from '@webdakwah/shared';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { ConfirmButton } from '@/components/confirm-button';
 import { ApiError, apiFetch } from '@/lib/api/server';
@@ -43,6 +46,12 @@ const specialDateFormatter = new Intl.DateTimeFormat('id-ID', {
   month: 'long',
   year: 'numeric',
   timeZone: 'UTC',
+});
+
+const watcherDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'Asia/Jakarta',
 });
 
 function firstValue(value: string | string[] | undefined): string | undefined {
@@ -162,7 +171,11 @@ function ScheduleFields({
 export default async function SiaranDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sukses?: string | string[]; error?: string | string[] }>;
+  searchParams: Promise<{
+    sukses?: string | string[];
+    error?: string | string[];
+    pengikut?: string | string[];
+  }>;
 }) {
   const viewer = await requireViewer('/dashboard/siaran');
   const params = await searchParams;
@@ -171,10 +184,14 @@ export default async function SiaranDashboardPage({
 
   const sukses = firstValue(params.sukses);
   const errorParam = firstValue(params.error);
+  const requestedPage = Number.parseInt(firstValue(params.pengikut) ?? '1', 10);
+  const watcherPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
   let settings: AdminLiveStream | null = null;
   let schedules: AdminBroadcastSchedule[] = [];
   let speakers: { id: string; name: string }[] = [];
+  let watchers: BroadcastWatchingList | null = null;
+  let watchersError: string | null = null;
   let loadError: string | null = null;
 
   if (isAdmin) {
@@ -191,6 +208,19 @@ export default async function SiaranDashboardPage({
     } catch (error) {
       loadError =
         error instanceof ApiError ? error.message : 'Gagal memuat data siaran. Coba lagi.';
+    }
+
+    if (settings?.id) {
+      try {
+        watchers = broadcastWatchingListSchema.parse(
+          await apiFetch(
+            `/broadcast/manage/watchers/${settings.id}?page=${watcherPage}&pageSize=20`,
+          ),
+        );
+      } catch (error) {
+        watchersError =
+          error instanceof ApiError ? error.message : 'Gagal memuat daftar pengikut siaran.';
+      }
     }
   }
 
@@ -332,6 +362,88 @@ export default async function SiaranDashboardPage({
               </form>
             </section>
           ) : null}
+
+          <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6">
+            <h2 className="text-base font-semibold text-ink-900">Pengikut siaran</h2>
+            <p className="mt-1 text-sm text-ink-500">
+              Pengguna yang menekan “Ikuti siaran” di halaman publik. Jumlah pengikut tampil
+              terbuka, sedangkan daftar ini hanya untuk admin.
+            </p>
+
+            {!settings?.id ? (
+              <p className="mt-4 rounded-2xl border border-dashed border-ink-200 bg-surface-soft p-4 text-sm text-ink-500">
+                Belum ada channel siaran tersimpan. Simpan pengaturan siaran terlebih dahulu.
+              </p>
+            ) : watchersError ? (
+              <p
+                role="alert"
+                className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+              >
+                {watchersError}
+              </p>
+            ) : watchers ? (
+              watchers.total === 0 ? (
+                <p className="mt-4 rounded-2xl border border-dashed border-ink-200 bg-surface-soft p-4 text-sm text-ink-500">
+                  Belum ada pengguna yang mengikuti siaran ini.
+                </p>
+              ) : (
+                <>
+                  <p className="mt-4 text-sm text-ink-700">
+                    <span className="font-semibold text-ink-900">{watchers.total}</span> pengikut.
+                  </p>
+                  <ul className="mt-3 space-y-2">
+                    {watchers.items.map((watcher) => (
+                      <li
+                        key={watcher.id}
+                        className="rounded-2xl border border-ink-200 p-3 text-sm sm:flex sm:items-center sm:justify-between sm:gap-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-ink-900">
+                            {watcher.fullName ?? 'Tanpa nama'}
+                          </p>
+                          <p className="break-all text-xs text-ink-500">{watcher.email}</p>
+                        </div>
+                        <p className="mt-1 shrink-0 text-xs text-ink-500 sm:mt-0">
+                          Sejak {watcherDateFormatter.format(new Date(watcher.createdAt))} WIB
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {watchers.totalPages > 1 ? (
+                    <nav
+                      aria-label="Halaman pengikut siaran"
+                      className="mt-4 flex items-center justify-between gap-3 text-sm"
+                    >
+                      {watchers.page > 1 ? (
+                        <Link
+                          href={`/dashboard/siaran?pengikut=${watchers.page - 1}`}
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          ← Sebelumnya
+                        </Link>
+                      ) : (
+                        <span />
+                      )}
+                      <span className="text-xs text-ink-500">
+                        Halaman {watchers.page} dari {watchers.totalPages}
+                      </span>
+                      {watchers.page < watchers.totalPages ? (
+                        <Link
+                          href={`/dashboard/siaran?pengikut=${watchers.page + 1}`}
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          Berikutnya →
+                        </Link>
+                      ) : (
+                        <span />
+                      )}
+                    </nav>
+                  ) : null}
+                </>
+              )
+            ) : null}
+          </section>
 
           <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6">
             <h2 className="text-base font-semibold text-ink-900">Jadwal siaran</h2>

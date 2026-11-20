@@ -31,6 +31,7 @@ model Profile {
   contents      Content[]
   uploads       UploadRequestLog[]
   notifications Notification[]
+  watchings BroadcastWatching[]
 
   @@map("profiles")
 }
@@ -176,6 +177,7 @@ model LiveStream {
   telegramUrl String?  @map("telegram_url") @db.VarChar(2048)
   isEnabled   Boolean  @default(false) @map("is_enabled")
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  watchings   BroadcastWatching[]
 
   @@map("live_stream")
 }
@@ -229,6 +231,24 @@ model Notification {
   @@index([userId, createdAt])
   @@index([contentId])
   @@map("notifications")
+}
+
+/// Pengikut siaran langsung: satu baris unik per (profil, channel). Dipakai
+/// untuk menghitung pengikut publik dan menampilkan daftarnya ke admin;
+/// data pengguna tidak pernah dikirim ke publik.
+model BroadcastWatching {
+  id        String   @id @default(uuid()) @db.Uuid
+  profileId String   @map("profile_id") @db.Uuid
+  channelId String   @map("channel_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  profile Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  channel LiveStream @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, channelId])
+  @@index([profileId])
+  @@index([channelId])
+  @@map("broadcast_watchings")
 }
 
 model ContentLink {

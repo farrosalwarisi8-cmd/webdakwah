@@ -243,6 +243,8 @@ Model:
 - `BroadcastSchedule` — `title`, `speakerId` (opsional), `dayOfWeek` (0–6) **atau** `date`
   (salah satu wajib, ditegakkan juga oleh constraint database), `startTime` (`HH:mm` WIB),
   `durationMin`, `notes`, `isActive`.
+- `BroadcastWatching` — `profileId`, `channelId`, `createdAt`; satu baris unik per pasangan
+  profil–channel. Dipakai sebagai penghitung pengikut publik dan daftar admin.
 
 Aturan validasi (di `packages/shared`):
 
@@ -255,13 +257,21 @@ Aturan validasi (di `packages/shared`):
   maksimal 32 KB, cache ±30 detik. Nama host/IP privat, loopback, link-local, dan alamat hasil DNS
   yang mengarah ke jaringan privat ditolak (proteksi SSRF). Kegagalan menghasilkan
   `UNKNOWN` → "Status tidak tersedia", bukan error.
-- `GET /api/public/live` hanya mengembalikan `isEnabled`, `title`, `description`, `streamUrl`,
-  `playMode`, `telegramUrl`, jadwal aktif terdekat, dan `liveStatus`; `statusUrl` serta data
-  internal tidak pernah ikut. Endpoint memakai throttle sendiri dan cache pendek.
+- `GET /api/public/live` hanya mengembalikan `id` channel (untuk tombol ikuti), `isEnabled`,
+  `title`, `description`, `streamUrl`, `playMode`, `telegramUrl`, jadwal aktif terdekat, dan
+  `liveStatus`; `statusUrl` serta data internal tidak pernah ikut. Endpoint memakai throttle
+  sendiri dan cache pendek.
+- Pengikut siaran: `GET /api/broadcast/public/:channelId/watching-count` (jumlah saja, tanpa
+  login), `GET/POST/DELETE /api/broadcast/watch/:channelId` (status dan aksi untuk pengguna
+  login), serta `GET /api/broadcast/manage/watchers/:channelId` (daftar nama/email, khusus
+  `broadcast:manage`). Ikuti/berhenti bersifat idempoten, hanya channel aktif yang bisa diikuti,
+  dan baris ikut terhapus saat profil atau channel dihapus (`ON DELETE CASCADE`).
 - Halaman `/siaran` memakai revalidasi 30 detik, memutar audio lewat provider global yang sudah
   ada (`preload`/tanpa autoplay), dan tetap tampil dengan pesan ramah bila API lambat atau mati.
-- Dashboard `/dashboard/siaran` (admin saja, izin `broadcast:manage`) berisi form pengaturan dan
-  CRUD jadwal.
+- Halaman `/siaran` menampilkan tombol **Ikuti siaran** (masuk dulu bila belum login) beserta
+  jumlah pengikut; jumlah tetap tampil walau pengunjung belum masuk.
+- Dashboard `/dashboard/siaran` (admin saja, izin `broadcast:manage`) berisi form pengaturan,
+  CRUD jadwal, dan daftar pengikut (nama, email, waktu bergabung) dengan paginasi.
 
 Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan siaran manual ke
 Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai

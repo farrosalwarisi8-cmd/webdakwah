@@ -149,6 +149,8 @@ export type BroadcastScheduleInput = z.infer<typeof broadcastScheduleInputSchema
 
 /** Pengaturan lengkap untuk dashboard admin (termasuk statusUrl). */
 export const adminLiveStreamSchema = z.object({
+  /** Id channel siaran; null selama pengaturan belum pernah disimpan. */
+  id: z.uuid().nullable(),
   title: z.string(),
   description: z.string().nullable(),
   streamUrl: z.string().nullable(),
@@ -209,6 +211,8 @@ export const publicLiveSchema = z.object({
   telegramUrl: z.string().nullable(),
   schedules: z.array(publicBroadcastScheduleSchema),
   liveStatus: liveStatusSchema,
+  /** Id channel siaran; null selama pengaturan siaran belum pernah disimpan. */
+  channelId: z.uuid().nullable(),
 });
 
 export type PublicLive = z.infer<typeof publicLiveSchema>;
