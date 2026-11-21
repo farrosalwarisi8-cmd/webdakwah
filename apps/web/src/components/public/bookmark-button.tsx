@@ -5,6 +5,7 @@ import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { BOOKMARKS_EVENT, isBookmarked, toBookmarkItem, toggleBookmark } from '@/lib/bookmarks';
+import { cachePagesForOffline, contentPageUrl } from '@/lib/pwa';
 
 export function BookmarkButton({ item }: { item: PublicContentSummary }) {
   const [saved, setSaved] = useState(false);
@@ -28,7 +29,15 @@ export function BookmarkButton({ item }: { item: PublicContentSummary }) {
     <button
       type="button"
       aria-pressed={saved}
-      onClick={() => setSaved(toggleBookmark(toBookmarkItem(item)))}
+      onClick={() => {
+        const nowSaved = toggleBookmark(toBookmarkItem(item));
+
+        setSaved(nowSaved);
+
+        if (nowSaved) {
+          cachePagesForOffline([contentPageUrl(item.type, item.slug)]);
+        }
+      }}
       className={`btn-press inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium ${
         saved
           ? 'border-brand-900 bg-brand-900 text-white'

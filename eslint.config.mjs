@@ -29,5 +29,23 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // Service worker berjalan di scope Worker, bukan browser/DOM biasa.
+    files: ['apps/web/public/sw.js'],
+    languageOptions: {
+      globals: {
+        AbortController: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        URL: 'readonly',
+        caches: 'readonly',
+        clearTimeout: 'readonly',
+        clients: 'readonly',
+        fetch: 'readonly',
+        self: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+  },
   prettier,
 );

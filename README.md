@@ -3,9 +3,9 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 22 — Jelajah taksonomi publik**. Halaman kategori, tag, dan penceramah kini
-> dapat dibuka tanpa login dan hanya menampilkan taksonomi yang punya konten terbit. Notifikasi
-> review dari Fase 21 tetap berjalan seperti sebelumnya.
+> Status: **Fase 27 — PWA & akses offline**. Website kini dapat dipasang ke layar utama dan
+> menyimpan halaman konten untuk dibaca saat koneksi mati. Fitur fase sebelumnya (taksonomi
+> publik, siaran, SEO) tetap berjalan seperti biasa.
 
 ## Teknologi
 
@@ -277,6 +277,41 @@ Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan si
 Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai
 placeholder `<diisi dari pengelola radio>` dan tidak memuat kredensial.
 
+## PWA & Akses Offline (Fase 27)
+
+- `apps/web/src/app/manifest.ts` menyajikan `/manifest.webmanifest` (`display: standalone`,
+  warna tema `#173b32`) dengan ikon 192/512, ikon maskable, dan ikon Apple 180.
+- `apps/web/public/sw.js` mendaftarkan service worker hanya saat produksi (`next start`), agar
+  hot reload saat `next dev` tidak terganggu.
+- Strategi cache:
+  - Halaman publik: **network-first** dengan batas tunggu 6 detik, lalu salinan cache, lalu
+    `/offline` bila tidak ada salinan.
+  - `/_next/static`, ikon, gambar, dan font: **cache-first** (maksimal 300 entri aset).
+  - `/dashboard`, `/masuk`, `/akun`, dan `/api`: tidak pernah disimpan, selalu jaringan.
+- Halaman `/offline` menampilkan tautan ke `/simpanan` dan beranda, ditandai `noindex`.
+- Tombol **Simpan** menyimpan ringkasan konten ke `localStorage`, lalu meminta service worker
+  menyimpan halaman detail beserta asetnya. Membuka `/simpanan` menyegarkan cache semua halaman
+  tersimpan (maksimal 24 halaman, 40 aset per halaman).
+- Banner "Anda sedang offline" dan kartu **Pasang aplikasi** muncul dari
+  `apps/web/src/components/public/pwa-client.tsx`; penolakan kartu diingat lewat
+  `localStorage` (`webdakwah:install-dismissed`).
+- `next.config.ts` memberi `Cache-Control: no-cache` + `Service-Worker-Allowed: /` untuk `/sw.js`
+  dan cache immutable 7 hari untuk `/icons/*`.
+
+Menguji secara lokal (service worker tidak aktif di `next dev`):
+
+```bash
+pnpm --filter web build
+pnpm --filter web start
+# buka http://localhost:3000, simpan satu konten, lalu matikan koneksi dan buka /simpanan
+```
+
+Ikon PNG dibuat tanpa dependensi tambahan:
+
+```bash
+node scripts/generate-pwa-icons.mjs
+```
+
 ## Menjalankan Secara Lokal
 
 Prasyarat: Node.js 24 (lihat `.nvmrc`), pnpm 12, dan satu project Supabase (gratis).
@@ -330,6 +365,7 @@ pnpm test          # tes unit aturan akses (Vitest)
 pnpm format        # Prettier --write
 pnpm format:check  # cek format
 pnpm smoke         # uji asap penerbitan (API + web, konten publik, taksonomi, siaran, sitemap, admin 401)
+node scripts/generate-pwa-icons.mjs  # buat ulang ikon PWA di apps/web/public/icons
 ```
 
 Prisma (dijalankan dari root):

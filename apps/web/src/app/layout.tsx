@@ -4,6 +4,7 @@ import { Amiri, Plus_Jakarta_Sans } from 'next/font/google';
 import { AudioMiniPlayer } from '@/components/public/audio-mini-player';
 import { AudioProvider } from '@/components/public/audio-provider';
 import { PublicBottomNav } from '@/components/public/public-bottom-nav';
+import { PwaClient } from '@/components/public/pwa-client';
 
 import './globals.css';
 
@@ -31,6 +32,18 @@ export const metadata: Metadata = {
   description:
     'Kumpulan artikel, audio kajian, video pendek, dan tautan rujukan Islam yang dikurasi dan ditinjau sebelum diterbitkan.',
   applicationName: 'WebDakwah',
+  appleWebApp: {
+    capable: true,
+    title: 'WebDakwah',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/apple-icon-180.png', sizes: '180x180', type: 'image/png' }],
+  },
   authors: [{ name: 'WebDakwah' }],
   keywords: ['dakwah', 'islam', 'kajian', 'artikel islam', 'audio kajian', 'video dakwah'],
   openGraph: {
@@ -59,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <AudioMiniPlayer />
           <PublicBottomNav />
+          <PwaClient />
         </AudioProvider>
       </body>
     </html>

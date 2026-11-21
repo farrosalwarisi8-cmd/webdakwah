@@ -1,10 +1,11 @@
 'use client';
 
-import { Bookmark, Trash2 } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { BOOKMARKS_EVENT, readBookmarks, removeBookmark, type BookmarkItem } from '@/lib/bookmarks';
+import { cachePagesForOffline, contentPageUrl } from '@/lib/pwa';
 
 import { PublicContentCard } from './content-card';
 
@@ -13,7 +14,12 @@ export function SavedContentList() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const sync = () => setItems(readBookmarks());
+    const sync = () => {
+      const saved = readBookmarks();
+
+      setItems(saved);
+      cachePagesForOffline(saved.map((item) => contentPageUrl(item.type, item.slug)));
+    };
 
     sync();
     setReady(true);
@@ -60,6 +66,10 @@ export function SavedContentList() {
     <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <li key={item.id} className="flex flex-col">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-brand-700">
+            <BookmarkCheck aria-hidden className="size-4" />
+            Tersimpan · siap dibaca offline
+          </p>
           <PublicContentCard item={item} />
           <button
             type="button"

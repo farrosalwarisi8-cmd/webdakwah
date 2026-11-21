@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { OfflineStatus } from '@/components/public/offline-status';
 import { SavedContentList } from '@/components/public/saved-content-list';
 import { SiteFooter } from '@/components/public/site-footer';
 import { SiteHeader } from '@/components/public/site-header';
@@ -30,6 +31,7 @@ export default function SimpananPage() {
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
             Kajian yang Anda tandai tersimpan di perangkat ini, tanpa perlu akun.
           </p>
+          <OfflineStatus />
         </div>
 
         <SavedContentList />
