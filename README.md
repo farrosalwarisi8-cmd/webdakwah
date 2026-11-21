@@ -3,9 +3,10 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 27 — PWA & akses offline**. Website kini dapat dipasang ke layar utama dan
-> menyimpan halaman konten untuk dibaca saat koneksi mati. Fitur fase sebelumnya (taksonomi
-> publik, siaran, SEO) tetap berjalan seperti biasa.
+> Status: **Fase 28 — Siaran langsung siap pakai**. Status radio membaca statistik Shoutcast
+> dan Icecast, pemutar mengenali stream langsung (tanpa durasi/progres palsu), dan halaman
+> `/siaran` tetap berguna saat status tidak diketahui. PWA & akses offline dari Fase 27 tetap
+> berjalan.
 
 ## Teknologi
 
@@ -230,7 +231,7 @@ tetap menambahkan filter `user_id` pada setiap query.
 - Notifikasi dibuat setelah transisi konten berhasil dan dibungkus best-effort: kegagalan menulis
   notifikasi dicatat sebagai peringatan, bukan menggagalkan aksi utama.
 
-## Siaran Langsung (Fase 19)
+## Siaran Langsung (Fase 19, diperbarui Fase 28)
 
 Server radio **tidak** dibuat di proyek ini. Radio mitra memberi akses siaran kepada penyiarnya,
 dan website hanya menyimpan **alamat dengar publik** serta jadwal. Kredensial panel radio atau
@@ -252,11 +253,16 @@ Aturan validasi (di `packages/shared`):
   tanpa kredensial tertanam (`user:pass@`). Mengaktifkan siaran mewajibkan alamat dengar.
 - Alamat `https` boleh `EMBED`. Alamat `http` selalu dipaksa `EXTERNAL` karena browser memblokir
   audio http di halaman https (mixed content). Form admin menampilkan peringatan ini.
-- `statusUrl` dan `telegramUrl` hanya boleh `https` tanpa kredensial.
-- Pemeriksaan status dijalankan di server: hanya https, tanpa redirect, timeout 3 detik, respons
-  maksimal 32 KB, cache ±30 detik. Nama host/IP privat, loopback, link-local, dan alamat hasil DNS
-  yang mengarah ke jaringan privat ditolak (proteksi SSRF). Kegagalan menghasilkan
-  `UNKNOWN` → "Status tidak tersedia", bukan error.
+- `telegramUrl` hanya boleh `https`; `statusUrl` boleh `http` **atau** `https` tanpa kredensial,
+  karena diperiksa dari server API (bukan browser) sehingga tidak ada mixed content.
+- Pemeriksaan status dijalankan di server: tanpa redirect, timeout 3 detik, respons maksimal
+  32 KB, cache ±30 detik. Port nonstandar diizinkan (server radio sering memakai 8000–9999),
+  tetapi port 0 ditolak. Nama host/IP privat, loopback, link-local, dan alamat hasil DNS yang
+  mengarah ke jaringan privat ditolak (proteksi SSRF).
+- Format status dipilih dari **struktur respons**, bukan dari URL: JSON sederhana
+  (`live`/`isLive`/`online`/…), statistik Shoutcast (`streamstatus`), dan `status-json.xsl`
+  Icecast (keberadaan `icestats.source`). Teks `live`/`offline` juga terbaca. Format tak
+  dikenal, gagal, atau timeout menghasilkan `UNKNOWN`, bukan error.
 - `GET /api/public/live` hanya mengembalikan `id` channel (untuk tombol ikuti), `isEnabled`,
   `title`, `description`, `streamUrl`, `playMode`, `telegramUrl`, jadwal aktif terdekat, dan
   `liveStatus`; `statusUrl` serta data internal tidak pernah ikut. Endpoint memakai throttle
@@ -268,10 +274,19 @@ Aturan validasi (di `packages/shared`):
   dan baris ikut terhapus saat profil atau channel dihapus (`ON DELETE CASCADE`).
 - Halaman `/siaran` memakai revalidasi 30 detik, memutar audio lewat provider global yang sudah
   ada (`preload`/tanpa autoplay), dan tetap tampil dengan pesan ramah bila API lambat atau mati.
+- Trek siaran ditandai `isLive`: mini-player menampilkan lencana **LANGSUNG**, menyembunyikan
+  progres/durasi/seek, dan tautannya menuju `/siaran` (bukan `/audio/siaran-langsung`). Saat
+  dilanjutkan setelah jeda, stream dimuat ulang agar kembali ke siaran saat ini. Durasi tak
+  hingga/NaN tidak pernah ditampilkan; galat memakai pesan "Siaran sedang tidak mengudara…".
+- Saat `liveStatus` `UNKNOWN`, halaman menampilkan **Sesuai jadwal** beserta jadwal berikutnya
+  (WIB), atau "Seharusnya sedang berlangsung" bila jam sekarang masih dalam rentang jadwal.
+  Penghitungnya murni dan dites (pergantian hari, Minggu, acara khusus, jadwal nonaktif).
 - Halaman `/siaran` menampilkan tombol **Ikuti siaran** (masuk dulu bila belum login) beserta
   jumlah pengikut; jumlah tetap tampil walau pengunjung belum masuk.
 - Dashboard `/dashboard/siaran` (admin saja, izin `broadcast:manage`) berisi form pengaturan,
-  CRUD jadwal, dan daftar pengikut (nama, email, waktu bergabung) dengan paginasi.
+  CRUD jadwal, dan daftar pengikut (nama, email, waktu bergabung) dengan paginasi. Form
+  menjelaskan perbedaan alamat dengar publik vs data koneksi penyiar, dan menyediakan tombol
+  **Tes dengar** yang memutar alamat sebentar di browser admin tanpa menyimpan apa pun.
 
 Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan siaran manual ke
 Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai

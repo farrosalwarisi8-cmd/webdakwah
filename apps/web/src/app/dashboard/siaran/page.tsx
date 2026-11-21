@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ConfirmButton } from '@/components/confirm-button';
+import { LiveAudioTest } from '@/components/dashboard/live-audio-test';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 
@@ -269,10 +270,23 @@ export default async function SiaranDashboardPage({
           {settings ? (
             <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6">
               <h2 className="text-base font-semibold text-ink-900">Pengaturan siaran</h2>
-              <p className="mt-1 text-sm text-ink-500">
-                Alamat dengar publik dari pengelola radio. Website hanya memakai URL ini, bukan
-                kredensial siaran.
-              </p>
+              <div className="mt-3 space-y-2 rounded-2xl border border-ink-200 bg-surface-soft p-4 text-xs leading-relaxed text-ink-600">
+                <p>
+                  <strong className="text-ink-900">Alamat dengar publik</strong> adalah alamat yang
+                  dibuka pendengar (mis. <code>https://radio.contoh.com/stream</code>). Isi di kolom
+                  di bawah.
+                </p>
+                <p>
+                  <strong className="text-ink-900">Data koneksi penyiar</strong> (server, port, nama
+                  pengguna, kata sandi, dan stream key) <strong>tidak diisi di website</strong>.
+                  Data itu hanya dimasukkan langsung ke aplikasi penyiar di komputer radio.
+                </p>
+                <p>
+                  Mode <strong>Diputar di halaman ini</strong> hanya untuk alamat stream langsung
+                  ber-<code>https</code>, bukan halaman web radio. Untuk alamat http atau halaman
+                  radio, pilih <strong>Buka di radio (tab baru)</strong>.
+                </p>
+              </div>
 
               <form action={saveSettingsAction} className="mt-4 grid gap-3 sm:grid-cols-2">
                 <label className={labelClass}>
@@ -305,12 +319,20 @@ export default async function SiaranDashboardPage({
                 <label className={`${labelClass} sm:col-span-2`}>
                   <span className="font-medium text-ink-800">Alamat dengar publik</span>
                   <input
+                    id="streamUrl"
                     name="streamUrl"
                     type="url"
                     placeholder="https://radio.contoh.com/stream"
                     defaultValue={settings.streamUrl ?? ''}
                     className={inputClass}
                   />
+                  <span className="mt-2 block">
+                    <LiveAudioTest inputId="streamUrl" />
+                    <span className="mt-1 block text-xs text-ink-500">
+                      Tes dengar memutar alamat di kolom ini sebentar di browser Anda. Tidak ada
+                      data yang disimpan.
+                    </span>
+                  </span>
                 </label>
                 <div className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-amber-900 sm:col-span-2">
                   Peringatan: alamat <code>http://</code> selalu dibuka di tab baru. Browser
@@ -327,9 +349,11 @@ export default async function SiaranDashboardPage({
                     className={inputClass}
                   />
                   <span className="mt-1 block text-xs text-ink-500">
-                    Hanya https. Kembalikan JSON <code>{'{"live": true}'}</code> atau teks{' '}
-                    <code>live</code>/<code>offline</code>. Diperiksa paling sering tiap 30 detik
-                    dengan batas 3 detik.
+                    Boleh http atau https karena diperiksa dari server, bukan browser. Mendukung
+                    JSON sederhana (<code>{'{"live": true}'}</code>), statistik Shoutcast, dan{' '}
+                    <code>status-json.xsl</code> Icecast; teks <code>live</code>/
+                    <code>offline</code> juga terbaca. Diperiksa paling sering tiap 30 detik dengan
+                    batas 3 detik. Jika gagal, halaman menampilkan jadwal, bukan error.
                   </span>
                 </label>
                 <label className={`${labelClass} sm:col-span-2`}>

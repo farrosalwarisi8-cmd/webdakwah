@@ -10,11 +10,15 @@ import {
   type ReactNode,
 } from 'react';
 
+import { isLiveTrack, playbackErrorMessage } from '@/lib/live-audio';
+
 export interface AudioTrack {
   slug: string;
   title: string;
   speaker: string;
   src: string;
+  /** Trek siaran langsung: tanpa durasi, progres, atau seek. */
+  isLive?: boolean;
 }
 
 interface AudioPlayerContextValue {
@@ -67,11 +71,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setError(null);
       setEnded(false);
 
+      // Stream langsung tidak punya posisi; muat ulang agar kembali ke siaran
+      // saat ini, bukan melanjutkan buffer lama.
+      const reloadLive = isLiveTrack(next);
+
       if (track?.slug === next.slug) {
         if (audio.paused) {
           setIsBuffering(true);
+
+          if (reloadLive) {
+            audio.src = next.src;
+            audio.load();
+          }
+
           void audio.play().catch(() => {
-            setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
+            setError(playbackErrorMessage(next));
             setIsPlaying(false);
             setIsBuffering(false);
           });
@@ -90,7 +104,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audio.load();
 
       void audio.play().catch(() => {
-        setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
+        setError(playbackErrorMessage(next));
         setIsPlaying(false);
         setIsBuffering(false);
       });
@@ -109,8 +123,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setError(null);
       setEnded(false);
       setIsBuffering(true);
+
+      // Siaran dilanjutkan dari titik sekarang, bukan dari buffer yang dijeda.
+      if (isLiveTrack(track)) {
+        audio.src = track.src;
+        audio.load();
+      }
+
       void audio.play().catch(() => {
-        setError('Audio tidak dapat diputar. Coba buka sumber aslinya.');
+        setError(playbackErrorMessage(track));
         setIsPlaying(false);
         setIsBuffering(false);
       });
@@ -221,7 +242,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           )
         }
         onError={() => {
-          setError('Audio tidak dapat dimuat. Coba buka sumber aslinya.');
+          setError(
+            isLiveTrack(track ?? { slug: '' })
+              ? playbackErrorMessage(track)
+              : 'Audio tidak dapat dimuat. Coba buka sumber aslinya.',
+          );
           setIsPlaying(false);
           setIsBuffering(false);
         }}

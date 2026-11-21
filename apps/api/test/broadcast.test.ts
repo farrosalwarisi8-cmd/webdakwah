@@ -170,15 +170,22 @@ describe('validasi pengaturan siaran', () => {
     ).toThrow();
   });
 
-  it('statusUrl dan telegramUrl wajib https', () => {
+  it('statusUrl menerima http, telegramUrl tetap wajib https', () => {
     expect(
       liveStreamInputSchema.parse({ ...base, telegramUrl: 'https://t.me/kanalradio' }).telegramUrl,
     ).toBe('https://t.me/kanalradio');
     expect(() =>
       liveStreamInputSchema.parse({ ...base, telegramUrl: 'http://t.me/kanalradio' }),
     ).toThrow();
+    expect(
+      liveStreamInputSchema.parse({ ...base, statusUrl: 'http://radio.example.com/status' })
+        .statusUrl,
+    ).toBe('http://radio.example.com/status');
     expect(() =>
-      liveStreamInputSchema.parse({ ...base, statusUrl: 'http://radio.example.com/status' }),
+      liveStreamInputSchema.parse({ ...base, statusUrl: 'ftp://radio.example.com/status' }),
+    ).toThrow();
+    expect(() =>
+      liveStreamInputSchema.parse({ ...base, statusUrl: 'https://user:pass@radio.example.com' }),
     ).toThrow();
   });
 });
@@ -350,11 +357,14 @@ describe('pemeriksaan status siaran', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('menolak URL non-https dan host yang DNS-nya mengarah ke jaringan privat', async () => {
-    const fetcher = vi.fn();
+  it('menerima statusUrl http dan menolak host yang DNS-nya privat', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response('live', { status: 200 }));
     await expect(
       checkLiveStatus('http://radio.example.com/status', { fetcher, resolver: publicResolver }),
-    ).resolves.toBe('UNKNOWN');
+    ).resolves.toBe('LIVE');
+    expect(fetcher).toHaveBeenCalledOnce();
+
+    fetcher.mockClear();
 
     await expect(
       checkLiveStatus('https://radio.example.com/status', {

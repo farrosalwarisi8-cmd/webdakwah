@@ -13,6 +13,7 @@ import { LiveWatchToggle } from '@/components/public/live-watch-toggle';
 import { SiteFooter } from '@/components/public/site-footer';
 import { SiteHeader } from '@/components/public/site-header';
 import { PublicApiError, getPublicLive } from '@/lib/api/public';
+import { describeBroadcastSchedule } from '@/lib/broadcast-schedule';
 
 export const metadata: Metadata = {
   title: 'Siaran Langsung',
@@ -34,7 +35,7 @@ const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
 const STATUS_COPY: Record<PublicLive['liveStatus'], { label: string; className: string }> = {
   LIVE: { label: 'Sedang mengudara', className: 'bg-emerald-50 text-emerald-800' },
   OFFLINE: { label: 'Sedang tidak mengudara', className: 'bg-ink-100 text-ink-700' },
-  UNKNOWN: { label: 'Status tidak tersedia', className: 'bg-ink-100 text-ink-600' },
+  UNKNOWN: { label: 'Sesuai jadwal', className: 'bg-ink-100 text-ink-700' },
 };
 
 const specialDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -92,6 +93,7 @@ export default async function SiaranPage() {
   const status = STATUS_COPY[live?.liveStatus ?? 'UNKNOWN'];
   const canPlay = Boolean(live?.isEnabled && live.streamUrl);
   const isExternal = live?.playMode !== 'EMBED';
+  const scheduleHint = describeBroadcastSchedule(new Date(), live?.schedules ?? []);
 
   return (
     <div className="min-h-dvh bg-ink-50">
@@ -133,6 +135,17 @@ export default async function SiaranPage() {
               <p className="rounded-xl bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900">
                 {loadError} Halaman tetap dapat dibuka; silakan coba lagi nanti.
               </p>
+            ) : null}
+
+            {live && live.liveStatus === 'UNKNOWN' ? (
+              <div className="rounded-2xl border border-ink-200 bg-surface-soft p-4">
+                <p className="text-sm font-medium text-ink-800">Sesuai jadwal</p>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                  {scheduleHint.kind === 'NONE'
+                    ? 'Belum ada jadwal aktif yang bisa ditampilkan. Silakan cek kembali nanti.'
+                    : scheduleHint.label}
+                </p>
+              </div>
             ) : null}
 
             {canPlay && live?.streamUrl ? (

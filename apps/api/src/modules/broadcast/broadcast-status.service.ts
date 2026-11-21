@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { isHttpsUrl, type LiveStatus } from '@webdakwah/shared';
+import { isSafeHttpUrl, type LiveStatus } from '@webdakwah/shared';
 import { lookup } from 'node:dns/promises';
+
+import { interpretStatus } from './broadcast-status-format.js';
+
+export { interpretStatus };
 
 const TIMEOUT_MS = 3_000;
 const MAX_RESPONSE_BYTES = 32 * 1024;
@@ -149,42 +153,6 @@ async function readLimitedText(response: Response): Promise<string | null> {
   return text + decoder.decode();
 }
 
-function interpretStatus(text: string): LiveStatus {
-  const trimmed = text.trim();
-
-  if (!trimmed) return 'UNKNOWN';
-
-  try {
-    const json: unknown = JSON.parse(trimmed);
-
-    if (json && typeof json === 'object') {
-      const record = json as Record<string, unknown>;
-
-      for (const key of ['live', 'isLive', 'is_live', 'online', 'onAir', 'on_air']) {
-        const value = record[key];
-
-        if (typeof value === 'boolean') {
-          return value ? 'LIVE' : 'OFFLINE';
-        }
-      }
-    }
-  } catch {
-    // Bukan JSON; coba teks sederhana di bawah.
-  }
-
-  const normalized = trimmed.toLowerCase();
-
-  if (['live', 'on air', 'onair', 'online', '1', 'true'].includes(normalized)) {
-    return 'LIVE';
-  }
-
-  if (['offline', 'off air', 'offair', 'off', '0', 'false'].includes(normalized)) {
-    return 'OFFLINE';
-  }
-
-  return 'UNKNOWN';
-}
-
 /**
  * Memeriksa status siaran dari URL yang diatur admin. Gagal, timeout, atau
  * host tidak aman selalu menghasilkan UNKNOWN, bukan error.
@@ -193,7 +161,8 @@ export async function checkLiveStatus(
   statusUrl: string,
   options: StatusCheckOptions = {},
 ): Promise<LiveStatus> {
-  if (!isHttpsUrl(statusUrl)) return 'UNKNOWN';
+  // Diperiksa dari server API, jadi http tidak menimbulkan mixed content.
+  if (!isSafeHttpUrl(statusUrl)) return 'UNKNOWN';
 
   let parsed: URL;
 
@@ -204,6 +173,10 @@ export async function checkLiveStatus(
   }
 
   if (parsed.username || parsed.password) return 'UNKNOWN';
+
+  // Port nonstandar diizinkan (server radio sering memakai 8000–9999), tetapi
+  // port 0 bukan tujuan yang valid.
+  if (parsed.port !== '' && Number(parsed.port) === 0) return 'UNKNOWN';
   if (isPrivateHostname(parsed.hostname)) return 'UNKNOWN';
 
   const resolver = options.resolver ?? defaultResolver;

@@ -46,7 +46,7 @@ export const streamUrlSchema = z
     'URL siaran tidak boleh memuat username atau kata sandi',
   );
 
-/** statusUrl/telegramUrl hanya boleh https agar tidak memicu mixed content. */
+/** telegramUrl hanya boleh https: tautannya dibuka dari halaman publik. */
 const optionalHttpsUrlSchema = z
   .string()
   .trim()
@@ -54,6 +54,21 @@ const optionalHttpsUrlSchema = z
   .refine(
     (value) => value === '' || (isHttpsUrl(value) && !hasEmbeddedCredentials(value)),
     'URL harus https:// tanpa username/kata sandi',
+  )
+  .optional()
+  .default('');
+
+/**
+ * URL status boleh http atau https karena diperiksa oleh server API, bukan
+ * browser, sehingga tidak ada mixed content. Tetap tanpa kredensial tertanam.
+ */
+const optionalStatusUrlSchema = z
+  .string()
+  .trim()
+  .max(2048, 'URL terlalu panjang')
+  .refine(
+    (value) => value === '' || (isSafeHttpUrl(value) && !hasEmbeddedCredentials(value)),
+    'URL status harus diawali http:// atau https:// tanpa username/kata sandi',
   )
   .optional()
   .default('');
@@ -73,7 +88,7 @@ export const liveStreamInputSchema = z
       .default(''),
     streamUrl: streamUrlSchema,
     playMode: playModeSchema.optional().default('EXTERNAL'),
-    statusUrl: optionalHttpsUrlSchema,
+    statusUrl: optionalStatusUrlSchema,
     telegramUrl: optionalHttpsUrlSchema,
     isEnabled: z.boolean().optional().default(false),
   })
