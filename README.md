@@ -137,33 +137,33 @@ serializer publik. Data lama yang tersimpan sebelum aturan ini juga dibersihkan 
 
 Endpoint API (semua butuh Bearer token):
 
-| Metode & path                         | Keterangan                                      |
-| ------------------------------------- | ----------------------------------------------- |
-| `GET /api/contents/mine`              | Daftar konten sendiri (`?status=`, `?page=`)    |
-| `GET /api/contents/:id`               | Detail untuk pemilik atau admin                 |
-| `POST /api/contents`                  | Buat draft baru                                 |
-| `PATCH /api/contents/:id`             | Sunting draft/konten ditolak                    |
-| `POST /api/contents/:id/submit`       | Ajukan review (validasi kelengkapan)            |
-| `POST /api/contents/:id/withdraw`     | Tarik kembali ke draft                          |
-| `DELETE /api/contents/:id`            | Hapus draft/konten ditolak                      |
-| `GET /api/contents/review`            | Antrean `PENDING_REVIEW` (admin saja)           |
-| `POST /api/contents/:id/publish`      | Terbitkan konten (admin saja)                   |
-| `POST /api/contents/:id/reject`       | Tolak + catatan wajib (admin saja)              |
-| `GET /api/contents/managed`           | Daftar terbit/arsip (admin saja)                |
-| `POST /api/contents/:id/archive`      | Arsipkan konten terbit (admin saja)             |
-| `POST /api/contents/:id/unarchive`    | Pulihkan konten arsip (admin saja)              |
-| `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif)  |
-| `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                  |
-| `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)             |
-| `DELETE /api/broadcast/settings`      | Hapus channel siaran + pengikutnya (admin)      |
-| `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)                |
-| `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)               |
-| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                 |
-| `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja)                |
-| `GET /api/notifications?page=`        | Notifikasi milik pengguna + jumlah belum dibaca |
-| `GET /api/notifications/unread-count` | Jumlah notifikasi belum dibaca                  |
-| `POST /api/notifications/:id/read`    | Tandai satu notifikasi milik sendiri            |
-| `POST /api/notifications/read-all`    | Tandai semua notifikasi sendiri sebagai dibaca  |
+| Metode & path                         | Keterangan                                                    |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `GET /api/contents/mine`              | Daftar konten sendiri (`?status=`, `?page=`)                  |
+| `GET /api/contents/:id`               | Detail untuk pemilik atau admin                               |
+| `POST /api/contents`                  | Buat draft baru                                               |
+| `PATCH /api/contents/:id`             | Sunting draft/konten ditolak                                  |
+| `POST /api/contents/:id/submit`       | Ajukan review (validasi kelengkapan)                          |
+| `POST /api/contents/:id/withdraw`     | Tarik kembali ke draft                                        |
+| `DELETE /api/contents/:id`            | Hapus draft/konten ditolak                                    |
+| `GET /api/contents/review`            | Antrean `PENDING_REVIEW` (admin saja)                         |
+| `POST /api/contents/:id/publish`      | Terbitkan konten (admin saja)                                 |
+| `POST /api/contents/:id/reject`       | Tolak + catatan wajib (admin saja)                            |
+| `GET /api/contents/managed`           | Daftar terbit/arsip (admin saja)                              |
+| `POST /api/contents/:id/archive`      | Arsipkan konten terbit (admin saja)                           |
+| `POST /api/contents/:id/unarchive`    | Pulihkan konten arsip (admin saja)                            |
+| `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif)                |
+| `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                                |
+| `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)                           |
+| `DELETE /api/broadcast/settings`      | Hapus channel + pengikut; `?schedules=true` ikut hapus jadwal |
+| `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)                              |
+| `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)                             |
+| `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                               |
+| `DELETE /api/broadcast/schedules/:id` | Hapus jadwal siaran (admin saja)                              |
+| `GET /api/notifications?page=`        | Notifikasi milik pengguna + jumlah belum dibaca               |
+| `GET /api/notifications/unread-count` | Jumlah notifikasi belum dibaca                                |
+| `POST /api/notifications/:id/read`    | Tandai satu notifikasi milik sendiri                          |
+| `POST /api/notifications/read-all`    | Tandai semua notifikasi sendiri sebagai dibaca                |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -317,8 +317,10 @@ Aturan validasi (di `packages/shared`):
   menjelaskan perbedaan alamat dengar publik vs data koneksi penyiar, dan menyediakan tombol
   **Tes dengar** yang memutar alamat sebentar di browser admin tanpa menyimpan apa pun.
 - Tombol **Hapus siaran** di bagian pengaturan menghapus channel siaran beserta pengikutnya
-  (`DELETE /api/broadcast/settings`, konfirmasi di UI). Jadwal siaran **tidak** ikut terhapus,
-  sehingga bisa dipakai ulang untuk channel baru; halaman kembali ke keadaan "belum ada channel".
+  (`DELETE /api/broadcast/settings`, konfirmasi di UI). Ada opsi centang **Hapus juga semua jadwal
+  siaran** (`?schedules=true`) yang menghapus jadwal dalam transaksi yang sama; tanpa centang,
+  jadwal tetap tersimpan untuk channel baru. Setelah dihapus halaman kembali ke keadaan "belum ada
+  channel".
 
 Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan siaran manual ke
 Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai

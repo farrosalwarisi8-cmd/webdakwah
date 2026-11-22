@@ -127,15 +127,21 @@ export async function toggleScheduleAction(formData: FormData): Promise<void> {
   redirect(`/dashboard/siaran?sukses=${nextActive ? 'jadwal-aktif' : 'jadwal-nonaktif'}`);
 }
 
-export async function deleteSettingsAction(): Promise<void> {
+export async function deleteSettingsAction(formData: FormData): Promise<void> {
+  const deleteSchedules = formData.get('deleteSchedules') === 'on';
+
   try {
-    await apiFetch('/broadcast/settings', { method: 'DELETE' });
+    await apiFetch(`/broadcast/settings${deleteSchedules ? '?schedules=true' : ''}`, {
+      method: 'DELETE',
+    });
   } catch (error) {
     failureRedirect(error);
   }
 
   refresh();
-  redirect('/dashboard/siaran?sukses=siaran-dihapus');
+  redirect(
+    `/dashboard/siaran?sukses=${deleteSchedules ? 'siaran-jadwal-dihapus' : 'siaran-dihapus'}`,
+  );
 }
 
 export async function deleteScheduleAction(formData: FormData): Promise<void> {

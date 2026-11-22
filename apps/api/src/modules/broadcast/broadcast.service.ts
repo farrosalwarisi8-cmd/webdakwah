@@ -131,8 +131,14 @@ export class BroadcastService {
     };
   }
 
-  /** Menghapus channel siaran; pengikut ikut terhapus lewat relasi, jadwal tetap disimpan. */
-  async deleteSettings(): Promise<{ deleted: true }> {
+  /**
+   * Menghapus channel siaran; pengikut ikut terhapus lewat relasi. Jadwal hanya
+   * dihapus bila diminta, dalam transaksi yang sama agar tidak setengah jadi.
+   */
+  async deleteSettings(options: { deleteSchedules: boolean }): Promise<{
+    deleted: true;
+    schedulesDeleted: number;
+  }> {
     const existing = await this.prisma.liveStream.findFirst({
       orderBy: { updatedAt: 'desc' },
       select: { id: true },
@@ -142,9 +148,17 @@ export class BroadcastService {
       throw new NotFoundException('Channel siaran belum tersimpan.');
     }
 
-    await this.prisma.liveStream.delete({ where: { id: existing.id } });
+    if (!options.deleteSchedules) {
+      await this.prisma.liveStream.delete({ where: { id: existing.id } });
+      return { deleted: true, schedulesDeleted: 0 };
+    }
 
-    return { deleted: true };
+    const [removedSchedules] = await this.prisma.$transaction([
+      this.prisma.broadcastSchedule.deleteMany({}),
+      this.prisma.liveStream.delete({ where: { id: existing.id } }),
+    ]);
+
+    return { deleted: true, schedulesDeleted: removedSchedules.count };
   }
 
   async listSchedules(): Promise<AdminBroadcastSchedule[]> {

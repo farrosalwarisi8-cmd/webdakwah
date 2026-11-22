@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   broadcastScheduleInputSchema,
@@ -58,10 +59,11 @@ export class BroadcastController {
     return this.broadcast.updateSettings(parseSettings(body));
   }
 
+  /** `?schedules=true` ikut menghapus semua jadwal siaran. */
   @Delete('settings')
-  deleteSettings(@CurrentProfile() profile: AuthProfile) {
+  deleteSettings(@CurrentProfile() profile: AuthProfile, @Query('schedules') schedules?: string) {
     this.broadcast.assertManager(profile);
-    return this.broadcast.deleteSettings();
+    return this.broadcast.deleteSettings({ deleteSchedules: schedules === 'true' });
   }
 
   @Get('schedules')

@@ -65,7 +65,9 @@ function createService() {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      deleteMany: vi.fn().mockResolvedValue({ count: 2 }),
     },
+    $transaction: vi.fn((operations: Promise<unknown>[]) => Promise.all(operations)),
     speaker: {
       findUnique: vi.fn().mockResolvedValue(null),
     },
@@ -125,20 +127,53 @@ describe('izin broadcast:manage', () => {
 });
 
 describe('BroadcastService.deleteSettings', () => {
-  it('menghapus channel siaran yang tersimpan', async () => {
+  it('menghapus channel siaran dan menyisakan jadwal bila tidak diminta', async () => {
     const { prisma, service } = createService();
     prisma.liveStream.findFirst.mockResolvedValue(SETTINGS_ROW);
     const controller = new BroadcastController(service);
 
-    await expect(controller.deleteSettings(admin)).resolves.toEqual({ deleted: true });
+    await expect(controller.deleteSettings(admin)).resolves.toEqual({
+      deleted: true,
+      schedulesDeleted: 0,
+    });
     expect(prisma.liveStream.delete).toHaveBeenCalledWith({ where: { id: SETTINGS_ROW.id } });
+    expect(prisma.broadcastSchedule.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('menghapus channel dan semua jadwal dalam satu transaksi bila diminta', async () => {
+    const { prisma, service } = createService();
+    prisma.liveStream.findFirst.mockResolvedValue(SETTINGS_ROW);
+    prisma.broadcastSchedule.deleteMany.mockResolvedValue({ count: 3 });
+    const controller = new BroadcastController(service);
+
+    await expect(controller.deleteSettings(admin, 'true')).resolves.toEqual({
+      deleted: true,
+      schedulesDeleted: 3,
+    });
+    expect(prisma.broadcastSchedule.deleteMany).toHaveBeenCalledWith({});
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(prisma.liveStream.delete).toHaveBeenCalledWith({ where: { id: SETTINGS_ROW.id } });
+  });
+
+  it('mengabaikan nilai selain true pada opsi hapus jadwal', async () => {
+    const { prisma, service } = createService();
+    prisma.liveStream.findFirst.mockResolvedValue(SETTINGS_ROW);
+    const controller = new BroadcastController(service);
+
+    await expect(controller.deleteSettings(admin, '1')).resolves.toMatchObject({
+      schedulesDeleted: 0,
+    });
+    expect(prisma.broadcastSchedule.deleteMany).not.toHaveBeenCalled();
   });
 
   it('menolak menghapus bila belum ada channel tersimpan', async () => {
     const { prisma, service } = createService();
 
-    await expect(service.deleteSettings()).rejects.toThrow('Channel siaran belum tersimpan.');
+    await expect(service.deleteSettings({ deleteSchedules: true })).rejects.toThrow(
+      'Channel siaran belum tersimpan.',
+    );
     expect(prisma.liveStream.delete).not.toHaveBeenCalled();
+    expect(prisma.broadcastSchedule.deleteMany).not.toHaveBeenCalled();
   });
 });
 

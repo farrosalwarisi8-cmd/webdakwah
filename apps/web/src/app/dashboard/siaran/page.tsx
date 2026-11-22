@@ -38,6 +38,7 @@ const SUCCESS_MESSAGES: Record<string, string> = {
   'jadwal-nonaktif': 'Jadwal siaran dinonaktifkan.',
   'jadwal-dihapus': 'Jadwal siaran dihapus.',
   'siaran-dihapus': 'Channel siaran dihapus. Jadwal siaran tetap tersimpan.',
+  'siaran-jadwal-dihapus': 'Channel siaran dan semua jadwalnya dihapus.',
 };
 
 const inputClass = 'mt-1 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm';
@@ -387,15 +388,26 @@ export default async function SiaranDashboardPage({
                 </div>
               </form>
 
-              <div className="mt-5 flex flex-col gap-2 border-t border-ink-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-5 border-t border-ink-100 pt-4">
                 <p className="text-xs leading-relaxed text-ink-500">
                   Menghapus siaran akan menghapus channel ini beserta daftar pengikutnya. Jadwal
-                  siaran tidak ikut terhapus.
+                  siaran hanya ikut terhapus bila Anda mencentang opsinya.
                 </p>
-                <form action={deleteSettingsAction}>
+                <form action={deleteSettingsAction} className="mt-3 space-y-3">
+                  <label className="flex min-h-11 items-start gap-2 text-xs text-ink-800">
+                    <input
+                      type="checkbox"
+                      name="deleteSchedules"
+                      className="mt-0.5 size-4 shrink-0 rounded border-ink-300"
+                    />
+                    <span>
+                      Hapus juga semua jadwal siaran ({schedules.length} jadwal). Tanpa centang ini,
+                      jadwal tetap tersimpan untuk channel baru.
+                    </span>
+                  </label>
                   <ConfirmButton
-                    message={`Hapus channel siaran "${settings.title}"? Pengikut channel ini ikut terhapus dan tindakan ini tidak bisa dibatalkan.`}
-                    className="shrink-0 rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
+                    message={`Hapus channel siaran "${settings.title}"? Pengikut channel ini ikut terhapus. Bila opsi hapus jadwal dicentang, semua jadwal siaran juga hilang. Tindakan ini tidak bisa dibatalkan.`}
+                    className="rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
                   >
                     Hapus siaran
                   </ConfirmButton>
