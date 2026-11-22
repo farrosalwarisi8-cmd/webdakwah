@@ -303,6 +303,10 @@ Aturan validasi (di `packages/shared`):
   dan baris ikut terhapus saat profil atau channel dihapus (`ON DELETE CASCADE`).
 - Halaman `/siaran` memakai revalidasi 30 detik, memutar audio lewat provider global yang sudah
   ada (`preload`/tanpa autoplay), dan tetap tampil dengan pesan ramah bila API lambat atau mati.
+- Tampilan `/siaran` mobile-first: hero bergradien berpola dengan status mengudara, kartu pemutar
+  yang menimpa hero, sorotan jadwal terdekat ("Hari ini"/"Besok"/"N hari lagi"), penanda hari ini
+  pada jadwal mingguan, dan kartu acara khusus dengan lencana tanggal. Semua dekorasi berupa CSS
+  (gradien, pola, cincin), tanpa berkas gambar tambahan.
 - Trek siaran ditandai `isLive`: mini-player menampilkan lencana **LANGSUNG**, menyembunyikan
   progres/durasi/seek, dan tautannya menuju `/siaran` (bukan `/audio/siaran-langsung`). Saat
   dilanjutkan setelah jeda, stream dimuat ulang agar kembali ke siaran saat ini. Durasi tak
