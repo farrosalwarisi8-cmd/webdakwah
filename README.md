@@ -155,6 +155,7 @@ Endpoint API (semua butuh Bearer token):
 | `POST /api/uploads/presign`           | URL PUT sementara ke R2 (semua pengguna aktif)  |
 | `GET /api/broadcast/settings`         | Pengaturan siaran (admin saja)                  |
 | `PATCH /api/broadcast/settings`       | Ubah pengaturan siaran (admin saja)             |
+| `DELETE /api/broadcast/settings`      | Hapus channel siaran + pengikutnya (admin)      |
 | `GET /api/broadcast/schedules`        | Semua jadwal siaran (admin saja)                |
 | `POST /api/broadcast/schedules`       | Tambah jadwal siaran (admin saja)               |
 | `PATCH /api/broadcast/schedules/:id`  | Ubah jadwal siaran (admin saja)                 |
@@ -315,6 +316,9 @@ Aturan validasi (di `packages/shared`):
   CRUD jadwal, dan daftar pengikut (nama, email, waktu bergabung) dengan paginasi. Form
   menjelaskan perbedaan alamat dengar publik vs data koneksi penyiar, dan menyediakan tombol
   **Tes dengar** yang memutar alamat sebentar di browser admin tanpa menyimpan apa pun.
+- Tombol **Hapus siaran** di bagian pengaturan menghapus channel siaran beserta pengikutnya
+  (`DELETE /api/broadcast/settings`, konfirmasi di UI). Jadwal siaran **tidak** ikut terhapus,
+  sehingga bisa dipakai ulang untuk channel baru; halaman kembali ke keadaan "belum ada channel".
 
 Panduan untuk penyiar non-teknis (Winamp Shoutcast DSP, BUTT, uji siaran, dan siaran manual ke
 Telegram lewat OBS) ada di [`docs/siaran-radio.md`](docs/siaran-radio.md). Dokumen itu memakai

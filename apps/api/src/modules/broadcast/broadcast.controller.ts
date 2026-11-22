@@ -58,6 +58,12 @@ export class BroadcastController {
     return this.broadcast.updateSettings(parseSettings(body));
   }
 
+  @Delete('settings')
+  deleteSettings(@CurrentProfile() profile: AuthProfile) {
+    this.broadcast.assertManager(profile);
+    return this.broadcast.deleteSettings();
+  }
+
   @Get('schedules')
   listSchedules(@CurrentProfile() profile: AuthProfile) {
     this.broadcast.assertManager(profile);

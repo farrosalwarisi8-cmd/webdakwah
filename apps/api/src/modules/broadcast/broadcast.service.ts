@@ -131,6 +131,22 @@ export class BroadcastService {
     };
   }
 
+  /** Menghapus channel siaran; pengikut ikut terhapus lewat relasi, jadwal tetap disimpan. */
+  async deleteSettings(): Promise<{ deleted: true }> {
+    const existing = await this.prisma.liveStream.findFirst({
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Channel siaran belum tersimpan.');
+    }
+
+    await this.prisma.liveStream.delete({ where: { id: existing.id } });
+
+    return { deleted: true };
+  }
+
   async listSchedules(): Promise<AdminBroadcastSchedule[]> {
     const rows = await this.prisma.broadcastSchedule.findMany({
       orderBy: [{ isActive: 'desc' }, { dayOfWeek: 'asc' }, { date: 'asc' }, { startTime: 'asc' }],

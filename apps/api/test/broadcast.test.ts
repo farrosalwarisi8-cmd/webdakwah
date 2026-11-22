@@ -57,6 +57,7 @@ function createService() {
       findFirst: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
       create: vi.fn(),
+      delete: vi.fn().mockResolvedValue({ id: SETTINGS_ROW.id }),
     },
     broadcastSchedule: {
       findMany: vi.fn().mockResolvedValue([]),
@@ -119,6 +120,25 @@ describe('izin broadcast:manage', () => {
         isEnabled: true,
       }),
     ).toThrow(ForbiddenException);
+    expect(() => controller.deleteSettings(contributor)).toThrow(ForbiddenException);
+  });
+});
+
+describe('BroadcastService.deleteSettings', () => {
+  it('menghapus channel siaran yang tersimpan', async () => {
+    const { prisma, service } = createService();
+    prisma.liveStream.findFirst.mockResolvedValue(SETTINGS_ROW);
+    const controller = new BroadcastController(service);
+
+    await expect(controller.deleteSettings(admin)).resolves.toEqual({ deleted: true });
+    expect(prisma.liveStream.delete).toHaveBeenCalledWith({ where: { id: SETTINGS_ROW.id } });
+  });
+
+  it('menolak menghapus bila belum ada channel tersimpan', async () => {
+    const { prisma, service } = createService();
+
+    await expect(service.deleteSettings()).rejects.toThrow('Channel siaran belum tersimpan.');
+    expect(prisma.liveStream.delete).not.toHaveBeenCalled();
   });
 });
 

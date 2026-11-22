@@ -19,6 +19,7 @@ import { requireViewer } from '@/lib/auth/require';
 import {
   createScheduleAction,
   deleteScheduleAction,
+  deleteSettingsAction,
   saveSettingsAction,
   toggleScheduleAction,
   updateScheduleAction,
@@ -36,6 +37,7 @@ const SUCCESS_MESSAGES: Record<string, string> = {
   'jadwal-aktif': 'Jadwal siaran diaktifkan.',
   'jadwal-nonaktif': 'Jadwal siaran dinonaktifkan.',
   'jadwal-dihapus': 'Jadwal siaran dihapus.',
+  'siaran-dihapus': 'Channel siaran dihapus. Jadwal siaran tetap tersimpan.',
 };
 
 const inputClass = 'mt-1 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm';
@@ -384,6 +386,21 @@ export default async function SiaranDashboardPage({
                   </button>
                 </div>
               </form>
+
+              <div className="mt-5 flex flex-col gap-2 border-t border-ink-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs leading-relaxed text-ink-500">
+                  Menghapus siaran akan menghapus channel ini beserta daftar pengikutnya. Jadwal
+                  siaran tidak ikut terhapus.
+                </p>
+                <form action={deleteSettingsAction}>
+                  <ConfirmButton
+                    message={`Hapus channel siaran "${settings.title}"? Pengikut channel ini ikut terhapus dan tindakan ini tidak bisa dibatalkan.`}
+                    className="shrink-0 rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
+                  >
+                    Hapus siaran
+                  </ConfirmButton>
+                </form>
+              </div>
             </section>
           ) : null}
 

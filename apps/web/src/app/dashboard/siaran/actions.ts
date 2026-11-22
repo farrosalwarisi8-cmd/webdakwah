@@ -127,6 +127,17 @@ export async function toggleScheduleAction(formData: FormData): Promise<void> {
   redirect(`/dashboard/siaran?sukses=${nextActive ? 'jadwal-aktif' : 'jadwal-nonaktif'}`);
 }
 
+export async function deleteSettingsAction(): Promise<void> {
+  try {
+    await apiFetch('/broadcast/settings', { method: 'DELETE' });
+  } catch (error) {
+    failureRedirect(error);
+  }
+
+  refresh();
+  redirect('/dashboard/siaran?sukses=siaran-dihapus');
+}
+
 export async function deleteScheduleAction(formData: FormData): Promise<void> {
   const id = readString(formData, 'id');
 
