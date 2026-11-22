@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
@@ -96,7 +97,14 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       </button>
 
       <p className="text-center text-xs leading-relaxed text-ink-500">
-        Akun dibuat oleh admin. Hubungi admin bila Anda belum memiliki akses.
+        Belum punya akun?{' '}
+        <Link
+          href="/daftar"
+          className="font-medium text-brand-700 underline-offset-4 hover:underline"
+        >
+          Daftar sebagai kontributor
+        </Link>
+        . Akun baru perlu verifikasi email sebelum bisa masuk.
       </p>
     </form>
   );

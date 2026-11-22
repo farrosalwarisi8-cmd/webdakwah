@@ -8,6 +8,8 @@ export const userSummarySchema = z.object({
   fullName: z.string().nullable(),
   role: z.enum(ROLES),
   isActive: z.boolean(),
+  /** ISO timestamp konfirmasi email; null bila email belum diverifikasi. */
+  emailVerifiedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -56,6 +58,7 @@ export const userProfileSchema = z.object({
   fullName: z.string().nullable(),
   role: z.enum(ROLES),
   isActive: z.boolean(),
+  emailVerifiedAt: z.string().nullable(),
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;

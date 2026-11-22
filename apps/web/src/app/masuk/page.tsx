@@ -22,10 +22,21 @@ function safeNextPath(value: string | string[] | undefined): string {
   return candidate;
 }
 
+const CONFIRMATION_MESSAGES: Record<string, { tone: 'success' | 'error'; text: string }> = {
+  berhasil: {
+    tone: 'success',
+    text: 'Email berhasil diverifikasi. Silakan masuk dengan kata sandi Anda.',
+  },
+  gagal: {
+    tone: 'error',
+    text: 'Tautan verifikasi tidak valid atau sudah kedaluwarsa. Silakan daftar ulang dengan email yang sama untuk meminta tautan baru.',
+  },
+};
+
 export default async function MasukPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[] }>;
+  searchParams: Promise<{ next?: string | string[]; konfirmasi?: string | string[] }>;
 }) {
   const viewer = await getViewer();
 
@@ -33,7 +44,9 @@ export default async function MasukPage({
     redirect('/dashboard');
   }
 
-  const { next } = await searchParams;
+  const { next, konfirmasi } = await searchParams;
+  const confirmation =
+    CONFIRMATION_MESSAGES[Array.isArray(konfirmasi) ? (konfirmasi[0] ?? '') : (konfirmasi ?? '')];
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface-soft">
@@ -57,6 +70,19 @@ export default async function MasukPage({
           <p className="mt-2 text-sm leading-relaxed text-ink-600">
             Khusus admin dan kontributor untuk menulis serta meninjau materi dakwah.
           </p>
+
+          {confirmation ? (
+            <p
+              role={confirmation.tone === 'error' ? 'alert' : undefined}
+              className={`mt-6 rounded-2xl border p-4 text-sm leading-relaxed ${
+                confirmation.tone === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                  : 'border-red-200 bg-red-50 text-red-800'
+              }`}
+            >
+              {confirmation.text}
+            </p>
+          ) : null}
 
           {viewer.status === 'unconfigured' ? (
             <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">

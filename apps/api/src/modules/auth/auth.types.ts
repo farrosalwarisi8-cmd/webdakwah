@@ -13,6 +13,7 @@ export interface AuthProfile {
   fullName: string | null;
   role: Role;
   isActive: boolean;
+  emailVerifiedAt: Date | null;
 }
 
 /**

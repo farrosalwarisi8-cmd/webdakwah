@@ -14,6 +14,8 @@ describe('aturan cache offline', () => {
     expect(isOfflineCacheablePath('/dashboard')).toBe(false);
     expect(isOfflineCacheablePath('/dashboard/konten/123')).toBe(false);
     expect(isOfflineCacheablePath('/masuk')).toBe(false);
+    expect(isOfflineCacheablePath('/daftar')).toBe(false);
+    expect(isOfflineCacheablePath('/auth/konfirmasi')).toBe(false);
     expect(isOfflineCacheablePath('/akun')).toBe(false);
     expect(isOfflineCacheablePath('/api/revalidate')).toBe(false);
   });

@@ -24,7 +24,7 @@ Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin*
 ```
 webdakwah/
 ├─ apps/
-│  ├─ web/        # Next.js App Router (beranda, halaman baca publik, /masuk, dashboard)
+│  ├─ web/        # Next.js App Router (beranda, halaman baca publik, /masuk, /daftar, dashboard)
 │  └─ api/        # NestJS + Fastify, modul auth, contents & health
 │     └─ prisma/  # schema.prisma, migrasi SQL, seed admin
 ├─ packages/
@@ -39,11 +39,22 @@ webdakwah/
 
 ## Autentikasi & Hak Akses
 
-- Login memakai **Supabase Auth** (email + kata sandi). Akun dibuat oleh admin, bukan pendaftaran
-  terbuka.
+- Login memakai **Supabase Auth** (email + kata sandi). Ada dua jalur pembuatan akun:
+  - **Pendaftaran mandiri** di `/daftar` untuk kontributor. Email wajib diverifikasi lewat tautan
+    yang dikirim Supabase sebelum login berhasil.
+  - **Dibuat admin** lewat `/dashboard/pengguna` (role dan status akses ditentukan admin) atau
+    `pnpm --filter api db:seed` untuk admin pertama.
 - Role **tidak** disimpan di metadata auth, melainkan di tabel `profiles` (id sama dengan
-  `auth.users.id`). Pengguna tidak bisa menaikkan hak aksesnya sendiri.
-- Trigger `on_auth_user_created` membuat profil baru otomatis dengan role `CONTRIBUTOR`.
+  `auth.users.id`). Pengguna tidak bisa menaikkan hak aksesnya sendiri; formulir pendaftaran tidak
+  mengirim role sama sekali.
+- Trigger `on_auth_user_created` membuat profil baru otomatis dengan role `CONTRIBUTOR` (selalu,
+  termasuk untuk pendaftaran mandiri).
+- Kolom `profiles.email_verified_at` diisi trigger `on_auth_user_email_confirmed` saat Supabase
+  menandai email terkonfirmasi. Nilainya tampil sebagai penanda di `/dashboard/pengguna` dan
+  `/akun`; akun yang belum verifikasi tetap muncul di daftar pengguna tetapi belum bisa login.
+- Tautan verifikasi masuk ke `/auth/konfirmasi`, yang mendukung `?token_hash=...&type=signup`
+  (template email kustom) maupun `?code=...` (ConfirmationURL bawaan). Setelah sesi terbentuk,
+  pengguna diarahkan ke `/masuk`.
 - API memverifikasi Bearer token setiap request (JWKS/ES256, atau HS256 untuk proyek lama), lalu
   `RolesGuard` membaca role **dari database** dan menolak akun yang dinonaktifkan.
 - Matriks izin ada di `packages/shared/src/auth/permissions.ts`
@@ -51,6 +62,23 @@ webdakwah/
   `taxonomy:manage`, `broadcast:manage`). Kontributor hanya mendapat dua izin pertama.
 - `/dashboard`, `/dashboard/konten`, dan `/dashboard/moderasi` dijaga oleh `proxy.ts` (pengganti
   middleware di Next 16). Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
+
+### Menyiapkan verifikasi email pendaftaran
+
+Pendaftaran mandiri butuh pengaturan di dashboard Supabase (tidak bisa dari kode):
+
+1. **Authentication → Providers → Email**: aktifkan **Confirm email**.
+2. **Authentication → URL Configuration**: isi _Site URL_, lalu tambahkan
+   `<url-situs>/auth/konfirmasi` ke _Redirect URLs_ untuk setiap lingkungan (lokal, staging,
+   produksi).
+3. **Authentication → Email Templates → Confirm signup** (disarankan): pakai tautan langsung agar
+   bisa dibuka dari perangkat lain, mis.
+   `{{ .SiteURL }}/auth/konfirmasi?token_hash={{ .TokenHash }}&type=signup`. Bila memakai
+   `{{ .ConfirmationURL }}` bawaan, alur `?code=` tetap ditangani.
+4. Batas kirim email dan pendaftaran mengikuti rate limit Supabase; tidak ada CAPTCHA tambahan.
+
+Bila pengaturan ini belum dilakukan, pendaftaran tetap mengirim permintaan ke Supabase tetapi
+email verifikasi tidak datang dan pengguna tidak bisa login.
 
 ## Konten & Alur Review
 
@@ -302,7 +330,8 @@ placeholder `<diisi dari pengelola radio>` dan tidak memuat kredensial.
   - Halaman publik: **network-first** dengan batas tunggu 6 detik, lalu salinan cache, lalu
     `/offline` bila tidak ada salinan.
   - `/_next/static`, ikon, gambar, dan font: **cache-first** (maksimal 300 entri aset).
-  - `/dashboard`, `/masuk`, `/akun`, dan `/api`: tidak pernah disimpan, selalu jaringan.
+  - `/dashboard`, `/masuk`, `/daftar`, `/akun`, `/auth`, dan `/api`: tidak pernah disimpan, selalu
+    jaringan.
 - Halaman `/offline` menampilkan tautan ke `/simpanan` dan beranda, ditandai `noindex`.
 - Tombol **Simpan** menyimpan ringkasan konten ke `localStorage`, lalu meminta service worker
   menyimpan halaman detail beserta asetnya. Membuka `/simpanan` menyegarkan cache semua halaman
@@ -364,6 +393,7 @@ pnpm --filter api dev
 Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
 Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
 Login: <http://localhost:3000/masuk>
+Daftar kontributor: <http://localhost:3000/daftar>
 Editor konten: <http://localhost:3000/dashboard/konten>
 Halaman publik: <http://localhost:3000/artikel>, `/audio`, `/video`, `/rujukan`, `/cari`
 
@@ -509,11 +539,20 @@ pnpm smoke
 Secara default membaca `API_URL` dan `WEB_URL` dari lingkungan. Opsional:
 
 ```bash
-pnpm smoke --api=http://localhost:3001 --web=http://localhost:3000
+pnpm smoke -- --api=http://localhost:3001 --web=http://localhost:3000
+# atau tanpa pnpm:
+node scripts/smoke.mjs --api=http://localhost:3001 --web=http://localhost:3000
 ```
 
+`pnpm` 12 hanya meneruskan argumen setelah pemisah `--`; tanpa pemisah itu argumen diabaikan
+dan skrip kembali memakai nilai default. Kedua bentuk `--api=URL` dan `--api URL` diterima.
+
 Uji mencakup `/health`, daftar konten publik, kategori/tag/penceramah publik, `/api/public/live`,
-sitemap.xml, robots.txt, dan verifikasi bahwa endpoint admin menolak permintaan tanpa token (401/403).
+sitemap.xml, robots.txt, verifikasi bahwa endpoint admin menolak permintaan tanpa token (401/403),
+serta cek PWA: `/manifest.webmanifest` (JSON valid, ikon 192/512/maskable benar-benar dapat
+diambil), `/sw.js` (200, JavaScript, `Cache-Control` revalidasi, `Service-Worker-Allowed: /`),
+dan halaman `/offline`, `/simpanan`, `/siaran`. Setiap kegagalan menyebut URL yang diperiksa dan
+alasannya.
 
 ### Deployment referensi
 

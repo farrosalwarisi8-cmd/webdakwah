@@ -5,7 +5,8 @@
  * - Aset Next (_next/static) dan ikon memakai cache-first.
  * - Halaman yang disimpan (pesan CACHE_CONTENTS dari klien) diambil lebih dulu
  *   beserta CSS/JS/gambar di dalamnya agar bisa dibaca tanpa koneksi.
- * - Halaman privat (/dashboard, /masuk, /akun, /api) tidak pernah di-cache.
+ * - Halaman privat (/dashboard, /masuk, /daftar, /akun, /auth, /api) tidak pernah
+ *   di-cache.
  */
 
 const VERSION = 'v2';
@@ -24,7 +25,7 @@ const PRECACHE_URLS = [
   '/icons/icon-maskable-512.png',
 ];
 
-const PRIVATE_PREFIXES = ['/dashboard', '/masuk', '/akun', '/api'];
+const PRIVATE_PREFIXES = ['/dashboard', '/masuk', '/daftar', '/akun', '/auth', '/api'];
 const MAX_ASSETS_PER_PAGE = 40;
 const MAX_CRAWLED_ASSETS = 80;
 const MAX_ASSET_ENTRIES = 300;

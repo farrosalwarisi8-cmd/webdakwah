@@ -154,6 +154,15 @@ export default async function PenggunaPage({
                         {user.email} · {ROLE_LABELS[user.role]} ·{' '}
                         {user.isActive ? 'Aktif' : 'Nonaktif'}
                       </p>
+                      <p
+                        className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                          user.emailVerifiedAt
+                            ? 'bg-emerald-50 text-emerald-800'
+                            : 'bg-amber-50 text-amber-800'
+                        }`}
+                      >
+                        {user.emailVerifiedAt ? 'Email terverifikasi' : 'Email belum terverifikasi'}
+                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <form action={updateUserAction} className="flex flex-wrap items-center gap-2">

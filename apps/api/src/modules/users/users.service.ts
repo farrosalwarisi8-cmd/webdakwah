@@ -19,6 +19,7 @@ function toSummary(profile: {
   fullName: string | null;
   role: 'ADMIN' | 'CONTRIBUTOR';
   isActive: boolean;
+  emailVerifiedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): UserSummary {
@@ -28,6 +29,7 @@ function toSummary(profile: {
     fullName: profile.fullName,
     role: profile.role,
     isActive: profile.isActive,
+    emailVerifiedAt: profile.emailVerifiedAt ? profile.emailVerifiedAt.toISOString() : null,
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
   };
@@ -64,6 +66,7 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -91,6 +94,7 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -159,6 +163,7 @@ export class UsersService {
           fullName: true,
           role: true,
           isActive: true,
+          emailVerifiedAt: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -206,6 +211,7 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
       },

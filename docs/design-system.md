@@ -344,4 +344,4 @@ Tidak digunakan: parallax berat, autoplay carousel, bounce berlebihan, atau efek
 
 **Fase berikutnya:** bookmark/simpanan, transkrip audio, notifikasi review, statistik lanjutan, PWA/install prompt, dan pencarian yang lebih cerdas.
 
-**Guardrail produk:** pengunjung tetap dapat mengakses konten publik tanpa akun; pendaftaran contributor tidak dibuka bebas; setiap konten publik harus memiliki sumber atau identitas pengisi yang jelas; tindakan admin yang mengubah visibilitas konten harus tercatat.
+**Guardrail produk:** pengunjung tetap dapat mengakses konten publik tanpa akun; pendaftaran contributor terbuka lewat `/daftar` dengan verifikasi email dan role awal selalu `CONTRIBUTOR` (peningkatan role hanya oleh admin); setiap konten publik harus memiliki sumber atau identitas pengisi yang jelas; tindakan admin yang mengubah visibilitas konten harus tercatat.

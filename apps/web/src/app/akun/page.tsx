@@ -52,6 +52,12 @@ export default async function AkunPage() {
                 {viewer.profile.isActive ? 'Aktif' : 'Dinonaktifkan'}
               </dd>
             </div>
+            <div className="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:justify-between">
+              <dt className="text-sm text-ink-500">Verifikasi email</dt>
+              <dd className="text-sm font-medium text-ink-900">
+                {viewer.profile.emailVerifiedAt ? 'Terverifikasi' : 'Belum diverifikasi'}
+              </dd>
+            </div>
           </dl>
         ) : (
           <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">

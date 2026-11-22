@@ -53,7 +53,8 @@ export function PwaClient() {
     !installDismissed &&
     !isStandaloneDisplay() &&
     !pathname.startsWith('/dashboard') &&
-    !pathname.startsWith('/masuk');
+    !pathname.startsWith('/masuk') &&
+    !pathname.startsWith('/daftar');
 
   async function install() {
     if (!installEvent) {

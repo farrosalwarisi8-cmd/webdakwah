@@ -93,6 +93,12 @@ export function SiteHeader() {
             <Search aria-hidden className="size-4" />
           </Link>
           <Link
+            href="/daftar"
+            className="hidden min-h-11 items-center px-2 text-sm font-medium text-ink-600 transition hover:text-brand-800 sm:inline-flex"
+          >
+            Daftar
+          </Link>
+          <Link
             href="/masuk"
             className="btn-press inline-flex min-h-11 items-center rounded-full border border-ink-300 bg-white px-4 text-sm font-semibold text-ink-800 transition hover:border-brand-300 hover:text-brand-800 sm:px-5"
           >

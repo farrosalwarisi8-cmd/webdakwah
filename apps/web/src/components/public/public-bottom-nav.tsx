@@ -35,7 +35,12 @@ export function PublicBottomNav() {
   const pathname = usePathname();
   const { track, currentTime, duration } = useAudioPlayer();
 
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/masuk')) {
+  if (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/masuk') ||
+    pathname.startsWith('/daftar') ||
+    pathname.startsWith('/auth')
+  ) {
     return null;
   }
 
