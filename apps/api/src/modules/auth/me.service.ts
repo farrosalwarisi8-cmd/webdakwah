@@ -23,6 +23,7 @@ export class MeService {
           fullName: true,
           role: true,
           isActive: true,
+          accountStatus: true,
           emailVerifiedAt: true,
         },
       });

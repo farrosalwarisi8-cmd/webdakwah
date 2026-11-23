@@ -41,7 +41,8 @@ webdakwah/
 
 - Login memakai **Supabase Auth** (email + kata sandi). Ada dua jalur pembuatan akun:
   - **Pendaftaran mandiri** di `/daftar` untuk kontributor. Email wajib diverifikasi lewat tautan
-    yang dikirim Supabase sebelum login berhasil.
+    yang dikirim Supabase sebelum login berhasil, lalu akun **menunggu persetujuan admin**
+    (lihat `profiles.account_status`).
   - **Dibuat admin** lewat `/dashboard/pengguna` (role dan status akses ditentukan admin) atau
     `pnpm --filter api db:seed` untuk admin pertama.
 - Role **tidak** disimpan di metadata auth, melainkan di tabel `profiles` (id sama dengan
@@ -49,6 +50,13 @@ webdakwah/
   mengirim role sama sekali.
 - Trigger `on_auth_user_created` membuat profil baru otomatis dengan role `CONTRIBUTOR` (selalu,
   termasuk untuk pendaftaran mandiri).
+- **Persetujuan akun (Fase 35)**: `profiles.account_status` bernilai `PENDING` untuk pendaftaran
+  mandiri, `APPROVED` untuk akun yang dibuat admin/seed. Akun `PENDING`/`REJECTED` tetap bisa login
+  dan membaca dashboard, tetapi API menolak pembuatan konten (`POST /api/contents`) dan pengajuan
+  review (`POST /api/contents/:id/submit`) dengan `403`. Admin memutuskan di bagian **Menunggu
+  persetujuan** pada `/dashboard/pengguna`; trigger `on_profile_pending_approval` juga membuat
+  notifikasi untuk semua admin aktif saat ada pendaftar baru, dan keputusan admin mengirim
+  notifikasi ke pemilik akun. Semua profil lama di-backfill `APPROVED` oleh migrasi.
 - Kolom `profiles.email_verified_at` diisi trigger `on_auth_user_email_confirmed` saat Supabase
   menandai email terkonfirmasi. Nilainya tampil sebagai penanda di `/dashboard/pengguna` dan
   `/akun`; akun yang belum verifikasi tetap muncul di daftar pengguna tetapi belum bisa login.
@@ -56,7 +64,7 @@ webdakwah/
   (template email kustom) maupun `?code=...` (ConfirmationURL bawaan). Setelah sesi terbentuk,
   pengguna diarahkan ke `/masuk`.
 - API memverifikasi Bearer token setiap request (JWKS/ES256, atau HS256 untuk proyek lama), lalu
-  `RolesGuard` membaca role **dari database** dan menolak akun yang dinonaktifkan.
+  `RolesGuard` membaca role dan status akun **dari database** dan menolak akun yang dinonaktifkan.
 - Matriks izin ada di `packages/shared/src/auth/permissions.ts`
   (`content:create`, `content:update-own`, `content:publish`, `content:delete-any`, `users:manage`,
   `taxonomy:manage`, `broadcast:manage`). Kontributor hanya mendapat dua izin pertama.
@@ -604,6 +612,9 @@ alasannya.
 - Verifikasi seeding berjalan bersih (`pnpm --filter api db:seed` → 10 kategori bawaan, admin
   tercipta bila `SEED_ADMIN_*` diisi, konten kosong). Aman dijalankan berulang: kategori yang sudah
   ada tidak diduplikasi dan tidak ditimpa.
+- Setelah migrasi `account_approval`, akun lama otomatis `APPROVED`. Periksa `/dashboard/pengguna`
+  beberapa hari pertama setelah membuka pendaftaran: pendaftar baru berstatus `PENDING` sampai
+  disetujui, dan tidak bisa membuat konten sebelum itu.
 
 **R2 (Cloudflare)**
 

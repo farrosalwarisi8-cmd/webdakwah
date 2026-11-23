@@ -13,6 +13,7 @@ const contributor: AuthProfile = {
   fullName: 'Nama Lama',
   role: 'CONTRIBUTOR',
   isActive: true,
+  accountStatus: 'APPROVED',
   emailVerifiedAt: null,
 };
 

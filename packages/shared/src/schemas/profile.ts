@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
+import { ACCOUNT_STATUSES } from '../constants/account.js';
 import { ROLES } from '../constants/roles.js';
+
+export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
 
 export const userSummarySchema = z.object({
   id: z.uuid(),
@@ -8,6 +11,7 @@ export const userSummarySchema = z.object({
   fullName: z.string().nullable(),
   role: z.enum(ROLES),
   isActive: z.boolean(),
+  accountStatus: accountStatusSchema,
   /** ISO timestamp konfirmasi email; null bila email belum diverifikasi. */
   emailVerifiedAt: z.string().nullable(),
   createdAt: z.string(),
@@ -52,10 +56,14 @@ export const userUpdateSchema = z
     fullName: z.string().trim().max(120, 'Nama lengkap maksimal 120 karakter').optional(),
     role: z.enum(ROLES).optional(),
     isActive: z.boolean().optional(),
+    accountStatus: accountStatusSchema.optional(),
   })
   .refine(
     (value) =>
-      value.fullName !== undefined || value.role !== undefined || value.isActive !== undefined,
+      value.fullName !== undefined ||
+      value.role !== undefined ||
+      value.isActive !== undefined ||
+      value.accountStatus !== undefined,
     'Minimal satu field harus diubah.',
   );
 
@@ -74,6 +82,7 @@ export const userProfileSchema = z.object({
   fullName: z.string().nullable(),
   role: z.enum(ROLES),
   isActive: z.boolean(),
+  accountStatus: accountStatusSchema,
   emailVerifiedAt: z.string().nullable(),
 });
 

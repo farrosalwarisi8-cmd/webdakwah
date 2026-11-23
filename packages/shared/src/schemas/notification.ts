@@ -4,6 +4,9 @@ export const NOTIFICATION_TYPES = [
   'CONTENT_SUBMITTED',
   'CONTENT_PUBLISHED',
   'CONTENT_REJECTED',
+  'ACCOUNT_PENDING',
+  'ACCOUNT_APPROVED',
+  'ACCOUNT_REJECTED',
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -14,6 +17,9 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   CONTENT_SUBMITTED: 'Review',
   CONTENT_PUBLISHED: 'Terbit',
   CONTENT_REJECTED: 'Perbaikan',
+  ACCOUNT_PENDING: 'Pendaftar',
+  ACCOUNT_APPROVED: 'Akun',
+  ACCOUNT_REJECTED: 'Akun',
 };
 
 export const notificationItemSchema = z.object({

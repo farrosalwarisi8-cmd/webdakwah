@@ -13,6 +13,7 @@ const profile: AuthProfile = {
   fullName: 'Admin Uji',
   role: 'ADMIN',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const PRESIGNED = {

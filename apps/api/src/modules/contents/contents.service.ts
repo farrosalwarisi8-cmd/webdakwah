@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   can,
+  canWriteContent,
   contentInputSchema,
   contentRejectSchema,
   type ContentInput,
@@ -264,6 +265,7 @@ export class ContentsService {
 
   async create(profile: AuthProfile, input: ContentInput) {
     this.assertPermission(profile.role, 'content:create');
+    this.assertCanWrite(profile);
 
     await this.taxonomy?.ensureCategories(input.categoryIds);
     await this.taxonomy?.ensureSpeaker(input.speakerId ?? null);
@@ -359,6 +361,7 @@ export class ContentsService {
   /** DRAFT/REJECTED -> PENDING_REVIEW; isian wajib diperiksa ulang di sini. */
   async submit(profile: AuthProfile, id: string) {
     this.assertPermission(profile.role, 'content:create');
+    this.assertCanWrite(profile);
 
     const row = await this.findOwnedRow(id, profile);
 
@@ -470,6 +473,20 @@ export class ContentsService {
   private assertPermission(role: AuthProfile['role'], permission: Permission): void {
     if (!can(role, permission)) {
       throw new ForbiddenException('Anda tidak memiliki izin untuk tindakan ini.');
+    }
+  }
+
+  /**
+   * Akun pendaftaran mandiri yang belum disetujui tetap bisa login dan membaca
+   * dashboard, tetapi tidak boleh membuat atau mengajukan konten.
+   */
+  private assertCanWrite(profile: AuthProfile): void {
+    if (!canWriteContent(profile.accountStatus)) {
+      throw new ForbiddenException(
+        profile.accountStatus === 'REJECTED'
+          ? 'Pendaftaran akun Anda ditolak admin, jadi konten belum bisa dibuat.'
+          : 'Akun Anda masih menunggu persetujuan admin, jadi konten belum bisa dibuat.',
+      );
     }
   }
 

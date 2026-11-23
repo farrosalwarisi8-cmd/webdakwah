@@ -61,8 +61,8 @@ async function seedAdmin(prisma: PrismaClient, email: string, password: string):
 
   const profile = await prisma.profile.upsert({
     where: { id: userId },
-    create: { id: userId, email, role: 'ADMIN', isActive: true },
-    update: { email, role: 'ADMIN', isActive: true },
+    create: { id: userId, email, role: 'ADMIN', isActive: true, accountStatus: 'APPROVED' },
+    update: { email, role: 'ADMIN', isActive: true, accountStatus: 'APPROVED' },
   });
 
   process.stdout.write(`Admin siap: ${profile.email} (role ${profile.role}).\n`);

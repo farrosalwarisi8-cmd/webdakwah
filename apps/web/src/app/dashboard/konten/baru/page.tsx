@@ -50,6 +50,12 @@ export default async function KontenBaruPage() {
             ? 'Supabase belum dikonfigurasi, jadi editor belum bisa dipakai.'
             : 'Profil Anda belum terbaca dari API. Pastikan API berjalan dan migrasi database sudah dijalankan.'}
         </div>
+      ) : viewer.profile.accountStatus !== 'APPROVED' ? (
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+          {viewer.profile.accountStatus === 'REJECTED'
+            ? 'Pendaftaran akun Anda ditolak admin, jadi konten baru belum bisa dibuat.'
+            : 'Akun Anda masih menunggu persetujuan admin. Setelah disetujui, formulir konten akan aktif di sini.'}
+        </div>
       ) : (
         <ContentForm
           action={createContentAction}

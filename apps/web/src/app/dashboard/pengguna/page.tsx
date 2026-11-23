@@ -1,4 +1,9 @@
-import { ROLE_LABELS, userSummarySchema, type UserSummary } from '@webdakwah/shared';
+import {
+  ACCOUNT_STATUS_LABELS,
+  ROLE_LABELS,
+  userSummarySchema,
+  type UserSummary,
+} from '@webdakwah/shared';
 import type { Metadata } from 'next';
 
 import { ApiError, apiFetch } from '@/lib/api/server';
@@ -53,6 +58,8 @@ export default async function PenggunaPage({
     }
   }
 
+  const pendingUsers = users.filter((user) => user.accountStatus === 'PENDING');
+
   return (
     <main className="py-2 sm:py-4">
       <div>
@@ -88,6 +95,63 @@ export default async function PenggunaPage({
         </div>
       ) : (
         <>
+          <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50/60 p-5 sm:p-6">
+            <h2 className="text-base font-semibold text-ink-900">
+              Menunggu persetujuan ({pendingUsers.length})
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-ink-600">
+              Akun pendaftaran mandiri bisa masuk dan membaca dashboard, tetapi belum bisa membuat
+              atau mengajukan konten sampai disetujui.
+            </p>
+
+            {pendingUsers.length === 0 ? (
+              <p className="mt-4 rounded-2xl border border-dashed border-ink-300 px-4 py-5 text-center text-sm text-ink-500">
+                Tidak ada pendaftar yang menunggu.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-2">
+                {pendingUsers.map((user) => (
+                  <li
+                    key={user.id}
+                    className="rounded-2xl border border-ink-200 bg-white p-4 sm:flex sm:items-center sm:justify-between sm:gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold break-words text-ink-900">
+                        {user.fullName ?? user.email}
+                      </p>
+                      <p className="mt-1 text-xs text-ink-500">
+                        {user.email} ·{' '}
+                        {user.emailVerifiedAt ? 'email terverifikasi' : 'email belum terverifikasi'}
+                      </p>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2 sm:mt-0">
+                      <form action={updateUserAction}>
+                        <input type="hidden" name="id" value={user.id} />
+                        <input type="hidden" name="accountStatus" value="APPROVED" />
+                        <button
+                          type="submit"
+                          className="rounded-full bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-800"
+                        >
+                          Setujui
+                        </button>
+                      </form>
+                      <form action={updateUserAction}>
+                        <input type="hidden" name="id" value={user.id} />
+                        <input type="hidden" name="accountStatus" value="REJECTED" />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
+                        >
+                          Tolak
+                        </button>
+                      </form>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           <section className="mt-6 rounded-3xl border border-ink-200 bg-white p-6">
             <h2 className="text-base font-semibold text-ink-900">Tambah pengguna</h2>
             <form action={createUserAction} className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -164,6 +228,17 @@ export default async function PenggunaPage({
                         }`}
                       >
                         {user.emailVerifiedAt ? 'Email terverifikasi' : 'Email belum terverifikasi'}
+                      </p>{' '}
+                      <p
+                        className={`mt-2 ml-1 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                          user.accountStatus === 'APPROVED'
+                            ? 'bg-brand-50 text-brand-800'
+                            : user.accountStatus === 'PENDING'
+                              ? 'bg-amber-50 text-amber-800'
+                              : 'bg-red-50 text-red-700'
+                        }`}
+                      >
+                        {ACCOUNT_STATUS_LABELS[user.accountStatus]}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

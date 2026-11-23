@@ -29,6 +29,7 @@ const admin: AuthProfile = {
   fullName: 'Admin',
   role: 'ADMIN',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const contributor: AuthProfile = {
@@ -37,6 +38,7 @@ const contributor: AuthProfile = {
   fullName: 'Kontributor',
   role: 'CONTRIBUTOR',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const SETTINGS_ROW = {

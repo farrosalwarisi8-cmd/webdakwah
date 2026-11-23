@@ -2,13 +2,19 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import type { UserCreateInput, UserSummary, UserUpdateInput } from '@webdakwah/shared';
+import type {
+  AccountStatus,
+  UserCreateInput,
+  UserSummary,
+  UserUpdateInput,
+} from '@webdakwah/shared';
 import { can } from '@webdakwah/shared';
 import type { AuthProfile } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -19,6 +25,7 @@ function toSummary(profile: {
   fullName: string | null;
   role: 'ADMIN' | 'CONTRIBUTOR';
   isActive: boolean;
+  accountStatus: AccountStatus;
   emailVerifiedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +36,7 @@ function toSummary(profile: {
     fullName: profile.fullName,
     role: profile.role,
     isActive: profile.isActive,
+    accountStatus: profile.accountStatus,
     emailVerifiedAt: profile.emailVerifiedAt ? profile.emailVerifiedAt.toISOString() : null,
     createdAt: profile.createdAt.toISOString(),
     updatedAt: profile.updatedAt.toISOString(),
@@ -37,6 +45,7 @@ function toSummary(profile: {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   private readonly supabase: SupabaseClient | null;
   /** Origin web pertama; tujuan tautan pemulihan sandi. */
   private readonly siteUrl: string;
@@ -72,6 +81,7 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        accountStatus: true,
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
@@ -100,6 +110,7 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        accountStatus: true,
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
@@ -156,12 +167,15 @@ export class UsersService {
           fullName: input.fullName?.trim() || null,
           role: input.role,
           isActive: true,
+          // Akun yang dibuat admin tidak perlu ditinjau lagi.
+          accountStatus: 'APPROVED',
         },
         update: {
           email,
           fullName: input.fullName?.trim() || null,
           role: input.role,
           isActive: true,
+          accountStatus: 'APPROVED',
         },
         select: {
           id: true,
@@ -169,6 +183,7 @@ export class UsersService {
           fullName: true,
           role: true,
           isActive: true,
+          accountStatus: true,
           emailVerifiedAt: true,
           createdAt: true,
           updatedAt: true,
@@ -189,7 +204,7 @@ export class UsersService {
   async updateUser(id: string, input: UserUpdateInput, actorId?: string): Promise<UserSummary> {
     const existing = await this.prisma.profile.findUnique({
       where: { id },
-      select: { id: true, role: true },
+      select: { id: true, email: true, role: true, accountStatus: true },
     });
 
     if (!existing) {
@@ -210,6 +225,7 @@ export class UsersService {
         ...(input.fullName !== undefined ? { fullName: input.fullName.trim() || null } : {}),
         ...(input.role !== undefined ? { role: input.role } : {}),
         ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+        ...(input.accountStatus !== undefined ? { accountStatus: input.accountStatus } : {}),
       },
       select: {
         id: true,
@@ -217,13 +233,46 @@ export class UsersService {
         fullName: true,
         role: true,
         isActive: true,
+        accountStatus: true,
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
+    if (
+      input.accountStatus &&
+      input.accountStatus !== existing.accountStatus &&
+      input.accountStatus !== 'PENDING'
+    ) {
+      await this.notifyAccountDecision(existing.id, input.accountStatus);
+    }
+
     return toSummary(profile);
+  }
+
+  /**
+   * Beri tahu pemilik akun saat statusnya diputuskan. Best-effort: kegagalan
+   * notifikasi tidak membatalkan keputusan admin yang sudah tersimpan.
+   */
+  private async notifyAccountDecision(userId: string, status: AccountStatus): Promise<void> {
+    const approved = status === 'APPROVED';
+
+    try {
+      await this.prisma.notification.create({
+        data: {
+          userId,
+          type: approved ? 'ACCOUNT_APPROVED' : 'ACCOUNT_REJECTED',
+          title: approved ? 'Akun Anda sudah disetujui' : 'Pendaftaran akun Anda ditolak',
+          message: approved
+            ? 'Sekarang Anda bisa membuat dan mengajukan konten untuk ditinjau.'
+            : 'Akun Anda belum bisa digunakan untuk menulis konten. Hubungi admin bila keliru.',
+          href: '/akun',
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`Gagal membuat notifikasi status akun: ${(error as Error).message}`);
+    }
   }
 
   async update(id: string, input: UserUpdateInput, actorId?: string): Promise<UserSummary> {

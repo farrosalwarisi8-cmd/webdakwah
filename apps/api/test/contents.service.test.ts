@@ -15,6 +15,7 @@ const contributor: AuthProfile = {
   fullName: 'Kontributor',
   role: 'CONTRIBUTOR',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const otherContributor: AuthProfile = {
@@ -29,6 +30,7 @@ const admin: AuthProfile = {
   fullName: 'Admin',
   role: 'ADMIN',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const author = { id: AUTHOR_ID, email: contributor.email, fullName: 'Kontributor' };

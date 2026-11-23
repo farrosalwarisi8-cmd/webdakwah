@@ -1,4 +1,4 @@
-import { ROLE_LABELS } from '@webdakwah/shared';
+import { ACCOUNT_STATUS_LABELS, ROLE_LABELS } from '@webdakwah/shared';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -63,6 +63,12 @@ export default async function AkunPage({
               </dd>
             </div>
             <div className="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:justify-between">
+              <dt className="text-sm text-ink-500">Persetujuan akun</dt>
+              <dd className="text-sm font-medium text-ink-900">
+                {ACCOUNT_STATUS_LABELS[viewer.profile.accountStatus]}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:justify-between">
               <dt className="text-sm text-ink-500">Verifikasi email</dt>
               <dd className="text-sm font-medium text-ink-900">
                 {viewer.profile.emailVerifiedAt ? 'Terverifikasi' : 'Belum diverifikasi'}
@@ -122,6 +128,16 @@ export default async function AkunPage({
               <PasswordForm />
             </section>
           </div>
+        ) : null}
+
+        {viewer.status === 'authenticated' &&
+        viewer.profile &&
+        viewer.profile.accountStatus !== 'APPROVED' ? (
+          <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+            {viewer.profile.accountStatus === 'REJECTED'
+              ? 'Pendaftaran akun Anda ditolak admin, sehingga konten baru belum bisa dibuat. Hubungi admin bila menurut Anda ini keliru.'
+              : 'Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa membuat dan mengajukan konten.'}
+          </p>
         ) : null}
 
         {viewer.status === 'authenticated' && !viewer.profile ? (

@@ -18,6 +18,7 @@ const owner: AuthProfile = {
   fullName: 'Kontributor',
   role: 'CONTRIBUTOR',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const admin: AuthProfile = {

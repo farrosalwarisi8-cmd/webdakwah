@@ -12,6 +12,7 @@ const contributorA: AuthProfile = {
   fullName: 'Kontributor A',
   role: 'CONTRIBUTOR',
   isActive: true,
+  accountStatus: 'APPROVED',
 };
 
 const contributorB: AuthProfile = {

@@ -19,15 +19,25 @@ enum Role {
 
 /// Profil aplikasi, terhubung 1:1 ke auth.users milik Supabase (id sama).
 /// Role sengaja disimpan di sini, bukan di metadata auth, agar pengguna tidak
-/// bisa menaikkan hak aksesnya sendiri.
+/// bisa menaikkan hak aksesnya sendiri./// Status persetujuan akun. Pendaftaran mandiri mulai dari PENDING; akun yang
+/// dibuat admin/seed langsung APPROVED. Konten baru hanya boleh dibuat oleh
+/// akun APPROVED.
+enum AccountStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Profile {
-  id        String   @id @db.Uuid
+  id              String    @id @db.Uuid
   email     String   @unique @db.VarChar(254)
   /// Diisi trigger Supabase saat email dikonfirmasi; null berarti belum.
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   fullName  String?  @map("full_name") @db.VarChar(120)
   role      Role     @default(CONTRIBUTOR)
   isActive  Boolean  @default(true) @map("is_active")
+  /// Akun pendaftaran mandiri menunggu persetujuan admin sebelum boleh menulis.
+  accountStatus AccountStatus @default(PENDING) @map("account_status")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   contents      Content[]
@@ -210,6 +220,9 @@ enum NotificationType {
   CONTENT_SUBMITTED
   CONTENT_PUBLISHED
   CONTENT_REJECTED
+  ACCOUNT_PENDING
+  ACCOUNT_APPROVED
+  ACCOUNT_REJECTED
 }
 
 /// Pemberitahuan untuk satu penerima. `title` dan `message` disalin saat

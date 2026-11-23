@@ -23,6 +23,9 @@ const TYPE_STYLES: Record<NotificationItem['type'], string> = {
   CONTENT_SUBMITTED: 'bg-accent-100 text-accent-800',
   CONTENT_PUBLISHED: 'bg-emerald-100 text-emerald-800',
   CONTENT_REJECTED: 'bg-red-100 text-red-800',
+  ACCOUNT_PENDING: 'bg-accent-100 text-accent-800',
+  ACCOUNT_APPROVED: 'bg-emerald-100 text-emerald-800',
+  ACCOUNT_REJECTED: 'bg-red-100 text-red-800',
 };
 
 function firstValue(value: string | string[] | undefined): string | undefined {
@@ -37,7 +40,7 @@ function readPage(value: string | string[] | undefined): number {
 
 /** Hanya tautan dashboard internal yang dibuat API yang boleh dirender. */
 function safeHref(href: string | null): string | null {
-  return href && href.startsWith('/dashboard/') ? href : null;
+  return href && (href.startsWith('/dashboard/') || href === '/akun') ? href : null;
 }
 
 export default async function NotificationsPage({

@@ -1,4 +1,4 @@
-import type { Role } from '@webdakwah/shared';
+import type { AccountStatus, Role } from '@webdakwah/shared';
 
 /** Isi token Supabase yang sudah diverifikasi. */
 export interface AuthUser {
@@ -13,6 +13,7 @@ export interface AuthProfile {
   fullName: string | null;
   role: Role;
   isActive: boolean;
+  accountStatus: AccountStatus;
   emailVerifiedAt: Date | null;
 }
 

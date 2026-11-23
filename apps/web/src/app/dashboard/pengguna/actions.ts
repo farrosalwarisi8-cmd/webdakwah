@@ -48,11 +48,15 @@ export async function updateUserAction(formData: FormData): Promise<void> {
   const fullName = readString(formData, 'fullName').trim();
   const role = readString(formData, 'role');
   const isActive = readString(formData, 'isActive');
+  const accountStatus = readString(formData, 'accountStatus');
 
   const body: Record<string, unknown> = {};
   if (fullName !== '') body.fullName = fullName;
   if (role) body.role = role;
   if (isActive === 'true' || isActive === 'false') body.isActive = isActive === 'true';
+  if (accountStatus === 'APPROVED' || accountStatus === 'REJECTED') {
+    body.accountStatus = accountStatus;
+  }
 
   try {
     await apiFetch(`/users/${encodeURIComponent(id)}`, {
