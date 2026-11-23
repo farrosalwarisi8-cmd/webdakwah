@@ -96,6 +96,15 @@ Status konten: `DRAFT → PENDING_REVIEW → PUBLISHED`, dengan `REJECTED → DR
   `PUBLISHED` dengan tanggal terbit pertama tetap dipertahankan.
 - Penulis hanya bisa membuka, menyunting, dan menghapus kontennya sendiri. Admin bisa membuka
   semua konten dan menyunting yang belum terbit. Kepemilikan dicek di API, bukan hanya UI.
+- **Kategori, penceramah, dan tag** dikelola admin di `/dashboard/taksonomi`. Kategori wajib
+  dipilih saat mengajukan review; penceramah opsional; tag dibuat otomatis dari formulir konten.
+  Setiap baris menampilkan jumlah konten terbit dan total relasi. Nama bisa diubah tanpa
+  mengubah slug, sehingga tautan lama tetap berlaku. Dua tag yang mirip bisa **digabungkan**
+  (relasi dipindah tanpa duplikasi, tag sumber dihapus) dan tag yang tidak dipakai konten mana
+  pun bisa dibersihkan sekaligus. Menghapus kategori/penceramah/tag hanya melepas kaitannya:
+  konten tetap ada, dan dialog konfirmasi menyebut berapa konten yang terdampak.
+- Bila belum ada kategori sama sekali, formulir konten menampilkan tautan ke `/dashboard/taksonomi`
+  untuk admin, dan pesan "Belum ada kategori, hubungi admin." untuk kontributor.
 - Slug dibuat otomatis dari judul dengan sufiks acak, jadi tidak perlu diisi manual.
 - Audio, video, dan gambar bisa diunggah dari editor ke Cloudflare R2, atau tetap memakai
   tautan http/https. Batas: audio 50 MB (MP3, M4A, AAC, OGG), video 200 MB (MP4, WebM), dan
@@ -164,6 +173,11 @@ Endpoint API (semua butuh Bearer token):
 | `GET /api/notifications/unread-count` | Jumlah notifikasi belum dibaca                                |
 | `POST /api/notifications/:id/read`    | Tandai satu notifikasi milik sendiri                          |
 | `POST /api/notifications/read-all`    | Tandai semua notifikasi sendiri sebagai dibaca                |
+| `GET /api/categories/manage`          | Kategori + jumlah terbit/total (admin saja)                   |
+| `GET /api/speakers/manage`            | Penceramah + jumlah terbit/total (admin saja)                 |
+| `GET /api/tags/manage`                | Tag + jumlah terbit/total (admin saja)                        |
+| `POST /api/tags/:id/merge`            | Gabungkan tag ke tag tujuan, tanpa duplikasi (admin saja)     |
+| `POST /api/tags/cleanup-orphans`      | Hapus tag tanpa relasi konten (admin saja)                    |
 
 Endpoint publik di bawah ini **tidak butuh login** dan hanya mengembalikan konten `PUBLISHED`.
 Responsnya memakai skema terpisah (`publicContentSummarySchema`/`publicContentDetailSchema`) yang
@@ -386,7 +400,8 @@ cp apps/web/.env.example apps/web/.env.local
 # 4. Terapkan skema database
 pnpm --filter api db:migrate
 
-# 5. Buat akun admin pertama (isi SEED_ADMIN_* + SUPABASE_SERVICE_ROLE_KEY di .env)
+# 5. Isi kategori bawaan; akun admin pertama ikut dibuat bila SEED_ADMIN_* dan
+#    SUPABASE_SERVICE_ROLE_KEY diisi (tanpa itu langkah admin dilewati)
 pnpm --filter api db:seed
 
 # 6. Jalankan keduanya (web :3000, api :3001)
@@ -429,7 +444,7 @@ Prisma (dijalankan dari root):
 pnpm --filter api db:generate   # generate Prisma Client ke src/generated/prisma
 pnpm --filter api db:migrate    # prisma migrate deploy (produksi/CI)
 pnpm --filter api db:migrate:dev# buat migrasi baru saat mengubah schema
-pnpm --filter api db:seed       # buat/naikkan akun admin dari SEED_ADMIN_*
+pnpm --filter api db:seed       # kategori bawaan + akun admin (bila SEED_ADMIN_* diisi)
 pnpm --filter api db:studio     # Prisma Studio
 ```
 
@@ -452,8 +467,8 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `SUPABASE_JWKS_URL`                            | tidak       | `<SUPABASE_URL>/...`    | Override endpoint JWKS                        |
 | `SUPABASE_JWT_SECRET`                          | tidak       | —                       | Hanya untuk proyek lama dengan token HS256    |
 | `SUPABASE_SERVICE_ROLE_KEY`                    | hanya seed  | —                       | Kunci server; jangan dipakai di runtime web   |
-| `SEED_ADMIN_EMAIL`                             | hanya seed  | —                       | Email admin pertama                           |
-| `SEED_ADMIN_PASSWORD`                          | hanya seed  | —                       | Minimal 8 karakter                            |
+| `SEED_ADMIN_EMAIL`                             | opsional    | —                       | Email admin pertama (seed)                    |
+| `SEED_ADMIN_PASSWORD`                          | opsional    | —                       | Minimal 8 karakter (seed)                     |
 | `R2_ACCOUNT_ID`                                | untuk media | —                       | ID akun Cloudflare                            |
 | `R2_ACCESS_KEY_ID`                             | untuk media | —                       | Access key token R2                           |
 | `R2_SECRET_ACCESS_KEY`                         | untuk media | —                       | Secret access key R2                          |
@@ -572,7 +587,9 @@ alasannya.
   dengan `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` di `.env`.
 - Terapkan migrasi dari database kosong: `pnpm --filter api db:migrate` (butuh `DATABASE_URL` dan
   `DIRECT_URL`). Gunakan URL koneksi langsung, bukan pooler, untuk migrasi Prisma.
-- Verifikasi seeding berjalan bersih (`pnpm --filter api db:seed` → admin tercipta, konten kosong).
+- Verifikasi seeding berjalan bersih (`pnpm --filter api db:seed` → 10 kategori bawaan, admin
+  tercipta bila `SEED_ADMIN_*` diisi, konten kosong). Aman dijalankan berulang: kategori yang sudah
+  ada tidak diduplikasi dan tidak ditimpa.
 
 **R2 (Cloudflare)**
 

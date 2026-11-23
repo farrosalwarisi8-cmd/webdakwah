@@ -174,6 +174,7 @@ export default async function SuntingKontenPage({
                 links: content.links.map((item) => ({ title: item.title, url: item.url })),
               }}
               taxonomy={taxonomy}
+              role={viewer.status === 'authenticated' ? viewer.profile?.role : undefined}
             />
           ) : content.body ? (
             <article

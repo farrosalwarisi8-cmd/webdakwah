@@ -6,8 +6,12 @@ import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
   type ContentType,
+  type Role,
 } from '@webdakwah/shared';
+import Link from 'next/link';
 import { useActionState, useState } from 'react';
+
+import { emptyCategoryHint } from '@/lib/taxonomy-hint';
 
 import type { ContentFormState } from './form-state';
 import { MediaUploadField } from './media-upload-field';
@@ -38,6 +42,7 @@ interface ContentFormProps {
     speakers: TaxonomyOption[];
   };
   submitLabel: string;
+  role?: Role;
 }
 
 const fieldClass =
@@ -51,8 +56,10 @@ export function ContentForm({
   initial,
   taxonomy,
   submitLabel,
+  role,
 }: ContentFormProps) {
   const [state, formAction, pending] = useActionState(action, { error: null });
+  const categoryHint = emptyCategoryHint(role);
   const [type, setType] = useState<ContentType>(initial?.type ?? 'ARTICLE');
   const [mediaUrl, setMediaUrl] = useState(initial?.mediaUrl ?? '');
   const [links, setLinks] = useState<{ title: string; url: string }[]>(initial?.links ?? []);
@@ -158,7 +165,17 @@ export function ContentForm({
             </label>
           ))}
           {(taxonomy?.categories ?? []).length === 0 ? (
-            <p className="text-xs text-ink-500">Belum ada kategori. Admin perlu menambahkannya.</p>
+            <div className="sm:col-span-2">
+              <p className="text-xs text-ink-500">{categoryHint.message}</p>
+              {categoryHint.action ? (
+                <Link
+                  href={categoryHint.action.href}
+                  className="mt-1 inline-flex text-xs font-medium text-brand-700 underline-offset-2 hover:underline"
+                >
+                  {categoryHint.action.label}
+                </Link>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

@@ -51,7 +51,12 @@ export default async function KontenBaruPage() {
             : 'Profil Anda belum terbaca dari API. Pastikan API berjalan dan migrasi database sudah dijalankan.'}
         </div>
       ) : (
-        <ContentForm action={createContentAction} submitLabel="Simpan draft" taxonomy={taxonomy} />
+        <ContentForm
+          action={createContentAction}
+          submitLabel="Simpan draft"
+          taxonomy={taxonomy}
+          role={viewer.status === 'authenticated' ? viewer.profile?.role : undefined}
+        />
       )}
     </main>
   );

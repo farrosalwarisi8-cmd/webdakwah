@@ -4,10 +4,15 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { createClient } from '@supabase/supabase-js';
 
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import { seedCategories } from './taxonomy-seed.js';
 
 /**
- * Membuat (atau menaikkan) satu akun admin pertama.
- * Butuh kredensial server Supabase; tidak pernah dijalankan otomatis saat deploy.
+ * Menyiapkan data awal: kategori bawaan (selalu) dan satu akun admin pertama (opsional).
+ *
+ * Bagian taksonomi tidak butuh kredensial Supabase, jadi instalasi baru tetap punya
+ * kategori minimal dan kontributor bisa mengajukan review. Bagian akun admin hanya
+ * berjalan bila SEED_ADMIN_EMAIL dan SEED_ADMIN_PASSWORD diisi, dan butuh kredensial
+ * server Supabase; tidak pernah dijalankan otomatis saat deploy.
  *
  * Pemakaian: pnpm --filter api db:seed
  */
@@ -15,23 +20,17 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 function required(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
-    throw new Error(`Variabel ${name} wajib diisi untuk menjalankan seed.`);
+    throw new Error(`Variabel ${name} wajib diisi untuk menjalankan bagian seed ini.`);
   }
   return value;
 }
 
-async function main(): Promise<void> {
-  const supabaseUrl = required('SUPABASE_URL');
-  const serviceRoleKey = required('SUPABASE_SERVICE_ROLE_KEY');
-  const email = required('SEED_ADMIN_EMAIL').toLowerCase();
-  const password = required('SEED_ADMIN_PASSWORD');
-  const connectionString = process.env.DIRECT_URL ?? required('DATABASE_URL');
-
+async function seedAdmin(prisma: PrismaClient, email: string, password: string): Promise<void> {
   if (password.length < 8) {
     throw new Error('SEED_ADMIN_PASSWORD minimal 8 karakter.');
   }
 
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
+  const admin = createClient(required('SUPABASE_URL'), required('SUPABASE_SERVICE_ROLE_KEY'), {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
@@ -60,16 +59,45 @@ async function main(): Promise<void> {
     userId = data.user.id;
   }
 
+  const profile = await prisma.profile.upsert({
+    where: { id: userId },
+    create: { id: userId, email, role: 'ADMIN', isActive: true },
+    update: { email, role: 'ADMIN', isActive: true },
+  });
+
+  process.stdout.write(`Admin siap: ${profile.email} (role ${profile.role}).\n`);
+}
+
+async function main(): Promise<void> {
+  const connectionString = process.env.DIRECT_URL ?? required('DATABASE_URL');
+  const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
   try {
-    const profile = await prisma.profile.upsert({
-      where: { id: userId },
-      create: { id: userId, email, role: 'ADMIN', isActive: true },
-      update: { email, role: 'ADMIN', isActive: true },
-    });
+    const taxonomy = await seedCategories(prisma);
+    process.stdout.write(
+      `Taksonomi siap: ${taxonomy.created} kategori dibuat, ${taxonomy.existing} sudah ada.\n`,
+    );
 
-    process.stdout.write(`Admin siap: ${profile.email} (role ${profile.role}).\n`);
+    if (!email || !password) {
+      process.stdout.write(
+        'SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD kosong: pembuatan akun admin dilewati.\n',
+      );
+      return;
+    }
+
+    // Akun admin opsional: jangan gagalkan pembuatan kategori hanya karena kredensial
+    // server Supabase belum diisi.
+    if (!process.env.SUPABASE_URL?.trim() || !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+      process.stdout.write(
+        'SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY kosong: pembuatan akun admin dilewati.\n',
+      );
+      return;
+    }
+
+    await seedAdmin(prisma, email, password);
   } finally {
     await prisma.$disconnect();
   }

@@ -189,6 +189,15 @@ export class TagsController {
     return this.taxonomy.listTags();
   }
 
+  /** Menghapus tag yang tidak dipakai konten mana pun. */
+  @Post('cleanup-orphans')
+  @Roles('ADMIN')
+  cleanupOrphans(@CurrentProfile() profile: AuthProfile) {
+    this.taxonomy.assertManager(profile);
+
+    return this.taxonomy.cleanupOrphanTags();
+  }
+
   @Patch(':id')
   @Roles('ADMIN')
   rename(

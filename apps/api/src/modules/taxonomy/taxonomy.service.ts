@@ -22,6 +22,19 @@ function slugify(value: string): string {
   return base;
 }
 
+function withCounts<T extends { id: string; _count: { contents: number } }>(
+  item: T,
+  published: Map<string, number>,
+): Omit<T, '_count'> & { publishedCount: number; totalCount: number } {
+  const { _count, ...rest } = item;
+
+  return {
+    ...rest,
+    publishedCount: published.get(item.id) ?? 0,
+    totalCount: _count.contents,
+  };
+}
+
 @Injectable()
 export class TaxonomyService {
   constructor(private readonly prisma: PrismaService) {}
@@ -50,17 +63,22 @@ export class TaxonomyService {
   }
 
   async listCategories() {
-    return this.prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: { select: { contents: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const [items, published] = await Promise.all([
+      this.prisma.category.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { contents: true } },
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.publishedCounts('category'),
+    ]);
+
+    return items.map((item) => withCounts(item, published));
   }
 
   async createCategory(input: CategoryInput) {
@@ -101,9 +119,12 @@ export class TaxonomyService {
       throw new NotFoundException('Kategori tidak ditemukan.');
     }
 
+    // Relasi ikut terhapus lewat cascade; kontennya tetap ada tanpa kategori ini.
+    const affectedContents = await this.prisma.contentCategory.count({ where: { categoryId: id } });
+
     await this.prisma.category.delete({ where: { id } });
 
-    return { ok: true };
+    return { ok: true as const, affectedContents };
   }
 
   // ---------- Penceramah ----------
@@ -124,19 +145,24 @@ export class TaxonomyService {
   }
 
   async listSpeakers() {
-    return this.prisma.speaker.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        bio: true,
-        avatarUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: { select: { contents: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const [items, published] = await Promise.all([
+      this.prisma.speaker.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          bio: true,
+          avatarUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { contents: true } },
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.publishedSpeakerCounts(),
+    ]);
+
+    return items.map((item) => withCounts(item, published));
   }
 
   async createSpeaker(input: SpeakerInput) {
@@ -194,9 +220,12 @@ export class TaxonomyService {
       throw new NotFoundException('Penceramah tidak ditemukan.');
     }
 
+    // Penceramah tidak wajib, jadi konten hanya kehilangan rujukannya.
+    const affectedContents = await this.prisma.content.count({ where: { speakerId: id } });
+
     await this.prisma.speaker.delete({ where: { id } });
 
-    return { ok: true };
+    return { ok: true as const, affectedContents };
   }
 
   // ---------- Tag ----------
@@ -210,17 +239,22 @@ export class TaxonomyService {
   }
 
   async listTags() {
-    return this.prisma.tag.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: { select: { contents: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const [items, published] = await Promise.all([
+      this.prisma.tag.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { contents: true } },
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.publishedCounts('tag'),
+    ]);
+
+    return items.map((item) => withCounts(item, published));
   }
 
   async renameTag(id: string, input: TagRenameInput) {
@@ -293,9 +327,11 @@ export class TaxonomyService {
       throw new NotFoundException('Tag tidak ditemukan.');
     }
 
+    const affectedContents = await this.prisma.contentTag.count({ where: { tagId: id } });
+
     await this.prisma.tag.delete({ where: { id } });
 
-    return { ok: true };
+    return { ok: true as const, affectedContents };
   }
 
   // ---------- Dipakai ContentsService ----------
@@ -350,14 +386,55 @@ export class TaxonomyService {
     return result;
   }
 
-  async cleanupOrphanTags(): Promise<void> {
+  /** Menghapus tag yang tidak lagi dipakai konten mana pun. */
+  async cleanupOrphanTags(): Promise<{ deleted: number }> {
     try {
-      await this.prisma.tag.deleteMany({
+      const result = await this.prisma.tag.deleteMany({
         where: { contents: { none: {} } },
       });
+
+      return { deleted: result.count };
     } catch {
       // Best-effort: jangan gagalkan aksi utama.
+      return { deleted: 0 };
     }
+  }
+
+  /** Jumlah konten terbit per kategori/tag, satu query untuk seluruh daftar. */
+  private async publishedCounts(kind: 'category' | 'tag'): Promise<Map<string, number>> {
+    if (kind === 'category') {
+      const rows = await this.prisma.contentCategory.groupBy({
+        by: ['categoryId'],
+        where: { content: { status: 'PUBLISHED' } },
+        _count: { _all: true },
+      });
+
+      return new Map(rows.map((row) => [row.categoryId, row._count._all]));
+    }
+
+    const rows = await this.prisma.contentTag.groupBy({
+      by: ['tagId'],
+      where: { content: { status: 'PUBLISHED' } },
+      _count: { _all: true },
+    });
+
+    return new Map(rows.map((row) => [row.tagId, row._count._all]));
+  }
+
+  private async publishedSpeakerCounts(): Promise<Map<string, number>> {
+    const rows = await this.prisma.content.groupBy({
+      by: ['speakerId'],
+      where: { status: 'PUBLISHED', speakerId: { not: null } },
+      _count: { _all: true },
+    });
+
+    return new Map(
+      rows
+        .filter(
+          (row): row is { speakerId: string; _count: { _all: number } } => row.speakerId !== null,
+        )
+        .map((row) => [row.speakerId, row._count._all]),
+    );
   }
 
   private async uniqueSlug(

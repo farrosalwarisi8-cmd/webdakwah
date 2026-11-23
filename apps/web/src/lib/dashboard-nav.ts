@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Radio,
   ShieldCheck,
+  Tags,
   UserRound,
   Users,
   type LucideIcon,
@@ -29,6 +30,7 @@ export const ADMIN_ITEMS: DashboardNavItem[] = [
   { href: '/dashboard/terbitan', label: 'Semua konten', icon: Archive },
   { href: '/dashboard/pengguna', label: 'Pengguna', icon: Users },
   { href: '/dashboard/siaran', label: 'Siaran', icon: Radio },
+  { href: '/dashboard/taksonomi', label: 'Taksonomi', icon: Tags },
   { href: '/dashboard/statistik', label: 'Statistik', icon: BarChart3 },
 ];
 

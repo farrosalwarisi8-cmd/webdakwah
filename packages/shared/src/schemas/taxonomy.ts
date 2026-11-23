@@ -92,6 +92,25 @@ export const speakerSchema = z.object({
 });
 
 /** Bentuk taksonomi yang aman untuk publik (tanpa id/status/data internal). */
+/** Item taksonomi untuk halaman admin: jumlah konten terbit dan total relasi. */
+const taxonomyCountSchema = {
+  publishedCount: z.number().int().nonnegative(),
+  totalCount: z.number().int().nonnegative(),
+};
+
+export const categoryManageSchema = categorySchema.extend(taxonomyCountSchema);
+export const tagManageSchema = tagSchema.extend(taxonomyCountSchema);
+export const speakerManageSchema = speakerSchema.extend(taxonomyCountSchema);
+
+export const taxonomyDeleteResultSchema = z.object({
+  ok: z.literal(true),
+  affectedContents: z.number().int().nonnegative(),
+});
+
+export const tagCleanupResultSchema = z.object({
+  deleted: z.number().int().nonnegative(),
+});
+
 export const publicCategorySchema = z.object({
   name: z.string(),
   slug: z.string(),
@@ -119,3 +138,8 @@ export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type SpeakerInput = z.infer<typeof speakerInputSchema>;
 export type TagRenameInput = z.infer<typeof tagRenameSchema>;
 export type TagMergeInput = z.infer<typeof tagMergeSchema>;
+export type CategoryManage = z.infer<typeof categoryManageSchema>;
+export type TagManage = z.infer<typeof tagManageSchema>;
+export type SpeakerManage = z.infer<typeof speakerManageSchema>;
+export type TaxonomyDeleteResult = z.infer<typeof taxonomyDeleteResultSchema>;
+export type TagCleanupResult = z.infer<typeof tagCleanupResultSchema>;
