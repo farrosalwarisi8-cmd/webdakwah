@@ -267,6 +267,26 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   dibersihkan tanpa menunggu 60 detik.
 - Bila API sedang mati, halaman tetap tampil dengan pesan ramah, bukan error 500.
 
+### Halaman status dan UX server tertidur (Fase 36)
+
+- **404**: `app/not-found.tsx` (umum) dan `not-found.tsx` per jenis konten (`artikel`, `audio`,
+  `video`, `rujukan`) memakai satu kerangka `StatusPage`, berbahasa Indonesia, dengan tautan
+  beranda dan status HTTP 404 yang benar.
+- **Galat**: `app/error.tsx` menampilkan pesan ramah + tombol **Coba lagi** (`reset()`), tanpa
+  detail teknis; `app/global-error.tsx` dipakai bila root layout sendiri gagal dan sengaja ditulis
+  tanpa CSS aplikasi.
+- **Loading**: `loading.tsx` + `PageSkeleton` di daftar/detail artikel, audio, video, rujukan,
+  `/cari`, `/akun`, dan seluruh rute `/dashboard/*`. Skeleton dashboard menyertakan teks
+  "Menghubungkan ke server, mohon tunggu sebentar…".
+- **Batas waktu**: `apiFetch` memakai 10 detik per percobaan dan hingga 2 percobaan ulang untuk
+  GET; 4xx tidak pernah diulang, dan 502/503/504 diulang hanya untuk GET/HEAD. Timeout dipetakan
+  menjadi `ApiError` bertanda `timedOut`.
+- **Login**: `signInWithPassword` dibatasi 12 detik dengan satu percobaan ulang khusus gangguan
+  jaringan; setelah 4 detik form menampilkan status menghubungkan, bukan tombol diam. Detail
+  teknis tidak pernah ditampilkan ke pengguna.
+- Semua aturan retry/timeout diuji sebagai fungsi murni di
+  `apps/web/src/lib/http/resilience.test.ts`.
+
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 
 - `POST /api/revalidate` dengan header `x-revalidate-secret: <REVALIDATE_SECRET>`.

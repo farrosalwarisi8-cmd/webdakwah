@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
+import { CONNECTING_HINT_MS, RequestTimeoutError, withTimeout } from '@/lib/http/resilience';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
+
+const SIGN_IN_TIMEOUT_MS = 12_000;
 
 interface LoginFormProps {
   nextPath: string;
@@ -19,30 +22,64 @@ export function LoginForm({ nextPath }: LoginFormProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [slow, setSlow] = useState(false);
+
+  async function attemptSignIn() {
+    const supabase = createSupabaseBrowserClient();
+
+    return withTimeout(
+      supabase.auth.signInWithPassword({ email: email.trim(), password }),
+      SIGN_IN_TIMEOUT_MS,
+    );
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setError(null);
+    setSlow(false);
+
+    const hint = setTimeout(() => setSlow(true), CONNECTING_HINT_MS);
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      // Server gratis bisa tertidur: satu percobaan ulang hanya untuk gangguan jaringan.
+      let result;
 
-      if (signInError) {
-        setError('Email atau kata sandi tidak cocok. Silakan coba lagi.');
+      try {
+        result = await attemptSignIn();
+      } catch (first) {
+        if (!(first instanceof RequestTimeoutError)) {
+          throw first;
+        }
+
+        result = await attemptSignIn();
+      }
+
+      if (result.error) {
+        const retryable =
+          (result.error as { status?: number }).status === 0 ||
+          result.error.name === 'AuthRetryableFetchError';
+
+        setError(
+          retryable
+            ? 'Server belum merespons. Tunggu sebentar lalu coba lagi.'
+            : 'Email atau kata sandi tidak cocok. Silakan coba lagi.',
+        );
         return;
       }
 
       router.replace(nextPath);
       router.refresh();
-    } catch {
-      setError('Login belum dikonfigurasi di server. Hubungi admin.');
+    } catch (caught) {
+      setError(
+        caught instanceof RequestTimeoutError
+          ? 'Server belum merespons. Tunggu sebentar lalu coba lagi.'
+          : 'Login belum dikonfigurasi di server. Hubungi admin.',
+      );
     } finally {
+      clearTimeout(hint);
       setPending(false);
+      setSlow(false);
     }
   }
 
@@ -89,6 +126,12 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           placeholder="••••••••"
         />
       </div>
+
+      {pending && slow ? (
+        <p role="status" className="rounded-xl bg-brand-50 px-3.5 py-2.5 text-sm text-brand-800">
+          Menghubungkan ke server, mohon tunggu sebentar…
+        </p>
+      ) : null}
 
       {error ? (
         <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
