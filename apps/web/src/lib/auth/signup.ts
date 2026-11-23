@@ -1,3 +1,5 @@
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@webdakwah/shared';
+
 /**
  * Validasi pendaftaran mandiri kontributor. Dipisah dari komponen agar aturan
  * yang sama bisa diuji tanpa DOM dan konsisten dengan `userCreateSchema` di
@@ -27,8 +29,8 @@ export type SignupValidation =
 /** Cek longgar: cukup satu `@` dan ada titik di domain, tanpa spasi. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const PASSWORD_MIN_LENGTH = 8;
-export const PASSWORD_MAX_LENGTH = 128;
+export { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH };
+
 export const FULL_NAME_MAX_LENGTH = 120;
 
 export function validateSignup(input: SignupInput): SignupValidation {

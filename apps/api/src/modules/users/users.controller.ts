@@ -82,6 +82,13 @@ export class UsersController {
     return this.users.updateUser(id, parseUpdate(body), profile.id);
   }
 
+  @Post(':id/reset-link')
+  @Roles('ADMIN')
+  sendResetLink(@CurrentProfile() profile: AuthProfile, @Param('id', ParseUUIDPipe) id: string) {
+    this.users.assertManager(profile);
+    return this.users.sendPasswordResetLink(id);
+  }
+
   @Post(':id/reset-password')
   @Roles('ADMIN')
   resetPassword(

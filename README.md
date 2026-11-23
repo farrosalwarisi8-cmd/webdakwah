@@ -62,6 +62,17 @@ webdakwah/
   `taxonomy:manage`, `broadcast:manage`). Kontributor hanya mendapat dua izin pertama.
 - `/dashboard`, `/dashboard/konten`, dan `/dashboard/moderasi` dijaga oleh `proxy.ts` (pengganti
   middleware di Next 16). Proxy hanya lapisan kenyamanan; API tetap memverifikasi token sendiri.
+- **Lupa kata sandi**: `/lupa-sandi` meminta tautan ke email; Supabase mengirim tautan ke
+  `/auth/pemulihan`, yang menerima `?token_hash=...&type=recovery` maupun `?code=...` seperti
+  `/auth/konfirmasi`. Setelah sesi pemulihan terbentuk, pengguna mengetik sandi baru di
+  `/atur-sandi` (validasi sama dengan pendaftaran: 8–128 karakter), lalu diminta masuk ulang.
+  Permintaan selalu dijawab dengan pesan yang sama ("jika email terdaftar…") agar keberadaan
+  akun tidak bocor, dengan batas 5 permintaan/15 menit per IP. Batas itu disimpan di memori
+  proses, jadi di serverless hanya berlaku per instance; batas email Supabase tetap lapisan utama.
+- **/akun** menampilkan data profil sekaligus form ubah nama (`PATCH /api/me`, hanya `fullName`)
+  dan ubah kata sandi lewat sesi Supabase aktif. Tidak ada jalur untuk menaikkan role sendiri.
+  Admin juga bisa mengirim tautan pemulihan dari `/dashboard/pengguna` (tombol **Kirim tautan
+  reset**), sehingga sandi pengguna tidak perlu diketahui admin.
 
 ### Menyiapkan verifikasi email pendaftaran
 
@@ -69,8 +80,9 @@ Pendaftaran mandiri butuh pengaturan di dashboard Supabase (tidak bisa dari kode
 
 1. **Authentication → Providers → Email**: aktifkan **Confirm email**.
 2. **Authentication → URL Configuration**: isi _Site URL_, lalu tambahkan
-   `<url-situs>/auth/konfirmasi` ke _Redirect URLs_ untuk setiap lingkungan (lokal, staging,
-   produksi).
+   `<url-situs>/auth/konfirmasi` dan `<url-situs>/auth/pemulihan` ke _Redirect URLs_ untuk setiap
+   lingkungan (lokal, staging, produksi). Tanpa `/auth/pemulihan`, tautan lupa sandi akan mendarat
+   di _Site URL_ dan alurnya gagal.
 3. **Authentication → Email Templates → Confirm signup** (disarankan): pakai tautan langsung agar
    bisa dibuka dari perangkat lain, mis.
    `{{ .SiteURL }}/auth/konfirmasi?token_hash={{ .TokenHash }}&type=signup`. Bila memakai
@@ -416,7 +428,9 @@ pnpm --filter api dev
 ```
 
 Cek API: <http://localhost:3001/health> → `{"status":"ok", ...}`
-Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me`.
+Endpoint bisnis berada di prefiks `/api`, mis. `GET /api/me` dan `PATCH /api/me` (ubah nama sendiri).
+Admin dapat memicu `POST /api/users/:id/reset-link` untuk mengirim tautan pemulihan sandi ke email
+pengguna; `POST /api/users/:id/reset-password` tetap ada sebagai cadangan bila email tidak masuk.
 Login: <http://localhost:3000/masuk>
 Daftar kontributor: <http://localhost:3000/daftar>
 Editor konten: <http://localhost:3000/dashboard/konten>

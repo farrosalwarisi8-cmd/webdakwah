@@ -7,7 +7,16 @@ export const OFFLINE_PATH = '/offline';
 export const INSTALL_DISMISS_KEY = 'webdakwah:install-dismissed';
 
 /** Halaman privat tidak boleh masuk cache offline. Sama dengan aturan di public/sw.js. */
-const PRIVATE_PREFIXES = ['/dashboard', '/masuk', '/daftar', '/akun', '/auth', '/api'];
+const PRIVATE_PREFIXES = [
+  '/dashboard',
+  '/masuk',
+  '/daftar',
+  '/akun',
+  '/auth',
+  '/api',
+  '/lupa-sandi',
+  '/atur-sandi',
+];
 
 export function isOfflineCacheablePath(pathname: string): boolean {
   return !PRIVATE_PREFIXES.some(

@@ -8,6 +8,7 @@ import {
   createUserAction,
   deleteUserAction,
   resetPasswordAction,
+  sendResetLinkAction,
   updateUserAction,
 } from './actions';
 
@@ -20,6 +21,7 @@ const SUCCESS_MESSAGES: Record<string, string> = {
   ditambahkan: 'Pengguna baru berhasil ditambahkan.',
   diperbarui: 'Pengguna berhasil diperbarui.',
   katasandi: 'Kata sandi berhasil direset.',
+  tautan: 'Tautan pengaturan kata sandi sudah dikirim ke email pengguna.',
   dihapus: 'Pengguna berhasil dihapus.',
 };
 
@@ -206,6 +208,15 @@ export default async function PenggunaPage({
                           className="rounded-full border border-amber-200 px-4 py-2 text-xs font-medium text-amber-800 transition hover:bg-amber-50"
                         >
                           Reset
+                        </button>
+                      </form>
+                      <form action={sendResetLinkAction}>
+                        <input type="hidden" name="id" value={user.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-ink-200 px-4 py-2 text-xs font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
+                        >
+                          Kirim tautan reset
                         </button>
                       </form>
                       <form action={deleteUserAction}>

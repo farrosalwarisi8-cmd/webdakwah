@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/dashboard', '/akun', '/masuk', '/daftar', '/auth'],
+      disallow: ['/dashboard', '/akun', '/masuk', '/daftar', '/auth', '/lupa-sandi', '/atur-sandi'],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

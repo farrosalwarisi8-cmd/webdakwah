@@ -66,9 +66,17 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       </div>
 
       <div>
-        <label htmlFor="password" className="text-sm font-medium text-ink-800">
-          Kata sandi
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="password" className="text-sm font-medium text-ink-800">
+            Kata sandi
+          </label>
+          <Link
+            href="/lupa-sandi"
+            className="text-xs font-medium text-brand-700 underline-offset-4 hover:underline"
+          >
+            Lupa kata sandi?
+          </Link>
+        </div>
         <input
           id="password"
           name="password"

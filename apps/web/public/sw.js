@@ -25,7 +25,16 @@ const PRECACHE_URLS = [
   '/icons/icon-maskable-512.png',
 ];
 
-const PRIVATE_PREFIXES = ['/dashboard', '/masuk', '/daftar', '/akun', '/auth', '/api'];
+const PRIVATE_PREFIXES = [
+  '/dashboard',
+  '/masuk',
+  '/daftar',
+  '/akun',
+  '/auth',
+  '/api',
+  '/lupa-sandi',
+  '/atur-sandi',
+];
 const MAX_ASSETS_PER_PAGE = 40;
 const MAX_CRAWLED_ASSETS = 80;
 const MAX_ASSET_ENTRIES = 300;

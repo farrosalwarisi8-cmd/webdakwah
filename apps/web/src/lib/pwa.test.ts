@@ -18,6 +18,8 @@ describe('aturan cache offline', () => {
     expect(isOfflineCacheablePath('/auth/konfirmasi')).toBe(false);
     expect(isOfflineCacheablePath('/akun')).toBe(false);
     expect(isOfflineCacheablePath('/api/revalidate')).toBe(false);
+    expect(isOfflineCacheablePath('/lupa-sandi')).toBe(false);
+    expect(isOfflineCacheablePath('/atur-sandi')).toBe(false);
   });
 
   it('tidak salah mencocokkan awalan yang mirip', () => {

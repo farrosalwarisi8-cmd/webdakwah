@@ -36,7 +36,11 @@ const CONFIRMATION_MESSAGES: Record<string, { tone: 'success' | 'error'; text: s
 export default async function MasukPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string | string[]; konfirmasi?: string | string[] }>;
+  searchParams: Promise<{
+    next?: string | string[];
+    konfirmasi?: string | string[];
+    atur?: string | string[];
+  }>;
 }) {
   const viewer = await getViewer();
 
@@ -44,9 +48,10 @@ export default async function MasukPage({
     redirect('/dashboard');
   }
 
-  const { next, konfirmasi } = await searchParams;
+  const { next, konfirmasi, atur } = await searchParams;
   const confirmation =
     CONFIRMATION_MESSAGES[Array.isArray(konfirmasi) ? (konfirmasi[0] ?? '') : (konfirmasi ?? '')];
+  const passwordUpdated = (Array.isArray(atur) ? (atur[0] ?? '') : (atur ?? '')) === 'berhasil';
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface-soft">
@@ -70,6 +75,12 @@ export default async function MasukPage({
           <p className="mt-2 text-sm leading-relaxed text-ink-600">
             Khusus admin dan kontributor untuk menulis serta meninjau materi dakwah.
           </p>
+
+          {passwordUpdated ? (
+            <p className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-relaxed text-emerald-900">
+              Kata sandi baru tersimpan. Silakan masuk dengan kata sandi tersebut.
+            </p>
+          ) : null}
 
           {confirmation ? (
             <p

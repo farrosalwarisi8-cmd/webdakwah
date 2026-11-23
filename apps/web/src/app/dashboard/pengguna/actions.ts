@@ -85,6 +85,20 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
   redirect('/dashboard/pengguna?sukses=katasandi');
 }
 
+export async function sendResetLinkAction(formData: FormData): Promise<void> {
+  const id = readString(formData, 'id');
+  if (!id) redirect('/dashboard/pengguna');
+
+  try {
+    await apiFetch(`/users/${encodeURIComponent(id)}/reset-link`, { method: 'POST' });
+  } catch (error) {
+    failureRedirect(error);
+  }
+
+  refresh();
+  redirect('/dashboard/pengguna?sukses=tautan');
+}
+
 export async function deleteUserAction(formData: FormData): Promise<void> {
   const id = readString(formData, 'id');
   if (!id) redirect('/dashboard/pengguna');

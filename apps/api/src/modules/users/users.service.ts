@@ -38,6 +38,8 @@ function toSummary(profile: {
 @Injectable()
 export class UsersService {
   private readonly supabase: SupabaseClient | null;
+  /** Origin web pertama; tujuan tautan pemulihan sandi. */
+  private readonly siteUrl: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -45,6 +47,10 @@ export class UsersService {
   ) {
     const url = config.get<string>('SUPABASE_URL');
     const key = config.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+
+    this.siteUrl = (config.get<string>('FRONTEND_ORIGINS') ?? 'http://localhost:3000')
+      .split(',')[0]!
+      .trim();
 
     this.supabase =
       url && key
@@ -247,6 +253,37 @@ export class UsersService {
 
   async updatePassword(id: string, password: string): Promise<{ ok: true }> {
     return this.resetPassword(id, password);
+  }
+
+  /**
+   * Mengirim tautan pemulihan ke email pengguna. Admin tidak perlu (dan tidak
+   * bisa) mengetahui sandi baru lewat jalur ini.
+   */
+  async sendPasswordResetLink(id: string): Promise<{ ok: true }> {
+    if (!this.supabase) {
+      throw new ServiceUnavailableException(
+        'Pengelolaan pengguna belum dikonfigurasi (SUPABASE_SERVICE_ROLE_KEY).',
+      );
+    }
+
+    const profile = await this.prisma.profile.findUnique({
+      where: { id },
+      select: { email: true },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Pengguna tidak ditemukan.');
+    }
+
+    const { error } = await this.supabase.auth.resetPasswordForEmail(profile.email, {
+      redirectTo: `${this.siteUrl}/auth/pemulihan`,
+    });
+
+    if (error) {
+      throw new BadRequestException('Gagal mengirim tautan pemulihan. Coba lagi nanti.');
+    }
+
+    return { ok: true };
   }
 
   async removeUser(id: string, actorId?: string): Promise<{ ok: true; id: string }> {

@@ -16,12 +16,31 @@ export const userSummarySchema = z.object({
 
 export type UserSummary = z.infer<typeof userSummarySchema>;
 
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 128;
+
+/** Satu-satunya aturan sandi: dipakai pendaftaran, ubah sandi, dan reset oleh admin. */
+export const passwordSchema = z
+  .string()
+  .min(PASSWORD_MIN_LENGTH, `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter`)
+  .max(PASSWORD_MAX_LENGTH, 'Kata sandi terlalu panjang');
+
+/** Perubahan profil oleh pemiliknya sendiri; role/status sengaja tidak bisa diubah. */
+export const profileUpdateSchema = z
+  .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(1, 'Nama tidak boleh kosong')
+      .max(120, 'Nama lengkap maksimal 120 karakter'),
+  })
+  .strict();
+
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+
 export const userCreateSchema = z.object({
   email: z.email(),
-  password: z
-    .string()
-    .min(8, 'Kata sandi minimal 8 karakter')
-    .max(128, 'Kata sandi terlalu panjang'),
+  password: passwordSchema,
   fullName: z.string().trim().max(120, 'Nama lengkap maksimal 120 karakter').optional().default(''),
   role: z.enum(ROLES).default('CONTRIBUTOR'),
 });
@@ -43,10 +62,7 @@ export const userUpdateSchema = z
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 export const userPasswordResetSchema = z.object({
-  password: z
-    .string()
-    .min(8, 'Kata sandi minimal 8 karakter')
-    .max(128, 'Kata sandi terlalu panjang'),
+  password: passwordSchema,
 });
 
 export type UserPasswordResetInput = z.infer<typeof userPasswordResetSchema>;
