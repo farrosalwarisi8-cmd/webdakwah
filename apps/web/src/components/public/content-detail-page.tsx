@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/format';
 import { AudioDetailPlayer } from './audio-detail-player';
 import { BookmarkButton } from './bookmark-button';
 import { SiteFooter } from './site-footer';
+import { ShareBar } from './share-bar';
 import { SiteHeader } from './site-header';
 import { VideoEmbedPlayer } from './video-embed';
 import { getVideoEmbed, isDirectVideoFileUrl } from '@webdakwah/shared';
@@ -100,7 +101,10 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                     {content.categories[0] ? ` · ${content.categories[0].name}` : ''}
                   </p>
                 </div>
-                <BookmarkButton item={content} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <BookmarkButton item={content} />
+                  <ShareBar type={content.type} slug={content.slug} title={content.title} />
+                </div>
               </div>
 
               {content.categories.length > 0 ? (

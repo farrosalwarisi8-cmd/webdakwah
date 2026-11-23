@@ -3,10 +3,11 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 38 — Halaman informasi dan kebijakan**. `/tentang`, `/kontak`, `/privasi`,
-> dan `/syarat` tersedia, tertaut dari footer dan sitemap, dengan isi yang mengikuti perilaku
-> aplikasi dan penanda DRAF sampai ditinjau pihak berwenang. CSP tetap **Report-Only** (Fase 37)
-> dan halaman status Fase 36 tetap berjalan.
+> Status: **Fase 39 — Tombol bagikan**. Halaman artikel, audio, dan video punya tombol
+> bagikan (Web Share API, WhatsApp, salin tautan) dengan URL kanonik dari server. Halaman
+> informasi Fase 38, CSP **Report-Only** (Fase 37), dan halaman status Fase 36 tetap berjalan.
+> Unduh artikel sebagai PDF dan email notifikasi kontributor belum dikerjakan karena menunggu
+> keputusan pemilik.
 
 ## Teknologi
 
@@ -314,6 +315,24 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   dan teks masa simpan.
 - Tanggung jawab pemilik: mengisi `SITE_OWNER`, meninjau teks hukum, lalu mengisi
   `legalReviewedAt` setelah tinjauan selesai.
+
+### Tombol bagikan (Fase 39)
+
+- Halaman `/artikel/[slug]`, `/audio/[slug]`, dan `/video/[slug]` menampilkan tombol bagikan di
+  dekat tombol **Simpan**. `/rujukan/[slug]` sengaja tidak punya tombol bagikan karena
+  tindakan utamanya membuka sumber eksternal.
+- `ShareBar` adalah Server Component yang menyusun judul dan URL kanonik konten dari
+  `NEXT_PUBLIC_SITE_URL` + slug, lalu meneruskannya ke komponen klien kecil
+  `ShareButtons`. Tidak ada permintaan jaringan tambahan dan tidak ada pustaka pihak ketiga.
+- **Web Share API** hanya muncul bila peramban mendukung (`navigator.share`); jika tidak,
+  pengguna tetap mendapat tautan **WhatsApp** (`https://wa.me/?text=…`, judul + URL) dan
+  **Salin tautan** (`navigator.clipboard`). Bila penyalinan ditolak peramban, URL ditampilkan
+  untuk disalin manual. Status penyalinan diumumkan lewat `aria-live`.
+- URL yang dibagikan memakai slug yang dienkode dan origin situs; bila `NEXT_PUBLIC_SITE_URL`
+  tidak sah, tombol menyalin path relatif daripada alamat setengah jadi. Aturan ini dites di
+  `apps/web/src/lib/share.test.ts`.
+- Fitur yang **belum** dikerjakan dan menunggu keputusan: unduh artikel sebagai PDF dan email
+  notifikasi untuk kontributor.
 
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 
