@@ -60,6 +60,24 @@ export default async function DaftarPage() {
           )}
 
           <p className="mt-6 text-center text-xs leading-relaxed text-ink-500">
+            Dengan mendaftar, Anda menyetujui{' '}
+            <Link
+              href="/syarat"
+              className="font-medium text-ink-700 underline-offset-4 hover:underline"
+            >
+              syarat penggunaan
+            </Link>{' '}
+            dan{' '}
+            <Link
+              href="/privasi"
+              className="font-medium text-ink-700 underline-offset-4 hover:underline"
+            >
+              kebijakan privasi
+            </Link>
+            .
+          </p>
+
+          <p className="mt-3 text-center text-xs leading-relaxed text-ink-500">
             Sudah punya akun?{' '}
             <Link
               href="/masuk"

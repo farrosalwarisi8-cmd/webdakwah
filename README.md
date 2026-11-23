@@ -3,11 +3,10 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 37 — Header keamanan**. Semua rute web mengirim HSTS, nosniff,
-> Referrer-Policy, X-Frame-Options, COOP, dan Permissions-Policy. CSP berjalan dalam mode
-> **Report-Only** dengan nonce per permintaan dari `proxy.ts` dan `script-src` tanpa
-> `'unsafe-inline'`; penegakan menunggu laporan bersih dan persetujuan pemilik.
-> Halaman status & batas waktu Fase 36 tetap berjalan.
+> Status: **Fase 38 — Halaman informasi dan kebijakan**. `/tentang`, `/kontak`, `/privasi`,
+> dan `/syarat` tersedia, tertaut dari footer dan sitemap, dengan isi yang mengikuti perilaku
+> aplikasi dan penanda DRAF sampai ditinjau pihak berwenang. CSP tetap **Report-Only** (Fase 37)
+> dan halaman status Fase 36 tetap berjalan.
 
 ## Teknologi
 
@@ -288,6 +287,33 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   teknis tidak pernah ditampilkan ke pengguna.
 - Semua aturan retry/timeout diuji sebagai fungsi murni di
   `apps/web/src/lib/http/resilience.test.ts`.
+
+### Halaman informasi dan kebijakan (Fase 38)
+
+- `/tentang`, `/kontak`, `/privasi`, dan `/syarat` adalah halaman statis ringan (Server
+  Component, tanpa data dinamis) yang memakai kerangka `InfoPage` dan ikut `sitemap.xml`.
+  Semuanya tertaut dari footer (grup **Informasi dan kebijakan**), dan `/daftar` menautkan
+  syarat + kebijakan privasi tepat di atas tautan masuk.
+- **Satu sumber data pemilik**: `apps/web/src/lib/site.ts` (`SITE_OWNER`) dengan penanda
+  **ISI OLEH PEMILIK**. Field yang disediakan: `managerName`, `address`, `contactEmail`,
+  `contactWhatsapp` (digit dengan kode negara tanpa `+`), `retentionDays`, dan
+  `legalReviewedAt` (`YYYY-MM-DD`).
+- Nilai kosong atau tidak sah **tidak pernah dirender**, termasuk di produksi: email harus
+  berbentuk wajar, WhatsApp harus diawali kode negara (angka lokal `0…` ditolak), dan alamat
+  kosong tidak membuat kartu kontak muncul. Bila belum ada kanal sama sekali, `/kontak`
+  menampilkan keterangan bahwa kanal belum diisi — bukan data karangan.
+- Selama `legalReviewedAt` kosong, `/privasi` dan `/syarat` menampilkan penanda **Draf** yang
+  menyatakan teks belum ditinjau pihak berwenang. Setelah diisi, penanda berganti menjadi
+  tanggal tinjauan.
+- Isi kebijakan mengikuti perilaku aplikasi saat ini: email/nama/status verifikasi akun
+  kontributor, konten dan media yang diunggah, data pengikut siaran, `localStorage`
+  (`webdakwah:bookmarks`, `webdakwah:install-dismissed`), cookie sesi Supabase, log teknis
+  platform, serta penyedia yang benar-benar dipakai (Supabase, penyimpanan objek, hosting,
+  embed video). Tidak ada pelacak iklan/analitik pihak ketiga di kode.
+- Tes `apps/web/src/lib/site.test.ts` menjaga penyaringan field kosong/tidak sah, status draf,
+  dan teks masa simpan.
+- Tanggung jawab pemilik: mengisi `SITE_OWNER`, meninjau teks hukum, lalu mengisi
+  `legalReviewedAt` setelah tinjauan selesai.
 
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 

@@ -3,6 +3,13 @@ import Link from 'next/link';
 
 import { CONTENT_SECTIONS, CONTENT_TYPE_ORDER, sectionPath } from '@/lib/content-routes';
 
+const INFO_LINKS = [
+  { href: '/tentang', label: 'Tentang' },
+  { href: '/kontak', label: 'Kontak' },
+  { href: '/privasi', label: 'Kebijakan privasi' },
+  { href: '/syarat', label: 'Syarat penggunaan' },
+] as const;
+
 export function SiteFooter() {
   return (
     <footer className="bg-brand-950 text-white">
@@ -21,29 +28,46 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-0 text-sm">
-            <Link
-              href="/"
-              className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
-            >
-              Beranda
-            </Link>
-            {CONTENT_TYPE_ORDER.map((type) => (
+          <div className="flex flex-col gap-2">
+            <nav aria-label="Tautan footer" className="flex flex-wrap gap-x-5 gap-y-0 text-sm">
               <Link
-                key={type}
-                href={sectionPath(type)}
+                href="/"
                 className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
               >
-                {CONTENT_SECTIONS[type].title}
+                Beranda
               </Link>
-            ))}
-            <Link
-              href="/siaran"
-              className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+              {CONTENT_TYPE_ORDER.map((type) => (
+                <Link
+                  key={type}
+                  href={sectionPath(type)}
+                  className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+                >
+                  {CONTENT_SECTIONS[type].title}
+                </Link>
+              ))}
+              <Link
+                href="/siaran"
+                className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+              >
+                Siaran
+              </Link>
+            </nav>
+
+            <nav
+              aria-label="Informasi dan kebijakan"
+              className="flex flex-wrap gap-x-5 gap-y-0 text-sm"
             >
-              Siaran
-            </Link>
-          </nav>
+              {INFO_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="inline-flex min-h-11 items-center text-white/65 transition hover:text-accent-300"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2 pt-6 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">

@@ -21,6 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     { url: absolute('/siaran'), lastModified: now, changeFrequency: 'daily', priority: 0.8 },
+    ...['/tentang', '/kontak', '/privasi', '/syarat'].map((path) => ({
+      url: absolute(path),
+      lastModified: now,
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    })),
   ];
 
   try {
