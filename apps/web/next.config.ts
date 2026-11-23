@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 
+import { securityHeaders } from './src/lib/security/headers';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -10,6 +12,11 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        // CSP dipasang per permintaan di src/proxy.ts karena memakai nonce.
+        source: '/:path*',
+        headers: securityHeaders(),
+      },
       {
         source: '/sw.js',
         headers: [

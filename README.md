@@ -3,10 +3,11 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 28 — Siaran langsung siap pakai**. Status radio membaca statistik Shoutcast
-> dan Icecast, pemutar mengenali stream langsung (tanpa durasi/progres palsu), dan halaman
-> `/siaran` tetap berguna saat status tidak diketahui. PWA & akses offline dari Fase 27 tetap
-> berjalan.
+> Status: **Fase 37 — Header keamanan**. Semua rute web mengirim HSTS, nosniff,
+> Referrer-Policy, X-Frame-Options, COOP, dan Permissions-Policy. CSP berjalan dalam mode
+> **Report-Only** dengan nonce per permintaan dari `proxy.ts` dan `script-src` tanpa
+> `'unsafe-inline'`; penegakan menunggu laporan bersih dan persetujuan pemilik.
+> Halaman status & batas waktu Fase 36 tetap berjalan.
 
 ## Teknologi
 
@@ -263,8 +264,9 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
 - `/sitemap.xml` dan `/robots.txt` dihasilkan otomatis. Dashboard, akun, dan halaman masuk
   dikecualikan dari indeks mesin pencari.
 - Data diambil dengan revalidasi 60 detik sebagai cadangan. Setelah konten terbit, diarsipkan,
-  atau dipulihkan, API memanggil webhook `POST /api/revalidate` agar cache publik langsung
-  dibersihkan tanpa menunggu 60 detik.
+  atau dipulihkan, API memanggil webhook `POST /api/revalidate` agar cache data publik langsung
+  dibersihkan tanpa menunggu 60 detik. Sejak Fase 37 HTML dirender dinamis karena CSP nonce,
+  tetapi cache data (60 detik + tag) tetap berlaku sehingga API tidak dipanggil tiap request.
 - Bila API sedang mati, halaman tetap tampil dengan pesan ramah, bukan error 500.
 
 ### Halaman status dan UX server tertidur (Fase 36)
@@ -536,6 +538,50 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 | `NEXT_PUBLIC_SUPABASE_URL`      | ya (Fase 2) | —                       | URL Supabase                                  |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ya (Fase 2) | —                       | Anon key (aman di browser)                    |
 | `REVALIDATE_SECRET`             | opsional    | —                       | Secret route revalidasi (sama dengan API)     |
+| `CSP_REPORT_URI`                | opsional    | —                       | Endpoint laporan pelanggaran CSP              |
+
+## Header Keamanan (Fase 37)
+
+Header statis dipasang `next.config.ts` untuk semua rute; CSP dipasang per permintaan oleh
+`apps/web/src/proxy.ts`. Aturan dan tesnya ada di `apps/web/src/lib/security/headers.ts` dan
+`headers.test.ts`.
+
+- `Strict-Transport-Security: max-age=63072000; includeSubDomains` (tanpa `preload`),
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  `X-Frame-Options: DENY`, `Cross-Origin-Opener-Policy: same-origin`.
+- `Permissions-Policy` mematikan kamera, mikrofon, geolokasi, pembayaran, USB, dan
+  `interest-cohort`.
+- `Content-Security-Policy-Report-Only` dikirim ke browser, dengan `nonce-<acak>` per
+  permintaan dan `'strict-dynamic'`; `script-src` tidak memuat `'unsafe-inline'`. Karena masih
+  Report-Only, pelanggaran **dicatat dan dilaporkan, belum memblokir** apa pun. Header
+  permintaan internal tetap `Content-Security-Policy` agar Next.js menemukan nonce lalu
+  menempelkannya ke framework script, chunk halaman, dan script inline yang ia hasilkan.
+- **Beralih ke penegakan** hanya setelah laporan pelanggaran bersih di staging/produksi dan
+  pemilik menyetujui: ubah `CONTENT_SECURITY_POLICY_HEADER` menjadi `'Content-Security-Policy'`
+  di `apps/web/src/lib/security/headers.ts`. Tes menjaga nilai ini supaya perubahan tidak
+  terjadi tanpa sengaja.
+- `default-src 'self'`, `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`,
+  `form-action 'self'`; `connect-src` memuat `'self'`, `*.supabase.co` (https/wss), dan origin
+  `NEXT_PUBLIC_API_URL` (browser memanggil API langsung untuk beberapa aksi); gambar dan media
+  boleh `https:` karena konten tersanitasi dapat memuat sumber eksternal.
+- `style-src` sengaja tetap `'self' 'unsafe-inline'`: komponen memakai atribut `style` untuk
+  progres pemutar audio dan tinggi kartu, yang akan hilang bila inline style diblokir.
+- `'unsafe-eval'` hanya ditambahkan saat `NODE_ENV=development` untuk React Refresh.
+- `CSP_REPORT_URI` (opsional) menambahkan `report-uri` ke kebijakan; tanpa itu laporan hanya
+  muncul di konsol browser. Server tidak menyimpan laporan sendiri.
+
+Konsekuensi yang perlu diketahui:
+
+- Nonce hanya bisa ditanam pada halaman yang dirender saat permintaan. Root layout memakai
+  `export const dynamic = 'force-dynamic'`, jadi semua halaman **tidak lagi di-prerender/ISR**
+  dan tidak bisa di-cache CDN. Data tetap memakai cache fetch 60 detik + webhook revalidasi,
+  jadi API tidak dipanggil pada setiap permintaan; yang dirender ulang adalah HTML-nya.
+- Proxy hanya mencocokkan halaman; aset `/_next/static`, `/_next/image`, ikon, `sw.js`,
+  `manifest.webmanifest`, `robots.txt`, `sitemap.xml`, dan rute `/api` tidak diberi CSP.
+  Permintaan prefetch `next/link` juga dilewati.
+- `_not-found` ikut dirender dinamis dan sudah membawa nonce. `global-error` hanya muncul bila
+  root layout sendiri gagal; pada kondisi itu hidrasi bisa tidak berjalan, tetapi teks dan
+  tombolnya tetap tampil.
 
 ## Batas Laju & Kuota Unggahan (Fase 10)
 
