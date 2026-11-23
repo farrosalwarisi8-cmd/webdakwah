@@ -1,11 +1,11 @@
 import { type ContentType } from '@webdakwah/shared';
-import { ArrowLeft, ExternalLink, Play, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Play, RefreshCw, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { PublicApiError, getPublicContent } from '@/lib/api/public';
 import { renderBodyHtml } from '@/lib/body-html';
-import { CONTENT_SECTIONS, sectionPath } from '@/lib/content-routes';
+import { CONTENT_SECTIONS, contentPath, sectionPath } from '@/lib/content-routes';
 import { CONTENT_TYPE_VISUALS, domainFromUrl } from '@/lib/content-visuals';
 import { formatDate } from '@/lib/format';
 
@@ -69,9 +69,28 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
         {error || !content ? (
           <div
             role="alert"
-            className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-red-800"
+            className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm leading-relaxed text-red-800"
           >
-            {error ?? 'Konten tidak ditemukan.'}
+            <p>{error ?? 'Konten tidak ditemukan.'}</p>
+            <p className="mt-1.5 text-xs text-red-700">
+              Bila masalah berlanjut, kembali ke daftar {section.title} atau coba muat ulang halaman
+              ini.
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Link
+                href={contentPath(type, slug)}
+                className="btn-press inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-xs font-semibold text-red-800 ring-1 ring-red-200 transition hover:ring-red-300"
+              >
+                <RefreshCw aria-hidden className="size-3.5" />
+                Coba lagi
+              </Link>
+              <Link
+                href={sectionPath(type)}
+                className="btn-press inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold text-red-800 ring-1 ring-red-200 transition hover:bg-white"
+              >
+                Lihat semua {section.title}
+              </Link>
+            </div>
           </div>
         ) : (
           <article className="mt-4">
@@ -210,13 +229,18 @@ export async function ContentDetailPage({ type, slug }: { type: ContentType; slu
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer nofollow"
-                            className="inline-flex min-h-8 items-center text-sm text-brand-700 transition hover:text-brand-900 hover:underline"
+                            className="inline-flex min-h-8 items-center gap-1 text-sm text-brand-700 transition hover:text-brand-900 hover:underline"
                           >
                             {link.title}
+                            <ExternalLink aria-hidden className="size-3.5 shrink-0" />
+                            <span className="sr-only">(membuka website lain)</span>
                           </a>
                         </li>
                       ))}
                     </ul>
+                    <p className="mt-3 text-[11px] leading-relaxed text-ink-600">
+                      Semua tautan referensi membuka website lain di tab baru.
+                    </p>
                   </section>
                 ) : null}
 

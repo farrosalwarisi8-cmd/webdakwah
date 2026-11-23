@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { ConfirmButton } from '@/components/confirm-button';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 import { formatDateTime } from '@/lib/format';
@@ -141,12 +142,15 @@ export default async function TinjauKontenPage({
 
               <form action={publishContentAction} className="mt-5">
                 <input type="hidden" name="id" value={content.id} />
-                <button
-                  type="submit"
+                <ConfirmButton
+                  message={`Terbitkan "${content.title}"? Konten langsung tampil di halaman publik dan bisa ditemukan pengunjung.`}
                   className="rounded-full bg-brand-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
                 >
                   Terbitkan konten
-                </button>
+                </ConfirmButton>
+                <p className="mt-2 text-xs text-ink-600">
+                  Setelah terbit, konten langsung terlihat pengunjung dan masuk sitemap.
+                </p>{' '}
               </form>
 
               <form
@@ -168,12 +172,12 @@ export default async function TinjauKontenPage({
                   placeholder="Contoh: Tambahkan sumber rujukan dan perbaiki judul agar lebih jelas."
                 />
                 <p className="text-xs text-ink-500">Minimal 10 karakter, maksimal 500.</p>
-                <button
-                  type="submit"
+                <ConfirmButton
+                  message={`Tolak "${content.title}" dan kembalikan ke penulis? Konten tidak tampil publik, penulis melihat catatan Anda, dan dapat memperbaiki lalu mengajukan ulang.`}
                   className="rounded-full border border-red-200 px-5 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50"
                 >
                   Tolak dan kembalikan ke penulis
-                </button>
+                </ConfirmButton>
               </form>
             </section>
           ) : (

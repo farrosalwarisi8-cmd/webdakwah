@@ -6,6 +6,7 @@ import {
 } from '@webdakwah/shared';
 import type { Metadata } from 'next';
 
+import { ConfirmButton } from '@/components/confirm-button';
 import { ApiError, apiFetch } from '@/lib/api/server';
 import { requireViewer } from '@/lib/auth/require';
 
@@ -138,12 +139,12 @@ export default async function PenggunaPage({
                       <form action={updateUserAction}>
                         <input type="hidden" name="id" value={user.id} />
                         <input type="hidden" name="accountStatus" value="REJECTED" />
-                        <button
-                          type="submit"
+                        <ConfirmButton
+                          message={`Tolak pendaftaran ${user.email}? Akun tetap bisa masuk dan membaca dashboard, tetapi tidak bisa membuat atau mengajukan konten sampai disetujui admin.`}
                           className="rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
                         >
                           Tolak
-                        </button>
+                        </ConfirmButton>
                       </form>
                     </div>
                   </li>
@@ -261,29 +262,48 @@ export default async function PenggunaPage({
                           <option value="false">Nonaktif</option>
                         </select>
                         <input name="fullName" type="hidden" value={user.fullName ?? ''} />
-                        <button
-                          type="submit"
+                        <ConfirmButton
+                          message={`Simpan perubahan untuk ${user.email}? Bila status diubah menjadi Nonaktif, pengguna langsung tidak bisa masuk.`}
                           className="rounded-full border border-ink-200 px-4 py-2 text-xs font-medium text-ink-700 transition hover:border-brand-300 hover:text-brand-700"
                         >
                           Simpan
-                        </button>
+                        </ConfirmButton>
                       </form>
-                      <form action={resetPasswordAction} className="flex items-center gap-2">
+                      <form
+                        action={resetPasswordAction}
+                        className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-2"
+                      >
                         <input type="hidden" name="id" value={user.id} />
+                        <label
+                          className="text-xs font-medium text-amber-900"
+                          htmlFor={`pw-${user.id}`}
+                        >
+                          Kata sandi baru
+                        </label>
                         <input
+                          id={`pw-${user.id}`}
                           name="password"
                           type="password"
                           required
                           minLength={8}
-                          placeholder="Kata sandi baru"
-                          className="rounded-xl border border-ink-200 px-3 py-2 text-xs"
+                          autoComplete="new-password"
+                          aria-describedby={`pw-help-${user.id}`}
+                          placeholder="Minimal 8 karakter"
+                          className="min-w-0 flex-1 rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs"
                         />
-                        <button
-                          type="submit"
-                          className="rounded-full border border-amber-200 px-4 py-2 text-xs font-medium text-amber-800 transition hover:bg-amber-50"
+                        <span
+                          id={`pw-help-${user.id}`}
+                          className="w-full text-[11px] leading-relaxed text-amber-900"
                         >
-                          Reset
-                        </button>
+                          Kata sandi lama langsung tidak berlaku. Sampaikan kata sandi baru kepada
+                          pengguna lewat jalur yang aman.
+                        </span>
+                        <ConfirmButton
+                          message={`Reset kata sandi ${user.email}? Kata sandi lama langsung tidak berlaku dan pengguna harus memakai kata sandi baru untuk masuk.`}
+                          className="rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-medium text-amber-900 transition hover:bg-amber-100"
+                        >
+                          Reset kata sandi
+                        </ConfirmButton>
                       </form>
                       <form action={sendResetLinkAction}>
                         <input type="hidden" name="id" value={user.id} />
@@ -296,12 +316,12 @@ export default async function PenggunaPage({
                       </form>
                       <form action={deleteUserAction}>
                         <input type="hidden" name="id" value={user.id} />
-                        <button
-                          type="submit"
+                        <ConfirmButton
+                          message={`Hapus pengguna ${user.email}? Akun dan profilnya dihapus permanen sehingga tidak bisa masuk lagi. Tindakan ini tidak bisa dibatalkan.`}
                           className="rounded-full border border-red-200 px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50"
                         >
                           Hapus
-                        </button>
+                        </ConfirmButton>
                       </form>
                     </div>
                   </div>

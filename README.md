@@ -3,11 +3,11 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 39 — Tombol bagikan**. Halaman artikel, audio, dan video punya tombol
-> bagikan (Web Share API, WhatsApp, salin tautan) dengan URL kanonik dari server. Halaman
-> informasi Fase 38, CSP **Report-Only** (Fase 37), dan halaman status Fase 36 tetap berjalan.
-> Unduh artikel sebagai PDF dan email notifikasi kontributor belum dikerjakan karena menunggu
-> keputusan pemilik.
+> Status: **Fase 40 — Audit UX dan ketahanan**. Unggahan media bisa dibatalkan dan diulang,
+> aksi sensitif di dashboard meminta konfirmasi, halaman baca punya jalan keluar saat gagal,
+> dan metadata memakai URL absolut. Fitur Fase 39 (bagikan), Fase 38 (halaman informasi), CSP
+> **Report-Only** (Fase 37), dan halaman status Fase 36 tetap berjalan. Unduh artikel sebagai
+> PDF dan email notifikasi kontributor belum dikerjakan karena menunggu keputusan pemilik.
 
 ## Teknologi
 
@@ -333,6 +333,24 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   `apps/web/src/lib/share.test.ts`.
 - Fitur yang **belum** dikerjakan dan menunggu keputusan: unduh artikel sebagai PDF dan email
   notifikasi untuk kontributor.
+
+### Audit UX dan ketahanan (Fase 40)
+
+- **Unggah media** (`media-upload-field.tsx`) punya tombol **Batalkan** saat berjalan dan
+  **Coba lagi** setelah gagal/batal. Progres memakai `role="progressbar"` dengan nilai, dan
+  unggahan dibatalkan saat halaman ditinggalkan agar tidak menyisakan permintaan menggantung.
+  Validasi tipe dan ukuran berkas tetap dilakukan sebelum unggah; validasi server tidak berubah.
+- **Aksi sensitif** di `/dashboard/pengguna` meminta konfirmasi yang menjelaskan dampak:
+  hapus pengguna, tolak pendaftaran, simpan perubahan akses (termasuk menonaktifkan), dan reset
+  kata sandi. Formulir reset kini berlabel, punya bantuan singkat, dan memakai
+  `autocomplete="new-password"`. Moderasi konten mengonfirmasi terbit dan tolak.
+- **Halaman baca** menampilkan tombol **Coba lagi** dan tautan ke daftar konten saat API gagal,
+  bukan pesan galat tanpa jalan keluar. Tautan referensi eksternal diberi ikon dan keterangan
+  bahwa tautan membuka website lain.
+- **Metadata** (`lib/seo.ts`) memakai URL kanonik absolut dan gambar Open Graph statis per jenis
+  konten; berkas audio/video tidak lagi dipakai sebagai gambar pratinjau. JSON-LD memakai URL
+  absolut. Aturan ini dites di `lib/seo.test.ts`; bila konten tidak dapat dimuat, halaman
+  tetap `noindex`.
 
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 

@@ -4,6 +4,22 @@ import type { Metadata } from 'next';
 import { getPublicContent } from './api/public';
 import { CONTENT_SECTIONS, contentPath } from './content-routes';
 
+const DEFAULT_SITE_URL = 'http://localhost:3000';
+
+/**
+ * URL absolut untuk metadata dan JSON-LD. JSON-LD mewajibkan URL absolut,
+ * sedangkan metadata Next boleh relatif. Path yang sudah absolut dibiarkan.
+ */
+export function absoluteUrl(path: string, siteUrl?: string): string {
+  const base = siteUrl ?? process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
+
+  try {
+    return new URL(path, base.endsWith('/') ? base : `${base}/`).href;
+  } catch {
+    return path;
+  }
+}
+
 /** Objek JSON-LD terstruktur untuk halaman baca. */
 function structuredData(
   type: ContentType,
@@ -134,9 +150,12 @@ export async function contentMetadata(type: ContentType, slug: string): Promise<
     }
 
     const description = content.excerpt ?? section.description;
-    const canonicalUrl = contentPath(type, content.slug);
+    const canonicalUrl = absoluteUrl(contentPath(type, content.slug));
     const authorName = content.author.fullName ?? content.speaker?.name;
-    const imageUrl: string = String((content.mediaUrl ?? section.imageUrl).trim());
+    // `mediaUrl` berisi berkas audio/video atau halaman sumber, bukan gambar.
+    // Gambar pratinjau memakai aset statis per jenis konten agar selalu berupa
+    // gambar yang bisa diambil mesin pencari dan aplikasi pesan.
+    const imageUrl = absoluteUrl(section.imageUrl);
     const transcript: string | undefined = content.transcript ?? undefined;
 
     const jsonLd = structuredData(
