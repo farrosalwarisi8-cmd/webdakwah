@@ -1,19 +1,26 @@
 /**
  * Header keamanan web.
  *
- * Header statis dipasang lewat `next.config.ts` untuk semua rute. CSP dibangun
- * per permintaan di `src/proxy.ts` karena memakai nonce: Next.js membaca nonce
- * dari header CSP pada permintaan, lalu menempelkannya ke script yang ia render.
- * Konsekuensinya halaman harus dinamis (lihat `dynamic = 'force-dynamic'` di root
- * layout), sehingga nonce-nya cocok dengan HTML yang dikirim.
+ * Header statis dipasang lewat `next.config.ts` untuk semua rute. CSP punya dua
+ * jalur, dipilih menurut sifat rutenya:
+ *
+ * - **Rute publik** (`/`, artikel, audio, video, halaman info, dst.) dirender
+ *   statis/ISR agar bisa di-cache CDN. HTML-nya dibuat saat build, ketika belum
+ *   ada permintaan yang membawa nonce, jadi kebijakannya tanpa nonce dan dipasang
+ *   statis dari `PUBLIC_CSP_SOURCES` di `next.config.ts`.
+ * - **Rute privat** (`/dashboard`, masuk, daftar, akun, lupa/atur sandi, auth)
+ *   selalu dirender per permintaan dan memakai CSP nonce + `strict-dynamic` yang
+ *   dibangun di `src/proxy.ts`.
  *
  * Kebijakan dikirim dalam mode Report-Only: pelanggaran dicatat dan dilaporkan,
  * tetapi belum memblokir permintaan. Setelah laporan bersih dan disetujui pemilik,
  * penegakan cukup mengganti header respons menjadi `Content-Security-Policy`.
  *
  * `style-src` sengaja masih memakai `'unsafe-inline'`: komponen memakai atribut
- * `style` untuk progres pemutar audio dan tinggi kartu. `script-src` memakai
- * nonce + `strict-dynamic` tanpa `'unsafe-inline'` sebagai jalur utama XSS.
+ * `style` untuk progres pemutar audio dan tinggi kartu. Pada rute privat
+ * `script-src` memakai nonce tanpa `'unsafe-inline'` sebagai jalur utama XSS;
+ * pada rute statis nonce tidak mungkin dipakai, sehingga `'unsafe-inline'`
+ * diperlukan untuk script inline Next (`self.__next_f`).
  */
 
 export interface SecurityHeader {
@@ -49,6 +56,56 @@ export interface CspOptions {
   apiOrigin?: string;
 }
 
+/** Pilihan CSP untuk rute statis: sama, tanpa nonce. */
+export type StaticCspOptions = Omit<CspOptions, 'nonce'>;
+
+/**
+ * Prefiks rute privat. Harus sama dengan daftar di `lib/pwa.ts` (dijaga oleh tes):
+ * halaman ini memuat data pribadi, dirender per permintaan, dan memakai CSP nonce.
+ */
+export const PRIVATE_ROUTE_PREFIXES = [
+  '/dashboard',
+  '/masuk',
+  '/daftar',
+  '/akun',
+  '/auth',
+  '/api',
+  '/lupa-sandi',
+  '/atur-sandi',
+] as const;
+
+/** Benar bila pathname termasuk rute privat (CSP nonce, tidak di-cache). */
+export function isPrivateRoute(pathname: string): boolean {
+  return PRIVATE_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+/**
+ * Daftar rute publik yang dikenal. `next.config.ts` memasang CSP statis lewat pola
+ * negatif "bukan rute privat" (sehingga halaman 404 di path mana pun ikut tercakup);
+ * daftar ini menjadi inventaris dan dipakai tes untuk memastikan setiap `page.tsx`
+ * di `src/app` terklasifikasi tepat satu kali.
+ */
+export const PUBLIC_CSP_SOURCES = [
+  '/',
+  '/artikel/:path*',
+  '/audio/:path*',
+  '/video/:path*',
+  '/kategori/:path*',
+  '/tag/:path*',
+  '/penceramah/:path*',
+  '/rujukan/:path*',
+  '/cari',
+  '/siaran',
+  '/tentang',
+  '/privasi',
+  '/syarat',
+  '/kontak',
+  '/simpanan',
+  '/offline',
+] as const;
+
 function normalizeOrigin(value: string | undefined): string | undefined {
   if (!value) {
     return undefined;
@@ -67,22 +124,15 @@ function normalizeOrigin(value: string | undefined): string | undefined {
   }
 }
 
-export function buildContentSecurityPolicy({
-  nonce,
-  isDev = false,
+function buildPolicy({
+  scriptSrc,
   reportUri,
   apiOrigin,
-}: CspOptions): string {
-  if (!nonce) {
-    throw new Error('CSP nonce wajib diisi');
-  }
-
-  const scriptSrc = [
-    "'self'",
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'",
-    ...(isDev ? ["'unsafe-eval'"] : []),
-  ];
+}: {
+  scriptSrc: string[];
+  reportUri?: string;
+  apiOrigin?: string;
+}): string {
   const connectSrc = ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'];
   const api = normalizeOrigin(apiOrigin);
 
@@ -124,7 +174,64 @@ export function buildContentSecurityPolicy({
   return directives.map(([name, values]) => `${name} ${values.join(' ')}`).join('; ');
 }
 
-/** Header keamanan statis untuk semua rute (tanpa CSP; CSP dipasang proxy). */
+export function buildContentSecurityPolicy({
+  nonce,
+  isDev = false,
+  reportUri,
+  apiOrigin,
+}: CspOptions): string {
+  if (!nonce) {
+    throw new Error('CSP nonce wajib diisi');
+  }
+
+  return buildPolicy({
+    scriptSrc: [
+      "'self'",
+      `'nonce-${nonce}'`,
+      "'strict-dynamic'",
+      ...(isDev ? ["'unsafe-eval'"] : []),
+    ],
+    reportUri,
+    apiOrigin,
+  });
+}
+
+/**
+ * CSP untuk HTML statis/ISR. Nonce mustahil dipakai karena HTML dibuat saat build,
+ * jadi script inline Next hanya bisa diizinkan lewat `'unsafe-inline'`. Kelemahan
+ * ini tertutup oleh `object-src 'none'`, `base-uri 'self'`, dan `frame-ancestors
+ * 'none'`, serta tetap Report-Only sampai pemilik menyetujui penegakan.
+ */
+export function buildStaticContentSecurityPolicy({
+  isDev = false,
+  reportUri,
+  apiOrigin,
+}: StaticCspOptions = {}): string {
+  return buildPolicy({
+    scriptSrc: ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
+    reportUri,
+    apiOrigin,
+  });
+}
+
+/** Header CSP untuk rute publik, dipasang lewat `next.config.ts`. */
+export function staticContentSecurityPolicyHeaders(): SecurityHeader[] {
+  return [
+    {
+      key: CONTENT_SECURITY_POLICY_HEADER,
+      value: buildStaticContentSecurityPolicy({
+        isDev: process.env.NODE_ENV === 'development',
+        reportUri: process.env.CSP_REPORT_URI,
+        apiOrigin: process.env.NEXT_PUBLIC_API_URL,
+      }),
+    },
+  ];
+}
+
+/**
+ * Header keamanan statis untuk semua rute, tanpa CSP: CSP per kelompok rute
+ * dipasang di `next.config.ts` (publik) dan `src/proxy.ts` (privat).
+ */
 export function securityHeaders(): SecurityHeader[] {
   return [...SECURITY_HEADERS];
 }

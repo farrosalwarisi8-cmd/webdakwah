@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Rute privat: sesi dicek per request dan CSP-nya memakai nonce.
+export const dynamic = 'force-dynamic';
+
 function safeNextPath(value: string | string[] | undefined): string {
   const candidate = Array.isArray(value) ? value[0] : value;
 

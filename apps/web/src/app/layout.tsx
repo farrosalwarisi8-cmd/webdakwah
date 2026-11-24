@@ -23,9 +23,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
-// CSP memakai nonce per permintaan, jadi seluruh halaman harus dirender dinamis.
-// Static/ISR tidak bisa memuat nonce karena HTML-nya dibuat saat build.
-export const dynamic = 'force-dynamic';
+// Tidak ada `force-dynamic` di sini: halaman publik dirender statis/ISR dengan CSP
+// tanpa nonce, sedangkan rute privat menandai dirinya sendiri dinamis (CSP nonce).
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

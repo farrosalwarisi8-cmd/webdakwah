@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Rute privat: token pemulihan dibaca dari cookie dan CSP-nya memakai nonce.
+export const dynamic = 'force-dynamic';
+
 function firstValue(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? '';
 }

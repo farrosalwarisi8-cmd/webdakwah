@@ -6,8 +6,11 @@ export const SERVICE_WORKER_URL = '/sw.js';
 export const OFFLINE_PATH = '/offline';
 export const INSTALL_DISMISS_KEY = 'webdakwah:install-dismissed';
 
-/** Halaman privat tidak boleh masuk cache offline. Sama dengan aturan di public/sw.js. */
-const PRIVATE_PREFIXES = [
+/**
+ * Halaman privat tidak boleh masuk cache offline. Sama dengan aturan di public/sw.js
+ * dan dengan `PRIVATE_ROUTE_PREFIXES` di `lib/security/headers.ts` (dijaga tes).
+ */
+export const PRIVATE_PATH_PREFIXES = [
   '/dashboard',
   '/masuk',
   '/daftar',
@@ -19,7 +22,7 @@ const PRIVATE_PREFIXES = [
 ];
 
 export function isOfflineCacheablePath(pathname: string): boolean {
-  return !PRIVATE_PREFIXES.some(
+  return !PRIVATE_PATH_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }

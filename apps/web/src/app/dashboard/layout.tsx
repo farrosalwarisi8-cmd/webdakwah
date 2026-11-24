@@ -2,6 +2,9 @@ import { DashboardHeader } from '@/components/dashboard-header';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { getViewer } from '@/lib/auth/viewer';
 
+// Seluruh dashboard privat: data pengguna dibaca per request dan CSP-nya memakai nonce.
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const viewer = await getViewer();
   const isAdmin = viewer.status === 'authenticated' && viewer.profile?.role === 'ADMIN';

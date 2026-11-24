@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Rute privat: sesi dicek per request dan CSP-nya memakai nonce.
+export const dynamic = 'force-dynamic';
+
 export default async function AkunPage({
   searchParams,
 }: {

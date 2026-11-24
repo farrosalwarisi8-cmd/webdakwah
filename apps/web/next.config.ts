@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-import { securityHeaders } from './src/lib/security/headers';
+import { securityHeaders, staticContentSecurityPolicyHeaders } from './src/lib/security/headers';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -13,9 +13,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // CSP dipasang per permintaan di src/proxy.ts karena memakai nonce.
+        // CSP rute privat (nonce) dipasang per permintaan di src/proxy.ts, karena
+        // kebijakan nonce membuat HTML harus dinamis.
         source: '/:path*',
         headers: securityHeaders(),
+      },
+      // Rute publik dirender statis/ISR: CSP-nya tanpa nonce dan ikut tersimpan
+      // di cache HTML, sehingga tetap terkirim saat permintaan dilayani CDN.
+      // Pola negatif dipakai agar halaman 404 pada path apa pun ikut mendapat CSP.
+      {
+        source: '/:path((?!dashboard|masuk|daftar|akun|auth|lupa-sandi|atur-sandi|api).*)',
+        headers: staticContentSecurityPolicyHeaders(),
       },
       {
         source: '/sw.js',

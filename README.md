@@ -3,11 +3,11 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 40 — Audit UX dan ketahanan**. Unggahan media bisa dibatalkan dan diulang,
-> aksi sensitif di dashboard meminta konfirmasi, halaman baca punya jalan keluar saat gagal,
-> dan metadata memakai URL absolut. Fitur Fase 39 (bagikan), Fase 38 (halaman informasi), CSP
-> **Report-Only** (Fase 37), dan halaman status Fase 36 tetap berjalan. Unduh artikel sebagai
-> PDF dan email notifikasi kontributor belum dikerjakan karena menunggu keputusan pemilik.
+> Status: **Fase 41 — Halaman publik statis/ISR dan CSP dua jalur**. Halaman publik kembali
+> statis/ISR dan bisa di-cache CDN, sementara rute privat tetap memakai CSP nonce. Fitur Fase 40
+> (audit UX dan ketahanan), Fase 39 (bagikan), Fase 38 (halaman informasi), CSP **Report-Only**
+> (Fase 37), dan halaman status Fase 36 tetap berjalan. Unduh artikel sebagai PDF dan email
+> notifikasi kontributor belum dikerjakan karena menunggu keputusan pemilik.
 
 ## Teknologi
 
@@ -265,8 +265,8 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   dikecualikan dari indeks mesin pencari.
 - Data diambil dengan revalidasi 60 detik sebagai cadangan. Setelah konten terbit, diarsipkan,
   atau dipulihkan, API memanggil webhook `POST /api/revalidate` agar cache data publik langsung
-  dibersihkan tanpa menunggu 60 detik. Sejak Fase 37 HTML dirender dinamis karena CSP nonce,
-  tetapi cache data (60 detik + tag) tetap berlaku sehingga API tidak dipanggil tiap request.
+  dibersihkan tanpa menunggu 60 detik. Sejak Fase 41 HTML publik disimpan sebagai statis/ISR,
+  jadi API tidak dipanggil tiap request dan HTML terakhir tetap disajikan saat API tidur.
 - Bila API sedang mati, halaman tetap tampil dengan pesan ramah, bukan error 500.
 
 ### Halaman status dan UX server tertidur (Fase 36)
@@ -351,6 +351,47 @@ Daftar taksonomi hanya memuat `name` dan `slug` agar id internal tidak bocor. `G
   konten; berkas audio/video tidak lagi dipakai sebagai gambar pratinjau. JSON-LD memakai URL
   absolut. Aturan ini dites di `lib/seo.test.ts`; bila konten tidak dapat dimuat, halaman
   tetap `noindex`.
+
+### Halaman publik statis/ISR dan CSP dua jalur (Fase 41)
+
+Sebelum fase ini root layout memakai `export const dynamic = 'force-dynamic'` agar nonce CSP
+cocok dengan HTML setiap permintaan. Akibatnya **semua** halaman dinamis: `Cache-Control:
+private, no-cache, no-store`, tanpa cache CDN, dan render di server pada tiap kunjungan.
+Sekarang kebijakan dipisah menurut sifat rute:
+
+| Rute                                                                                        | Rendering                             | CSP                                              | Lokasi pemasangan                           |
+| ------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
+| Publik (beranda, detail artikel/audio/video/rujukan, halaman info, `/simpanan`, `/offline`) | Statis/ISR                            | Tanpa nonce, `script-src 'self' 'unsafe-inline'` | `next.config.ts` (pola "bukan rute privat") |
+| Privat (`/dashboard`, `/masuk`, `/daftar`, `/akun`, `/lupa-sandi`, `/atur-sandi`, `/auth`)  | Dinamis per permintaan                | Nonce + `'strict-dynamic'`                       | `src/proxy.ts`                              |
+| Daftar/taksonomi/pencarian (`/artikel`, `/kategori/[slug]`, `/cari`, dst.)                  | Dinamis karena membaca `searchParams` | Sama dengan rute publik                          | `next.config.ts`                            |
+
+- Rute detail memakai `generateStaticParams()` kosong: tidak ada HTML yang dibangun saat build,
+  tetapi halaman dibuat saat pertama diminta lalu disimpan sebagai ISR (`revalidate = 60`) dan
+  diperbarui lewat webhook revalidasi. Beranda (`revalidate = 60`) dan `/siaran`
+  (`revalidate = 30`) dibangun saat build.
+- Proxy tidak lagi berjalan untuk halaman publik, sehingga HTML statis tidak bergantung pada
+  middleware dan bisa dilayani cache CDN (Vercel). Halaman privat menandai `force-dynamic` sendiri
+  agar CSP nonce tetap cocok walaupun Supabase belum dikonfigurasi.
+- CSP rute publik dipasang lewat pola negatif (`bukan dashboard|masuk|daftar|akun|auth|\nlupa-sandi|atur-sandi|api`), sehingga halaman 404 di path mana pun ikut mendapat CSP tanpa
+  menimpa CSP nonce rute privat (satu header per respons).
+- `PRIVATE_ROUTE_PREFIXES` di `lib/security/headers.ts` harus sama dengan daftar rute privat di
+  `lib/pwa.ts`; `headers.test.ts` memeriksa kesamaan itu sekaligus memastikan **setiap**
+  `page.tsx` di `src/app` terklasifikasi tepat satu kali (publik atau privat, lewat daftar
+  `PUBLIC_CSP_SOURCES` sebagai inventaris), agar rute baru tidak lolos tanpa CSP.
+- Pengukuran lokal (`next build` + `next start`, API tiruan untuk mengatur latensi):
+
+| Skenario                         | Sebelum (Fase 37–40)                              | Sesudah (Fase 41)                             |
+| -------------------------------- | ------------------------------------------------- | --------------------------------------------- |
+| TTFB beranda, API normal         | 56–106 ms, tanpa cache                            | 2–20 ms, `x-nextjs-cache: HIT`, `s-maxage=60` |
+| TTFB `/artikel/[slug]`           | 32–72 ms                                          | 2–18 ms, `s-maxage=60`                        |
+| API lambat 5 detik, cache kosong | beranda TTFB 5,42 s                               | halaman tersaji dari cache dalam 2–65 ms      |
+| API mati (503)                   | beranda 1,23 s dengan tampilan "belum ada konten" | HTML terakhir tetap tampil (~5–32 ms)         |
+
+- Risiko yang tersisa dan perlu diketahui: (1) build statis memanggil API, jadi deploy saat API
+  mati menghasilkan beranda kosong sampai revalidasi pertama; (2) bila revalidasi ISR berjalan
+  ketika API mati, halaman kosong bisa menggantikan HTML yang baik untuk satu siklus (60 detik);
+  (3) CSP publik kehilangan nonce, sehingga `script-src` memakai `'unsafe-inline'` — masih
+  **Report-Only**, dan keputusan penegakan menunggu pemilik.
 
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 
@@ -605,20 +646,26 @@ Salin dari file `.env.example` di masing-masing app. Tidak ada nilai rahasia yan
 
 ## Header Keamanan (Fase 37)
 
-Header statis dipasang `next.config.ts` untuk semua rute; CSP dipasang per permintaan oleh
-`apps/web/src/proxy.ts`. Aturan dan tesnya ada di `apps/web/src/lib/security/headers.ts` dan
-`headers.test.ts`.
+Header statis dipasang `next.config.ts` untuk semua rute. Sejak Fase 41 CSP punya dua jalur:
+statis untuk rute publik (`PUBLIC_CSP_SOURCES` di `next.config.ts`) dan per permintaan dengan
+nonce untuk rute privat (`apps/web/src/proxy.ts`). Aturan dan tesnya ada di
+`apps/web/src/lib/security/headers.ts` dan `headers.test.ts`.
 
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains` (tanpa `preload`),
   `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
   `X-Frame-Options: DENY`, `Cross-Origin-Opener-Policy: same-origin`.
 - `Permissions-Policy` mematikan kamera, mikrofon, geolokasi, pembayaran, USB, dan
   `interest-cohort`.
-- `Content-Security-Policy-Report-Only` dikirim ke browser, dengan `nonce-<acak>` per
-  permintaan dan `'strict-dynamic'`; `script-src` tidak memuat `'unsafe-inline'`. Karena masih
-  Report-Only, pelanggaran **dicatat dan dilaporkan, belum memblokir** apa pun. Header
-  permintaan internal tetap `Content-Security-Policy` agar Next.js menemukan nonce lalu
-  menempelkannya ke framework script, chunk halaman, dan script inline yang ia hasilkan.
+- `Content-Security-Policy-Report-Only` dikirim ke browser pada kedua jalur. Karena masih
+  Report-Only, pelanggaran **dicatat dan dilaporkan, belum memblokir** apa pun.
+- **Rute privat** memakai `nonce-<acak>` per permintaan dan `'strict-dynamic'`; `script-src`
+  tidak memuat `'unsafe-inline'`. Header permintaan internal tetap `Content-Security-Policy` agar
+  Next.js menemukan nonce lalu menempelkannya ke framework script, chunk halaman, dan script
+  inline yang ia hasilkan.
+- **Rute publik** statis/ISR tidak bisa memuat nonce karena HTML dibuat saat build, jadi
+  `script-src` memakai `'self' 'unsafe-inline'` (script inline Next `self.__next_f`). Kelemahan
+  ini diterima sementara kebijakan masih Report-Only dan tertutup oleh `object-src 'none'`,
+  `base-uri 'self'`, serta `frame-ancestors 'none'`.
 - **Beralih ke penegakan** hanya setelah laporan pelanggaran bersih di staging/produksi dan
   pemilik menyetujui: ubah `CONTENT_SECURITY_POLICY_HEADER` menjadi `'Content-Security-Policy'`
   di `apps/web/src/lib/security/headers.ts`. Tes menjaga nilai ini supaya perubahan tidak
@@ -635,16 +682,17 @@ Header statis dipasang `next.config.ts` untuk semua rute; CSP dipasang per permi
 
 Konsekuensi yang perlu diketahui:
 
-- Nonce hanya bisa ditanam pada halaman yang dirender saat permintaan. Root layout memakai
-  `export const dynamic = 'force-dynamic'`, jadi semua halaman **tidak lagi di-prerender/ISR**
-  dan tidak bisa di-cache CDN. Data tetap memakai cache fetch 60 detik + webhook revalidasi,
-  jadi API tidak dipanggil pada setiap permintaan; yang dirender ulang adalah HTML-nya.
-- Proxy hanya mencocokkan halaman; aset `/_next/static`, `/_next/image`, ikon, `sw.js`,
-  `manifest.webmanifest`, `robots.txt`, `sitemap.xml`, dan rute `/api` tidak diberi CSP.
-  Permintaan prefetch `next/link` juga dilewati.
-- `_not-found` ikut dirender dinamis dan sudah membawa nonce. `global-error` hanya muncul bila
-  root layout sendiri gagal; pada kondisi itu hidrasi bisa tidak berjalan, tetapi teks dan
-  tombolnya tetap tampil.
+- Nonce hanya bisa ditanam pada halaman yang dirender saat permintaan, jadi hanya rute privat
+  yang memakainya. Root layout tidak lagi `force-dynamic`; halaman publik kembali statis/ISR dan
+  bisa di-cache CDN, sedangkan `/dashboard`, halaman masuk/daftar/akun/sandi, dan `/auth`
+  menandai `force-dynamic` sendiri.
+- Proxy hanya mencocokkan rute privat di atas. Aset `/_next/static`, `/_next/image`, ikon,
+  `sw.js`, `manifest.webmanifest`, `robots.txt`, `sitemap.xml`, rute `/api`, dan seluruh halaman
+  publik tidak diberi CSP oleh proxy (CSP publik dipasang `next.config.ts`). Permintaan prefetch
+  `next/link` ke `/dashboard` juga dilewati.
+- `_not-found` publik dilayani sebagai halaman statis dengan CSP tanpa nonce; `global-error`
+  hanya muncul bila root layout sendiri gagal, dan pada kondisi itu hidrasi bisa tidak berjalan,
+  tetapi teks dan tombolnya tetap tampil.
 
 ## Batas Laju & Kuota Unggahan (Fase 10)
 

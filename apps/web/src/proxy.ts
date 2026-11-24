@@ -23,8 +23,10 @@ function withPolicy(response: NextResponse, policy: string): NextResponse {
 }
 
 /**
- * Memasang CSP nonce untuk semua halaman, lalu (khusus /dashboard) menyegarkan
- * sesi Supabase dan menjaga rute. Proxy hanya lapisan kenyamanan; API tetap
+ * Memasang CSP nonce untuk rute privat (lihat `PRIVATE_ROUTE_PREFIXES`), lalu
+ * (khusus /dashboard) menyegarkan sesi Supabase dan menjaga rute. Halaman publik
+ * tidak lewat proxy agar tetap statis/ISR dan bisa dilayani dari cache CDN; CSP-nya
+ * dipasang statis lewat `next.config.ts`. Proxy hanya lapisan kenyamanan; API tetap
  * memverifikasi token di setiap rute.
  */
 export async function proxy(request: NextRequest) {
@@ -87,19 +89,27 @@ export async function proxy(request: NextRequest) {
   return withPolicy(response, policy);
 }
 
+/*
+ * Hanya rute privat yang memakai CSP nonce dan butuh penyegaran sesi. Rute publik
+ * sengaja dilewati agar halaman statis/ISR tidak bergantung pada proxy dan tetap
+ * bisa dilayani dari cache CDN. `:path*` juga cocok untuk path tanpa segmen
+ * tambahan, jadi `/dashboard` ikut tercakup. Daftar ini harus literal: Next
+ * membacanya saat build, bukan saat runtime.
+ */
 export const config = {
   matcher: [
-    /*
-     * Semua halaman (agar CSP nonce ikut), kecuali aset statis, API, dan
-     * permintaan prefetch yang tidak merender HTML.
-     */
     {
-      source:
-        '/((?!api|_next/static|_next/image|favicon.ico|icons|sw.js|manifest.webmanifest|robots.txt|sitemap.xml).*)',
+      source: '/dashboard/:path*',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
       ],
     },
+    { source: '/masuk' },
+    { source: '/daftar' },
+    { source: '/akun' },
+    { source: '/lupa-sandi' },
+    { source: '/atur-sandi' },
+    { source: '/auth/:path*' },
   ],
 };
