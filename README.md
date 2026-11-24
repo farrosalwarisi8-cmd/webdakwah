@@ -3,11 +3,12 @@
 Website dakwah berbahasa Indonesia: artikel, audio kajian, video pendek, dan tautan rujukan.
 Konten ditulis oleh **Kontributor**, lalu ditinjau dan diterbitkan oleh **Admin**.
 
-> Status: **Fase 41 — Halaman publik statis/ISR dan CSP dua jalur**. Halaman publik kembali
-> statis/ISR dan bisa di-cache CDN, sementara rute privat tetap memakai CSP nonce. Fitur Fase 40
-> (audit UX dan ketahanan), Fase 39 (bagikan), Fase 38 (halaman informasi), CSP **Report-Only**
-> (Fase 37), dan halaman status Fase 36 tetap berjalan. Unduh artikel sebagai PDF dan email
-> notifikasi kontributor belum dikerjakan karena menunggu keputusan pemilik.
+> Status: **Fase 42 — Konten cadangan saat build**. Build memakai cadangan
+> `public-snapshot.json` bila API mati, di atas Fase 41 (halaman publik statis/ISR dengan CSP dua
+> jalur: statis untuk publik, nonce untuk rute privat). Fitur Fase 40 (audit UX dan ketahanan),
+> Fase 39 (bagikan), Fase 38 (halaman informasi), CSP **Report-Only** (Fase 37), dan halaman
+> status Fase 36 tetap berjalan. Unduh artikel sebagai PDF dan email notifikasi kontributor belum
+> dikerjakan karena menunggu keputusan pemilik.
 
 ## Teknologi
 
@@ -380,18 +381,48 @@ Sekarang kebijakan dipisah menurut sifat rute:
   `PUBLIC_CSP_SOURCES` sebagai inventaris), agar rute baru tidak lolos tanpa CSP.
 - Pengukuran lokal (`next build` + `next start`, API tiruan untuk mengatur latensi):
 
-| Skenario                         | Sebelum (Fase 37–40)                              | Sesudah (Fase 41)                             |
-| -------------------------------- | ------------------------------------------------- | --------------------------------------------- |
-| TTFB beranda, API normal         | 56–106 ms, tanpa cache                            | 2–20 ms, `x-nextjs-cache: HIT`, `s-maxage=60` |
-| TTFB `/artikel/[slug]`           | 32–72 ms                                          | 2–18 ms, `s-maxage=60`                        |
-| API lambat 5 detik, cache kosong | beranda TTFB 5,42 s                               | halaman tersaji dari cache dalam 2–65 ms      |
-| API mati (503)                   | beranda 1,23 s dengan tampilan "belum ada konten" | HTML terakhir tetap tampil (~5–32 ms)         |
+| Skenario                                                                                        | Sebelum (Fase 37–40)                              | Sesudah (Fase 41)                             |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------- |
+| TTFB beranda, API normal                                                                        | 56–106 ms, tanpa cache                            | 2–20 ms, `x-nextjs-cache: HIT`, `s-maxage=60` |
+| TTFB `/artikel/[slug]`                                                                          | 32–72 ms                                          | 2–18 ms, `s-maxage=60`                        |
+| API lambat 5 detik, cache kosong                                                                | beranda TTFB 5,42 s                               | halaman tersaji dari cache dalam 2–65 ms      |
+| API mati (503)                                                                                  | beranda 1,23 s dengan tampilan "belum ada konten" | HTML terakhir tetap tampil (~5–32 ms)         | - Risiko yang tersisa dan perlu diketahui: (1) build statis memanggil API, jadi deploy saat API |
+| mati menghasilkan beranda kosong sampai revalidasi pertama — ditutup oleh cadangan build di     |
+| bagian _Konten cadangan saat build_ di bawah; (2) bila revalidasi ISR berjalan ketika API mati, |
+| halaman kosong bisa menggantikan HTML yang baik untuk satu siklus (60 detik);                   |
+| (3) CSP publik kehilangan nonce, sehingga `script-src` memakai `'unsafe-inline'` — masih        |
+| **Report-Only**, dan keputusan penegakan menunggu pemilik.                                      |
 
-- Risiko yang tersisa dan perlu diketahui: (1) build statis memanggil API, jadi deploy saat API
-  mati menghasilkan beranda kosong sampai revalidasi pertama; (2) bila revalidasi ISR berjalan
-  ketika API mati, halaman kosong bisa menggantikan HTML yang baik untuk satu siklus (60 detik);
-  (3) CSP publik kehilangan nonce, sehingga `script-src` memakai `'unsafe-inline'` — masih
-  **Report-Only**, dan keputusan penegakan menunggu pemilik.
+### Konten cadangan saat build (Fase 42)
+
+Build statis memanggil API. Bila API mati saat `next build` (misalnya Render sedang tertidur),
+halaman yang diprerender dibangun dalam keadaan kosong dan HTML kosong itu yang disajikan
+sampai revalidasi berikutnya. Cadangan menutup celah itu:
+
+- `pnpm snapshot:public` merekam jawaban API publik ke
+  `apps/web/src/data/public-snapshot.json` (berkas ini di-commit). Yang direkam: highlight,
+  konten terbaru beranda, informasi siaran, kategori/tag/penceramah, dan halaman daftar yang
+  dipakai sitemap. Skrip menulis atomik: bila satu permintaan gagal, berkas lama tidak diubah
+  dan exit code `1`.
+- Saat build, `fetchParsed` memakai jawaban cadangan bila permintaan gagal (jaringan mati atau
+  5xx) dan bentuknya lolos skema yang sama. Bila tidak ada cadangan, perilaku kembali seperti
+  sebelumnya (tampilan kosong yang ramah).
+- Jawaban **4xx tidak pernah** diganti cadangan: konten yang sudah dihapus atau diarsipkan tetap
+  hilang. Cadangan juga **tidak dipakai saat runtime** (hanya `NEXT_PHASE=phase-production-build`),
+  jadi konten arsip tidak muncul lagi hanya karena API gagal sesaat; di runtime cache ISR tetap
+  menyajikan HTML terakhir. Untuk pengujian manual, `PUBLIC_SNAPSHOT_FALLBACK=always` (atau `off`)
+  bisa dipakai.
+- Perbarui cadangan sebelum deploy penting (atau berkala):
+
+  ```bash
+  pnpm snapshot:public -- --api=https://<domain-api>
+  # tanpa --api memakai API_URL/NEXT_PUBLIC_API_URL, lalu http://localhost:3001
+  ```
+
+- Batasannya: cadangan hanya berisi apa yang terekam saat skrip dijalankan, bukan cache hidup.
+  Slug yang terbit setelah cadangan dibuat tidak ada di dalamnya, tetapi halaman detail memang
+  tidak diprerender saat build (`generateStaticParams()` kosong), sehingga dibangun saat pertama
+  diminta. Selama `generatedAt` masih `null`, cadangan tidak berpengaruh sama sekali.
 
 ### Revalidasi cache (`apps/web/src/app/api/revalidate/route.ts`)
 
@@ -728,9 +759,11 @@ Konsekuensi yang perlu diketahui:
    | `REVALIDATE_SECRET`             | sama persis dengan API (minimal 16 karakter)               |
    | `CSP_REPORT_URI`                | opsional, endpoint laporan CSP                             |
 
-4. Setelah API Render hidup dan env terisi, deploy. **Build memanggil API**: `/`, `/siaran`, dan
-   halaman info di-prerender saat build, jadi bila API mati saat build, beranda ikut kosong
-   sampai revalidasi pertama. Build tetap sukses (halaman menampilkan pesan ramah), bukan gagal.
+4. Setelah API Render hidup dan env terisi, jalankan `pnpm snapshot:public -- --api=https://<api>`
+   lalu commit berkas `apps/web/src/data/public-snapshot.json`, kemudian deploy. **Build memanggil
+   API**: `/`, `/siaran`, dan halaman info di-prerender saat build; bila API mati, cadangan di
+   atas yang dipakai agar beranda tidak kosong. Tanpa cadangan, build tetap sukses tetapi beranda
+   kosong sampai revalidasi pertama.
 5. Set `FRONTEND_REVALIDATE_URL=https://<domain-vercel>/api/revalidate` dan `REVALIDATE_SECRET`
    yang sama di Render agar konten baru langsung menyegarkan cache.
 6. Verifikasi setelah deploy (halaman publik harus dari cache CDN, rute privat ber-nonce):

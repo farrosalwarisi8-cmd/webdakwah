@@ -17,6 +17,11 @@ import {
 import { cache } from 'react';
 
 import { PUBLIC_CONTENT_TAG } from '../cache-tags';
+import {
+  getSnapshotResponse,
+  isSnapshotFallbackActive,
+  snapshotGeneratedAt,
+} from './public-snapshot';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const REVALIDATE_SECONDS = 60;
@@ -37,10 +42,10 @@ interface Schema<T> {
   safeParse: (value: unknown) => { success: true; data: T } | { success: false };
 }
 
-async function fetchParsed<T>(
+async function requestParsed<T>(
   path: string,
   schema: Schema<T>,
-  revalidateSeconds = REVALIDATE_SECONDS,
+  revalidateSeconds: number,
 ): Promise<T> {
   let response: Response;
 
@@ -68,6 +73,49 @@ async function fetchParsed<T>(
   }
 
   return parsed.data;
+}
+
+/**
+ * Bila API mati saat build, pakai jawaban terakhir yang terekam di
+ * `src/data/public-snapshot.json` supaya halaman publik tidak dibangun kosong.
+ * Jawaban 4xx tidak pernah diganti cadangan: konten yang sudah dihapus atau
+ * diarsipkan harus tetap hilang.
+ */
+function readSnapshotFallback<T>(path: string, schema: Schema<T>): T | null {
+  if (!isSnapshotFallbackActive()) return null;
+
+  const raw = getSnapshotResponse(path);
+
+  if (raw === null) return null;
+
+  const parsed = schema.safeParse(raw);
+
+  return parsed.success ? parsed.data : null;
+}
+
+async function fetchParsed<T>(
+  path: string,
+  schema: Schema<T>,
+  revalidateSeconds = REVALIDATE_SECONDS,
+): Promise<T> {
+  try {
+    return await requestParsed(path, schema, revalidateSeconds);
+  } catch (error) {
+    if (error instanceof PublicApiError && error.status >= 400 && error.status < 500) {
+      throw error;
+    }
+
+    const fallback = readSnapshotFallback(path, schema);
+
+    if (!fallback) throw error;
+
+    console.warn(
+      `[public-api] API gagal untuk ${path}; memakai cadangan build` +
+        ` (${snapshotGeneratedAt() ?? 'belum pernah dibuat'}).`,
+    );
+
+    return fallback;
+  }
 }
 
 export async function getPublicList(type: ContentType, page: number): Promise<PublicContentList> {
