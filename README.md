@@ -712,10 +712,44 @@ Konsekuensi yang perlu diketahui:
 **Web (Vercel)**
 
 1. Import repo, set **Root Directory** ke `apps/web`.
-2. Framework terdeteksi otomatis (Next.js). Build command: `cd ../.. && pnpm --filter web build`
-   agar Prisma/Turbo tetap melihat workspace.
-3. Isi env `NEXT_PUBLIC_API_URL` (URL Render), `NEXT_PUBLIC_SITE_URL` (domain produksi),
-   `NEXT_PUBLIC_SUPABASE_URL`, dan `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+2. Framework terdeteksi otomatis (Next.js). Build dan install command sudah ditulis di
+   `apps/web/vercel.json` (`cd ../.. && pnpm --filter web build` / `pnpm install
+--frozen-lockfile`) supaya workspace, `packages/shared`, dan lockfile ikut terpakai. Jangan
+   menimpa keduanya di dashboard. Region diset `sin1` (Singapura); ganti bila audiens utama di
+   benua lain.
+3. Isi env di dashboard (Production dan Preview):
+
+   | Nama                            | Nilai                                                      |
+   | ------------------------------- | ---------------------------------------------------------- |
+   | `NEXT_PUBLIC_API_URL`           | URL Render, tanpa garis miring di akhir                    |
+   | `NEXT_PUBLIC_SITE_URL`          | `https://<domain-produksi>` (untuk canonical, sitemap, OG) |
+   | `NEXT_PUBLIC_SUPABASE_URL`      | project Supabase                                           |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key                                                   |
+   | `REVALIDATE_SECRET`             | sama persis dengan API (minimal 16 karakter)               |
+   | `CSP_REPORT_URI`                | opsional, endpoint laporan CSP                             |
+
+4. Setelah API Render hidup dan env terisi, deploy. **Build memanggil API**: `/`, `/siaran`, dan
+   halaman info di-prerender saat build, jadi bila API mati saat build, beranda ikut kosong
+   sampai revalidasi pertama. Build tetap sukses (halaman menampilkan pesan ramah), bukan gagal.
+5. Set `FRONTEND_REVALIDATE_URL=https://<domain-vercel>/api/revalidate` dan `REVALIDATE_SECRET`
+   yang sama di Render agar konten baru langsung menyegarkan cache.
+6. Verifikasi setelah deploy (halaman publik harus dari cache CDN, rute privat ber-nonce):
+
+   ```bash
+   curl -s -D - -o /dev/null https://<domain>/ | grep -iE '^(x-vercel-cache|cache-control)'
+   # harapan: x-vercel-cache: HIT/MISS/STALE, cache-control: s-maxage=60, stale-while-revalidate=...
+   curl -s -D - -o /dev/null https://<domain>/artikel/<slug> | grep -i '^x-vercel-cache'
+   curl -s -D - -o /dev/null https://<domain>/masuk | grep -i 'content-security-policy-report-only'
+   # harapan: berisi nonce-..., sedangkan halaman publik tanpa nonce
+   ```
+
+   `x-vercel-cache: PRERENDER` juga normal: Vercel menyajikan HTML hasil build lalu
+   memasukkannya ke cache. Bila `cache-control` berisi `private, no-store`, halaman tidak
+   ter-prerender — periksa `dynamic`/`revalidate` di halaman tersebut.
+
+**Catatan pnpm di Vercel**: repo memakai `packageManager: pnpm@12.18.0`. Bila build gagal dengan
+pesan versi pnpm tidak dikenal, set env `ENABLE_EXPERIMENTAL_COREPACK=1` di project Vercel agar
+Corepack memasang versi yang diminta `package.json`.
 
 **API (Render)**
 
@@ -812,8 +846,11 @@ alasannya.
 
 **Vercel**
 
-- Root directory: `apps/web` (Next.js 16). Build: `pnpm --filter web build`.
+- Root directory: `apps/web` (Next.js 16). Build/install command dari `apps/web/vercel.json`,
+  region `sin1`.
 - API **tidak diimpor** ke Vercel. Web menghubungi API melalui `NEXT_PUBLIC_API_URL` (URL Render).
+- Halaman publik statis/ISR sejak Fase 41: `x-vercel-cache` harus `HIT`/`MISS`/`STALE` dan
+  `Cache-Control` memuat `s-maxage=60`, bukan `private, no-store`.
 - Isi `NEXT_PUBLIC_SITE_URL` (domain produksi), `NEXT_PUBLIC_SUPABASE_URL`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `REVALIDATE_SECRET` (sama dengan API).
 - Webhook revalidasi: `POST /api/revalidate` dengan `x-revalidate-secret`; dua sisi (API + web)

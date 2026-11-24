@@ -29,6 +29,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Vercel (dibuat `vercel link`; berisi id proyek lokal)
+.vercel/
+
 # Editor
 .idea/
 .vscode/*
